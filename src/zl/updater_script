@@ -1,0 +1,59 @@
+ui_print("");ui_print("");ui_print("");
+ui_print("===========================================");
+ui_print("|                                         |");
+ui_print("|         *** XZDualRecovery ***          |");
+ui_print("|         *** UPDATE PACKAGE ***          |");
+ui_print("|                                         |");
+ui_print("|  PhilZ Touch, CWM & TWRP dual recovery! |");
+ui_print("|       Maintained by [NUT] on XDA        |");
+ui_print("|                                         |");
+ui_print("============================================");
+
+ui_print("");
+show_progress(0.000000, 0);
+
+package_extract_file("dr.prop", "/tmp/dr.prop");
+ui_print("Updating to version ", file_getprop("/tmp/dr.prop","version"));
+set_progress(0.100000);
+
+ui_print("  Mounting SYSTEM...");
+mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
+set_progress(0.200000);
+
+ui_print("  Removing old dual recovery files from SYSTEM...");
+delete("/system/bin/recovery.twrp.tar");
+delete("/system/bin/recovery.cwm.tar");
+delete("/system/bin/recovery.cwm.cpio.lzma");
+delete("/system/bin/recovery.philz.cpio.lzma");
+delete("/system/bin/recovery.twrp.cpio.lzma");
+delete("/system/bin/ric");
+delete("/system/bin/charger");
+delete("/system/bin/chargemon");
+delete("/system/bin/dualrecovery.sh");
+delete("/system/xbin/busybox");
+set_progress(0.400000);
+
+ui_print("  Extract new recovery files to SYSTEM...");
+package_extract_dir("system", "/system");
+set_progress(0.700000);
+
+ui_print("  Correcting permissions...");
+set_perm(0, 2000, 0644, "/system/bin/recovery.cwm.cpio.lzma");
+set_perm(0, 2000, 0644, "/system/bin/recovery.philz.cpio.lzma");
+set_perm(0, 2000, 0644, "/system/bin/recovery.twrp.cpio.lzma");
+set_perm(0, 2000, 0755, "/system/bin/chargemon");
+set_perm(0, 2000, 0755, "/system/bin/dualrecovery.sh");
+set_perm(0, 2000, 0755, "/system/xbin/busybox");
+set_progress(0.800000);
+
+ui_print("  Unmounting SYSTEM...");
+unmount("/system");
+set_progress(0.900000);
+
+ui_print("FINISHED!");
+set_progress(1.000000);
+ui_print("===========================================");
+ui_print("|    If you like this recovery package,   |");
+ui_print("|            be sure to hit the           |");
+ui_print("|          >> Thanks << Button! :)        |");
+ui_print("===========================================");

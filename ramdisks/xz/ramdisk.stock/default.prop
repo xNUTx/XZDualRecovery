@@ -1,0 +1,16 @@
+#
+# ADDITIONAL_DEFAULT_PROPERTIES
+#
+persist.sys.usb.config=mtp
+ro.sys.umsdirtyratio=20
+drm.service.enabled=true
+ro.secure=1
+ro.allow.mock.location=0
+ro.debuggable=0
+#
+# VERSION_PROPERTIES
+#
+ro.semc.version.sw=1269-5309
+ro.semc.version.sw_revision=10.4.B.0.569
+ro.semc.version.sw_variant=GENERIC
+ro.semc.version.sw_type=user

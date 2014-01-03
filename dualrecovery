@@ -1,0 +1,95 @@
+#! /bin/bash
+
+PROJECT="dualrecovery"
+
+if [ "$TOPDIR" = "" ]; then
+        WORKDIR=`pwd`
+else
+        WORKDIR="$TOPDIR/$PROJECT"
+fi
+
+cd $WORKDIR
+
+dualrecovery_menu_opt() {
+	clear
+	echo ""
+	echo ""
+	echo " Xperia DualRecovery Device Menu"
+	echo ""
+	echo "          1/ Xperia Z DualRecovery"
+	echo "          2/ Xperia Z1 DualRecovery"
+	echo "          3/ Xperia ZU DualRecovery"
+	echo "          4/ Xperia ZL DualRecovery"
+	echo "          5/ Xperia TabZ DualRecovery"
+	echo ""
+	if [ -n "$PROJECTS" ]; then
+		echo "          B/ Back to Projects menu"
+		echo ""
+	fi
+	echo "          Q/ Quit"
+	echo ""
+	echo "    Enter option:"
+	echo ""
+	read num
+	case $num in
+	        1) clear; buildxz;;
+	        2) clear; buildz1;;
+	        3) clear; buildzu;;
+	        4) clear; buildzl;;
+	        5) clear; buildtabz;;
+        	b|B) clear; projects_menu_opt;;
+        	q|Q) clear; exit;;
+        	*) echo "$num is not a valid option"; sleep 3; clear; dualrecovery_menu_opt;
+	esac
+}
+
+buildxz() {
+        cd $WORKDIR
+	LABEL="XZ"
+	DRPATH="xz"
+	CODENAME="yuga"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildz1() {
+        cd $WORKDIR
+	LABEL="Z1"
+	DRPATH="z1"
+	CODENAME="honami"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildzu() {
+        cd $WORKDIR
+	LABEL="ZU"
+	DRPATH="zu"
+	CODENAME="togari"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildzl() {
+        cd $WORKDIR
+	LABEL="ZL"
+	DRPATH="zl"
+	CODENAME="odin"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildtabz() {
+        cd $WORKDIR
+	LABEL="TabZ"
+	DRPATH="tabz"
+	CODENAME="pollux"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+# Fire up the menu
+while :
+do
+        dualrecovery_menu_opt
+done

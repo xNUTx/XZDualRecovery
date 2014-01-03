@@ -1,0 +1,141 @@
+import init.sony-platform.rc
+
+on early-init
+    mount debugfs /sys/kernel/debug /sys/kernel/debug
+
+on boot
+    # Override the value set in rootdir/init.rc
+    
+
+    write /proc/sys/kernel/sysrq 0
+    
+    
+
+on post-fs
+    # Change to socket location on libkeyctrl/suntory for /data encryption
+    mkdir /dev/socket/suntory 0755 system system
+
+on post-fs-data
+    mkdir /data/tombstones 0755 system system
+    mkdir /data/tombstones/vendor 0755 system system
+    mkdir /data/crashsms 0711 system system
+    mkdir /data/crashsms/crashes 0755 system system
+    mkdir /data/mediaserver 0740 media media
+    mkdir /data/pc 700 radio radio
+    mkdir /data/credmgr 700 system system
+    mkdir /data/smime 0770 root smime_keystore
+    mkdir /data/app-skin 0771 system system
+    
+    
+
+on property:vold.decrypt=trigger_restart_framework
+    start display_cc
+
+on early-boot
+    # Display color correction is needed in charge only mode as well.
+    start display_cc
+    write /sys/devices/platform/msm_hsic_host/override_wakelock 0
+    # Start the offline charging (This blocks booting further in some cases)
+    exec /system/bin/chargemon.stock
+    write /sys/devices/platform/msm_hsic_host/override_wakelock 1
+    write /sys/module/pm8921_bms/parameters/enable_lowbatt_detect 1
+
+on property:dev.bootcomplete=1
+    start fota-snoop
+    start grabramdump
+    start startup-prober
+
+# klogger and klogrouter service switch
+on property:persist.sys.kernel.log=logcat
+    stop klogger
+    start klogrouter
+
+on property:persist.sys.kernel.log=file
+    stop klogrouter
+    start klogger
+
+on property:persist.sys.kernel.log=disable
+    stop klogger
+    stop klogrouter
+
+# Ramdumper post processing
+service grabramdump /system/bin/grabramdump -d "/dev/block/platform/msm_sdcc.1/by-name/userdata,sdcard" -d "/dev/block/mmcblk1p1,ext_card"
+    user root
+    oneshot
+    disabled
+
+service iddd /system/bin/iddd
+    class core
+    user idd
+    group idd log
+
+# Sony: FOTA snooping
+service fota-snoop /system/bin/fota-snoop
+    class main
+    group cache
+    oneshot
+    disabled
+
+# Start RIC
+service ric /sbin/ric
+    class main
+    user root
+    group root
+    disabled
+
+# klogger service
+service klogger /system/bin/kernel_log_redirector file
+    oneshot
+    disabled
+
+# klogrouter service
+service klogrouter /system/bin/kernel_log_redirector logcat
+    oneshot
+    disabled
+
+# Start suntrold
+service suntrold /system/bin/suntrold
+    user system
+    group system
+    oneshot
+    class main
+
+# Start Credential manager daemon
+service credmgrd /system/bin/credmgrd
+    user system
+    group system
+    socket credmgr stream 0660 system system
+    class main
+
+#Starting crashmonitor native service
+
+
+service startup-prober /system/bin/startup-prober
+    user root
+    oneshot
+    disabled
+
+# Fast Dormancy
+service fast-dormancy /system/bin/fast-dormancy
+    user root
+    group root inet net_raw net_admin
+    class main
+
+on property:ro.semc.enable.fast_dormancy=false
+    stop fast-dormancy
+
+# Native helper for SuperStamina
+service xssm /system/bin/xssm
+    class main
+    socket xssm stream 0660 root system
+
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/bugmailer.sh -v
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116
+
+
+
+
