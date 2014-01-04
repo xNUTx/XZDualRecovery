@@ -3,6 +3,8 @@ XZDualRecovery
 
 Dual Recovery for Xperia devices
 
+==============
+
 Run 'dualrecovery' to start building. It is menu driven for ease of use.
 
 Currently supported are:
@@ -26,6 +28,8 @@ with the newer built recoveries!
 The 'Build' menu item has an 'all' option, which will allow you to grab the latest built and patched
 without the compilation bits. It will also ask if you wish to increase the revision number and if
 you wish to upload it... which obviously will only work if you have the correct password.
+
+==============
 
 For now all releases will be officially done by [NUT] a.k.a. xNUTx.
 
