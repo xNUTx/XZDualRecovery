@@ -287,31 +287,23 @@ fi
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 	TECHOL "Creating XZDR.prop file."
 	if [ -f "${DRPATH}/default" -a "`cat ${DRPATH}/default`" = "twrp" ]; then
-		TECHOL "dr.default.recovery will be set to TWRP"
-		echo "dr.default.recovery=twrp" > ${DRPATH}/XZDR.prop
+		TECHOL "dr.recovery.boot will be set to TWRP"
+		echo "dr.recovery.boot=twrp" > ${DRPATH}/XZDR.prop
 		rm -f ${DRPATH}/default
 	else
-		TECHOL "dr.default.recovery will be set to CWM/PhilZ (default)"
-		echo "dr.default.recovery=cwm" > ${DRPATH}/XZDR.prop
+		TECHOL "dr.recovery.boot will be set to PhilZ (default)"
+		echo "dr.recovery.boot=philz" > ${DRPATH}/XZDR.prop
 	fi
-	if [ -f "${DRPATH}/cwm" ]; then
-		TECHOL "dr.vanilla.cwm will be set to true"
-		echo "dr.vanilla.cwm=true" >> ${DRPATH}/XZDR.prop
-		rm -f ${DRPATH}/cwm
-	else
-		TECHOL "dr.vanilla.cwm will be set to false (default)"
-		echo "dr.vanilla.cwm=false" >> ${DRPATH}/XZDR.prop
-	fi
-	TECHOL "dr.enable.initd will be set to false (default)"
-	echo "dr.enable.initd=false" >> ${DRPATH}/XZDR.prop
-	TECHOL "dr.insecure.ramdisk will be set to false (default)"
-	echo "dr.insecure.ramdisk=false" >> ${DRPATH}/XZDR.prop
+	TECHOL "dr.initd.active will be set to false (default)"
+	echo "dr.initd.active=false" >> ${DRPATH}/XZDR.prop
+	TECHOL "dr.ramdisk.boot will be set to power (default)"
+	echo "dr.ramdisk.boot=power" >> ${DRPATH}/XZDR.prop
 	if [ -f "/system/bin/ramdisk.stock.cpio.lzma" ]; then
-		TECHOL "dr.ramdisk.location will /system/bin/ramdisk.stock.cpio.lzma"
-		echo "dr.ramdisk.location=/system/bin/ramdisk.stock.cpio.lzma" >> ${DRPATH}/XZDR.prop
+		TECHOL "dr.ramdisk.path will /system/bin/ramdisk.stock.cpio.lzma"
+		echo "dr.ramdisk.path=/system/bin/ramdisk.stock.cpio.lzma" >> ${DRPATH}/XZDR.prop
 	else
-		TECHOL "dr.ramdisk.location will be empty (default)"
-		echo "dr.ramdisk.location=" >> ${DRPATH}/XZDR.prop
+		TECHOL "dr.ramdisk.path will be empty (default)"
+		echo "dr.ramdisk.path=" >> ${DRPATH}/XZDR.prop
 	fi
 fi
 

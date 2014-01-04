@@ -142,7 +142,10 @@ AppPackages/
 # Others
 sql/
 out/
+<<<<<<< HEAD
 tmp/
+=======
+>>>>>>> 4220aed6cb8f129b96391d18b2d935bda840d6cf
 *.Cache
 ClientBin/
 [Ss]tyle[Cc]op.*
