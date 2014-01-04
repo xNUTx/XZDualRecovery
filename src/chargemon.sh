@@ -294,10 +294,10 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 		TECHOL "dr.recovery.boot will be set to PhilZ (default)"
 		echo "dr.recovery.boot=philz" > ${DRPATH}/XZDR.prop
 	fi
-	TECHOL "dr.initd.active will be set to power (default)"
-	echo "dr.initd.active=power" >> ${DRPATH}/XZDR.prop
-	TECHOL "dr.ramdisk.boot will be set to false (default)"
-	echo "dr.ramdisk.boot=false" >> ${DRPATH}/XZDR.prop
+	TECHOL "dr.initd.active will be set to false (default)"
+	echo "dr.initd.active=false" >> ${DRPATH}/XZDR.prop
+	TECHOL "dr.ramdisk.boot will be set to power (default)"
+	echo "dr.ramdisk.boot=power" >> ${DRPATH}/XZDR.prop
 	if [ -f "/system/bin/ramdisk.stock.cpio.lzma" ]; then
 		TECHOL "dr.ramdisk.path will /system/bin/ramdisk.stock.cpio.lzma"
 		echo "dr.ramdisk.path=/system/bin/ramdisk.stock.cpio.lzma" >> ${DRPATH}/XZDR.prop
