@@ -133,16 +133,12 @@ EXECL killall cat
 EXECL rm -f /dev/keycheck
 EXECL rm -f /dev/keycheckout
 
-if [ "$KEYCHECK" != "" -o -f "${DRPATH}/boot" -o -f "/cache/recovery/boot" ]; then
+if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" ]; then
 
 	ECHOL "Recovery boot mode selected"
 
 	# Recovery boot mode notification
 	SETLED on 255 0 255
-
-	if [ -f "${DRPATH}/boot" ]; then
-		EXECL rm -f ${DRPATH}/boot
-	fi
 
 	if [ -f "/cache/recovery/boot" ]; then
 		EXECL rm -f /cache/recovery/boot
@@ -151,32 +147,21 @@ if [ "$KEYCHECK" != "" -o -f "${DRPATH}/boot" -o -f "/cache/recovery/boot" ]; th
 	cd /
 
 	#read what CWM to use
-	if [ "$(DRGETPROP dr.vanilla.cwm)" = "true" -o "$(DRGETPROP dr.vanilla.cwm)" = "1" -o "$(DRGETPROP dr.vanilla.cwm)" = "yes" ]; then
-		ECHOL "User defined choice for vanilla CWM!"
-		CWM="cwm"
-	else
-		ECHOL "Will be using PhilZ Touch Recovery when CWM choice has been made!"
-		CWM="philz"
-	fi
-
-	#read default, for use with the boot flag file.
-	if [ "$(DRGETPROP dr.default.recovery)" = "twrp" ]; then
-		RECLOG="Booting TWRP by default..."
-		RECOVERY="/sbin/recovery.twrp.cpio.lzma"
-	else
-		RECLOG="Booting CWM/PhilZ by default..."
-		RECOVERY="/sbin/recovery.${CWM}.cpio.lzma"
-	fi
+	CWM="$(DRGETPROP dr.recovery.boot)"
+	RECLOG="Booting to ${CWM}..."
+	RECOVERY="/sbin/recovery.${CWM}.cpio.lzma"
 
   	# Prepare CWM recovery
 	if [ -f "/system/bin/recovery.${CWM}.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
-		RECLOG="Booting CWM/PhilZ by keypress..."
+		RECLOG="Booting Overridden by keypress..."
+		RECLOG="Booting to ${CWM}..."
 		RECOVERY="/sbin/recovery.${CWM}.cpio.lzma"
 	fi
 
 	# Prepare TWRP recovery
 	if [ -f "/system/bin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
-		RECLOG="Booting TWRP by keypress..."
+		RECLOG="Booting Overridden by keypress..."
+		RECLOG="Booting twrp..."
 		RECOVERY="/sbin/recovery.twrp.cpio.lzma"
 	fi
 
@@ -258,15 +243,20 @@ SETLED off
 # Check and prepare for stock ramdisk
 STOCKRAMDISK=""
 PACKED=""
-if [ -f "$(DRGETPROP dr.ramdisk.location)" -a "$(DRGETPROP dr.insecure.ramdisk)" = "true" ]; then
+INSECUREBOOT=""
+if [ -f "$(DRGETPROP dr.ramdisk.path)" ] && [ "$(DRGETPROP dr.ramdisk.boot)" = "true" -o -f "/cache/ramdisk" ]; then
 
-	STOCKRAMDISK=$(DRGETPROP dr.ramdisk.location)
+	if [ -f "/cache/ramdisk" ]; then
+		EXECL rm -f /cache/ramdisk
+	fi
+
+	STOCKRAMDISK=$(DRGETPROP dr.ramdisk.path)
 	PACKED=$(basename $STOCKRAMDISK | awk -F . '{print $NF}')
-	cp $STOCKRAMDISK /sbin/
+	INSECUREBOOT="true"
 
 fi
 
-if [ -f "$(DRGETPROP dr.ramdisk.location)" -a "$(DRGETPROP dr.insecure.ramdisk)" = "power" ]; then
+if [ -f "$(DRGETPROP dr.ramdisk.path)" -a "$(DRGETPROP dr.ramdisk.boot)" = "power" ]; then
 
 	ECHOL "Power keycheck..."
 
@@ -293,9 +283,9 @@ if [ -f "$(DRGETPROP dr.ramdisk.location)" -a "$(DRGETPROP dr.insecure.ramdisk)"
 
 	if [ "$POWERKEYCHECK" != "0" ]; then
 		ECHOL "Power button pressed, will attempt booting insecure ramdisk!"
-		STOCKRAMDISK=$(DRGETPROP dr.ramdisk.location)
+		STOCKRAMDISK=$(DRGETPROP dr.ramdisk.path)
 		PACKED=$(basename $STOCKRAMDISK | awk -F . '{print $NF}')
-		cp $STOCKRAMDISK /sbin/
+		INSECUREBOOT="true"
 	fi
 
 	EXECL killall cat
@@ -314,7 +304,7 @@ fi
 
 # If the ramdisk is not present or if the setting in the XZDR.prop
 # file has been set to disabled, we do a regular boot.
-if [ "$STOCKRAMDISK" != "" ] && [ "$(DRGETPROP dr.insecure.ramdisk)" = "true" -o "$(DRGETPROP dr.insecure.ramdisk)" = "power" ]; then
+if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
 
 	ECHOL "Insecure ramdisk boot..."
 
@@ -349,7 +339,7 @@ else
 	nohup /system/bin/rickiller.sh $(which busybox) &
 
 	# init.d support
-	if [ "$(DRGETPROP dr.enable.initd)" = "true" ]; then
+	if [ "$(DRGETPROP dr.initd.active)" = "true" ]; then
 
 		ECHOL "Init.d folder found and execution is enabled!"
 		ECHOL "It will run the following scripts:"
@@ -360,7 +350,7 @@ else
 	else
 
 		ECHOL "Init.d execution is disabled."
-		ECHOL "To enable it, set dr.enable.initd to true in XZDR.prop!"
+		ECHOL "To enable it, set dr.initd.active to true in XZDR.prop!"
 
 	fi
 

@@ -1,10 +1,6 @@
 #!/sbin/sh
 
-DRPATH="/external_sd/XZDualRecovery"
-
-if [ !-d "/external_sd/XZDualRecovery" ]; then
-	DRPATH="/storage/sdcard1/XZDualRecovery"
-fi
+DRPATH="/storage/sdcard1/XZDualRecovery"
 
 if [ !-d "/storage/sdcard1/XZDualRecovery" ]; then
 	DRPATH="/cache/XZDualRecovery"
@@ -50,15 +46,15 @@ if [ "$ROMVER" = "10.4.B.0.569" -o "$ROMVER" = "14.2.A.0.290" ]; then
 
 	cp /tmp/ramdisk.stock.cpio.lzma /system/bin/
 	chmod 644 /system/bin/ramdisk.stock.cpio.lzma
-	DRSETPROP dr.ramdisk.location /system/bin/ramdisk.stock.cpio.lzma
+	DRSETPROP dr.ramdisk.path /system/bin/ramdisk.stock.cpio.lzma
 
 fi
 
-if [ -f "/system/bin/ramdisk.stock.cpio.lzma" -a "$(DRGETPROP dr.insecure.ramdisk)" = "" ]; then
+if [ -f "/system/bin/ramdisk.stock.cpio.lzma" -a "$(DRGETPROP dr.ramdisk.boot)" = "" ]; then
 
 	echo "  ** Installed custom ramdisk! **"
 	# This, once a working ramdisk has been produced, will be turned to true in the future
-	DRSETPROP dr.insecure.ramdisk false
+	DRSETPROP dr.ramdisk.boot power
 
 fi
 
