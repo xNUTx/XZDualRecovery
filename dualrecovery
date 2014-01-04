@@ -1,4 +1,4 @@
-#! /bin/bash
+#!/usr/bin/sudo bash
 
 PROJECT="dualrecovery"
 
@@ -9,6 +9,13 @@ else
 fi
 
 cd $WORKDIR
+
+if [ ! -d "$WORKDIR/out" ]; then
+	mkdir $WORKDIR/out
+fi
+if [ ! -d "$WORKDIR/tmp" ]; then
+	mkdir $WORKDIR/tmp
+fi
 
 dualrecovery_menu_opt() {
 	clear
