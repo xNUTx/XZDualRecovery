@@ -6,11 +6,16 @@ Dual Recovery for Xperia devices
 Run 'dualrecovery' to start building. It is menu driven for ease of use.
 
 Currently supported are:
-Sony Xperia Z
-Sony Xperia ZL
-Sony Xperia Tablet Z
-Sony Xperia Z Ultra
-Sony Xperia Z1
+
+* Sony Xperia Z
+
+* Sony Xperia ZL
+
+* Sony Xperia Tablet Z
+
+* Sony Xperia Z Ultra
+
+* Sony Xperia Z1
 
 The main device menu is split up in to 2 major parts, 'Build' and 'Recovery'.
 
