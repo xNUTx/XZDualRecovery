@@ -295,7 +295,7 @@ if [ -f "$(DRGETPROP dr.ramdisk.path)" -a "$(DRGETPROP dr.ramdisk.boot)" = "powe
 
 fi
 
-if [ "$PACKED" != "lzma" -a "$PACKED" != "cpio" -a "$PACKED" != "tar" ]; then
+if [ "$PACKED" != "" -a "$PACKED" != "lzma" -a "$PACKED" != "cpio" -a "$PACKED" != "tar" ]; then
 
 	ECHOL "Unknown archive type, use only cpio, cpio.lzma and tar archives!"
 	STOCKRAMDISK=""
@@ -305,6 +305,10 @@ fi
 # If the ramdisk is not present or if the setting in the XZDR.prop
 # file has been set to disabled, we do a regular boot.
 if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
+
+	ECHOL "Known archive type, will copy it to /sbin now"
+	EXECL cp $STOCKRAMDISK /sbin/
+	STOCKRAMDISK="/sbin/$(basename $STOCKRAMDISK)"
 
 	ECHOL "Insecure ramdisk boot..."
 
@@ -317,7 +321,7 @@ if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
 	elif [ "$PACKED" = "cpio" ]; then
 		cpio -i -u < $STOCKRAMDISK
 	else
-		lzcat $STOCKRAMDISK | busybox cpio -i -u
+		lzcat $STOCKRAMDISK | cpio -i -u
 	fi
 
 	# Ending log
@@ -328,15 +332,6 @@ if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
 	exec /init
 
 else
-
-	# The following will get done 'on boot' which spoils the fun on the Z1 JB4.3 ROM's ...
-	# mount -o nosuid,nodev,noexec securityfs /sys/kernel/security
-	# echo 1 > /sys/kernel/security/sony_ric/enable
-	# This script will attempt to reverse that... (and sofar, failing to do so)
-	# In any case it is the complete integration of the remount-reboot fix
-
-	TECHOL "RIC service: Making sure it does not bother us..."
-	nohup /system/bin/rickiller.sh $(which busybox) &
 
 	# init.d support
 	if [ "$(DRGETPROP dr.initd.active)" = "true" ]; then
@@ -354,7 +349,7 @@ else
 
 	fi
 
-	ECHOL "Remount / ro..."
+	ECHOL "Remount rootfs ro..."
 	mount -o remount,ro rootfs /
 	ECHOL "Remount /system ro..."
 	mount -o remount,ro /system

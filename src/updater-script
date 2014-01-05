@@ -46,6 +46,7 @@ set_perm(0, 2000, 0644, "/system/bin/recovery.twrp.cpio.lzma");
 set_perm(0, 2000, 0755, "/system/bin/chargemon");
 set_perm(0, 2000, 0755, "/system/bin/dualrecovery.sh");
 set_perm(0, 2000, 0755, "/system/bin/rickiller.sh");
+set_perm(0, 2000, 0755, "/system/xbin/disableric");
 set_perm(0, 2000, 0755, "/system/xbin/busybox");
 set_progress(0.850000);
 

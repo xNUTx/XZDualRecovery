@@ -65,6 +65,7 @@ runinstall() {
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 	./${ADBBINARY} push rickiller.sh /data/local/tmp/recovery/rickiller.sh
+	./${ADBBINARY} push disableric /data/local/tmp/recovery/disableric
 	./${ADBBINARY} push busybox /data/local/tmp/recovery/busybox
 	./${ADBBINARY} push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 	./${ADBBINARY} push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma

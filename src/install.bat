@@ -73,6 +73,7 @@ adb push dr.prop /data/local/tmp/recovery/dr.prop
 adb push chargemon.sh /data/local/tmp/recovery/chargemon
 adb push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 adb push rickiller.sh /data/local/tmp/recovery/rickiller.sh
+adb push disableric /data/local/tmp/recovery/disableric
 adb push busybox /data/local/tmp/recovery/busybox
 adb push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 adb push recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma

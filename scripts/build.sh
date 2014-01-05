@@ -53,6 +53,7 @@ packflashable() {
 	cp $WORKDIR/src/chargemon.sh $WORKDIR/tmp/flashable/system/bin/chargemon
 	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/tmp/flashable/system/bin/dualrecovery.sh
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/tmp/flashable/system/bin/rickiller.sh
+	cp $WORKDIR/src/disableric.sh $WORKDIR/tmp/flashable/system/xbin/disableric
 	cp $WORKDIR/tmp/busybox $WORKDIR/tmp/flashable/system/xbin/busybox
 	cp $WORKDIR/src/backupchargemon.sh $WORKDIR/tmp/flashable/backupchargemon.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/tmp/flashable/META-INF/com/google/android/updater-script
@@ -76,6 +77,7 @@ packinstaller() {
 	cp $WORKDIR/src/chargemon.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/chargemon.sh
 	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/dualrecovery.sh
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/rickiller.sh
+	cp $WORKDIR/src/disableric.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/disableric
 	cp $WORKDIR/src/installrecovery.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/installrecovery.sh
 	cp $WORKDIR/src/install.bat $WORKDIR/tmp/installer/lockeddualrecovery/install.bat
 	cp $WORKDIR/src/install.sh $WORKDIR/tmp/installer/lockeddualrecovery/install.sh

@@ -68,6 +68,10 @@ echo "Copy rickiller.sh to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh /system/bin/
 ${BUSYBOX} chmod 755 /system/bin/rickiller.sh
 
+echo "Copy disableric to system."
+${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
+${BUSYBOX} chmod 755 /system/xbin/disableric
+
 echo "Copy busybox to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/
 ${BUSYBOX} chmod 755 /system/xbin/busybox

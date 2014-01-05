@@ -113,6 +113,11 @@ DRGETPROP() {
 
 }
 
+# Run Androxyde's fix when it's the correct ROM.
+if [ "$(DRGETPROP ro.build.id)" = "14.2.A.0.290" ]; then
+	/system/xbin/disableric
+fi
+
 # Busybox setup, chosing the one that supports lzcat, as it is vital for this recovery setup!
 if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
 	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzcat | /system/xbin/busybox wc -l`
@@ -296,8 +301,8 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 	fi
 	TECHOL "dr.initd.active will be set to false (default)"
 	echo "dr.initd.active=false" >> ${DRPATH}/XZDR.prop
-	TECHOL "dr.ramdisk.boot will be set to power (default)"
-	echo "dr.ramdisk.boot=power" >> ${DRPATH}/XZDR.prop
+	TECHOL "dr.ramdisk.boot will be set to false (default)"
+	echo "dr.ramdisk.boot=false" >> ${DRPATH}/XZDR.prop
 	if [ -f "/system/bin/ramdisk.stock.cpio.lzma" ]; then
 		TECHOL "dr.ramdisk.path will /system/bin/ramdisk.stock.cpio.lzma"
 		echo "dr.ramdisk.path=/system/bin/ramdisk.stock.cpio.lzma" >> ${DRPATH}/XZDR.prop

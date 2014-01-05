@@ -80,26 +80,6 @@ onFileChange() {
 
 }
 
-# This will only run when a 4.3 ROM has been found with the securityfs mount active, for 4.2.2 and earlier this fix has no purpose.
-disableSecFSRIC() {
-
-	ECHOL "disableSecFSRIC running"
-
-	ECHOL "$(DRGETPROP ro.build.version.release) and $($BUSYBOX grep "mount securityfs securityfs /sys/kernel/security" /init.sony-platform.rc | $BUSYBOX wc -l)"
-
-	if [ "$(DRGETPROP ro.build.version.release)" = "4.3" -a $($BUSYBOX grep "mount securityfs securityfs /sys/kernel/security" /init.sony-platform.rc | $BUSYBOX wc -l) -eq 1 ]; then
-
-		ECHOL "4.3 ROM, with securityfs, lets do it!"
-		$BUSYBOX mount -o remount,rw rootfs /
-		$BUSYBOX mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
-		$BUSYBOX mkdir -p /sys/kernel/security/sony_ric
-		$BUSYBOX chmod 755 /sys/kernel/security/sony_ric
-		echo 0 > /sys/kernel/security/sony_ric/enable
-
-	fi
-
-}
-
 RicIsKilled() {
         if [ -f "/tmp/killedric" ]; then
                 return 0
@@ -128,9 +108,6 @@ if [ "$INITIALRICCHECK" = "" ]; then
 	$BUSYBOX mv ${RICPATH} ${RICPATH}c
 
 	$BUSYBOX touch /tmp/killedric
-
-	# Disable the kernel based ric
-	disableSecFSRIC
 
 fi
 
