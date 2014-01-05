@@ -81,39 +81,21 @@ onFileChange() {
 }
 
 # This will only run when a 4.3 ROM has been found with the securityfs mount active, for 4.2.2 and earlier this fix has no purpose.
-actOnSecFSMount() {
+disableSecFSRIC() {
 
-	ECHOL "actOnSecFSMount running"
+	ECHOL "disableSecFSRIC running"
 
 	ECHOL "$(DRGETPROP ro.build.version.release) and $($BUSYBOX grep "mount securityfs securityfs /sys/kernel/security" /init.sony-platform.rc | $BUSYBOX wc -l)"
 
 	if [ "$(DRGETPROP ro.build.version.release)" = "4.3" -a $($BUSYBOX grep "mount securityfs securityfs /sys/kernel/security" /init.sony-platform.rc | $BUSYBOX wc -l) -eq 1 ]; then
 
 		ECHOL "4.3 ROM, with securityfs, lets do it!"
-		onFileChange /sys/kernel/security disableRIC
-
-	fi
-
-}
-
-disableRIC() {
-
-	ECHOL "disableRIC running"
-
-	# As it's only useful to disable it once it has been enabled, test for the value to change
-	if [ ! -f "/sys/kernel/security/sony_ric/enable" ]; then
-
-		ECHOL "/sys/kernel/security/sony_ric/enable has vanished or simply does not exist, disableRIC is stopping now!"
-		return 0
-
-	elif [ -f "/sys/kernel/security/sony_ric/enable" ]; then
-		ECHOL "/sys/kernel/security/sony_ric/enable available, changing now!"
+		$BUSYBOX mount -o remount,rw rootfs /
+		$BUSYBOX mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		$BUSYBOX mkdir -p /sys/kernel/security/sony_ric
+		$BUSYBOX chmod 755 /sys/kernel/security/sony_ric
 		echo 0 > /sys/kernel/security/sony_ric/enable
-		EXECL cat /sys/kernel/security/sony_ric/enable
-		return 0
-	else
-		$BUSYBOX usleep 100000
-		disableRIC
+
 	fi
 
 }
@@ -140,15 +122,15 @@ if [ "$INITIALRICCHECK" = "" ]; then
 	fi
 
 	# Just to make sure the rootfs has been remounted writable. It should already though...
-	$BUSYBOX mount -o remount,rw /
+	$BUSYBOX mount -o remount,rw rootfs /
 
 	# Move the ric binary out of the way...
 	$BUSYBOX mv ${RICPATH} ${RICPATH}c
 
 	$BUSYBOX touch /tmp/killedric
 
-	# lets kickstart the security demolisher :)
-	actOnSecFSMount
+	# Disable the kernel based ric
+	disableSecFSRIC
 
 fi
 
@@ -173,10 +155,10 @@ if [ ! -f "/tmp/killedric" ]; then
 
 	done
 
-	actOnSecFSMount
-
 fi
 
 ECHOL "Script finished, exitting!"
+
+$BUSYBOX mount -o remount,ro rootfs /
 
 exit 0
