@@ -11,6 +11,10 @@
 #
 ###########################################################################
 
+if [ -f "/system/xbin/disableric" ]; then
+	/system/xbin/disableric
+fi
+
 set +x
 _PATH="$PATH"
 
@@ -93,15 +97,9 @@ EXIT2CM(){
 }
 DRGETPROP() {
 
-	# Get the property from getprop
-	PROP=`/system/bin/getprop $*`
+	# If it's empty, see if what was requested was a XZDR.prop value!
+	PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
-	if [ "$PROP" = "" ]; then
-
-		# If it's empty, see if what was requested was a XZDR.prop value!
-		PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
-
-	fi
 	if [ "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
@@ -112,11 +110,6 @@ DRGETPROP() {
 	echo $PROP
 
 }
-
-# Run Androxyde's fix when it's the correct ROM.
-if [ "$(DRGETPROP ro.build.id)" = "14.2.A.0.290" ]; then
-	/system/xbin/disableric
-fi
 
 # Busybox setup, chosing the one that supports lzcat, as it is vital for this recovery setup!
 if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
@@ -191,14 +184,6 @@ else
 		TEXECL cp /system/bin/recovery.cwm.cpio.lzma /sbin/
 		TEXECL cp /system/bin/recovery.philz.cpio.lzma /sbin/
 		TEXECL cp /system/bin/recovery.twrp.cpio.lzma /sbin/
-
-		# Making time_daemon executable from /sbin
-		TEXECL cp /system/bin/time_daemon /sbin/
-		TEXECL find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
-		TEXECL find /system -name "libqmi_client_qmux.so" -exec cp {} /sbin/ \;
-		TEXECL find /system -name "libqmi_common_so.so" -exec cp {} /sbin/ \;
-		TEXECL find /system -name "libqmi_encdec.so" -exec cp {} /sbin/ \;
-		TEXECL find /system -name "libdiag.so" -exec cp {} /sbin/ \;
 
 	else
 

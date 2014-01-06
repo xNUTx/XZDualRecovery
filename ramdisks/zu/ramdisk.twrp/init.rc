@@ -29,6 +29,9 @@ on init
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
+    # Making timedaemon run a little early, before the recovery is started
+    start timedaemon
+
 on boot
 
     ifup lo
@@ -48,6 +51,7 @@ service healthd /sbin/healthd -n
 
 # time_daemon keeps throwing tantrums on LB... maybe this will help?
 service timedaemon /sbin/timedaemon.sh
+    disabled
     oneshot
 
 # Fixscript to make sure no filesystem locks are lingering.

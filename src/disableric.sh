@@ -1,4 +1,3 @@
-#!/system/bin/sh
 /system/bin/mount -o remount,rw rootfs /
 /system/bin/mv /sbin/ric /sbin/ricc
 /system/bin/mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security

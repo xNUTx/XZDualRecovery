@@ -68,9 +68,12 @@ echo "Copy rickiller.sh to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh /system/bin/
 ${BUSYBOX} chmod 755 /system/bin/rickiller.sh
 
-echo "Copy disableric to system."
-${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
-${BUSYBOX} chmod 755 /system/xbin/disableric
+
+if [ "$(/system/bin/getprop ro.build.id)" = "14.2.A.0.290" ]; then
+	echo "Copy disableric to system."
+	${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
+	${BUSYBOX} chmod 755 /system/xbin/disableric
+fi
 
 echo "Copy busybox to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/

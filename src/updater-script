@@ -37,6 +37,8 @@ ui_print("  Stock ramdisk needed?");
 package_extract_dir("tmp", "/tmp");
 set_perm(0, 0, 0755, "/tmp/installstock.sh");
 run_program("/tmp/installstock.sh");
+set_perm(0, 0, 0755, "/tmp/installdisableric.sh");
+run_program("/tmp/installdisableric.sh");
 set_progress(0.700000);
 
 ui_print("  Correcting permissions...");
@@ -46,7 +48,6 @@ set_perm(0, 2000, 0644, "/system/bin/recovery.twrp.cpio.lzma");
 set_perm(0, 2000, 0755, "/system/bin/chargemon");
 set_perm(0, 2000, 0755, "/system/bin/dualrecovery.sh");
 set_perm(0, 2000, 0755, "/system/bin/rickiller.sh");
-set_perm(0, 2000, 0755, "/system/xbin/disableric");
 set_perm(0, 2000, 0755, "/system/xbin/busybox");
 set_progress(0.850000);
 
