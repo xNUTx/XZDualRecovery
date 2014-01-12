@@ -14,18 +14,18 @@ recoverypatcher() {
 }
 
 patchtwrp() {
-	cp -vr $WORKDIR/patches/all/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
-	cp -vr $WORKDIR/patches/${DRPATH}/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	cp -vfr $WORKDIR/patches/all/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	cp -vfr $WORKDIR/patches/${DRPATH}/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 }
 
 patchcwm() {
-	cp -vr $WORKDIR/patches/all/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
-	cp -vr $WORKDIR/patches/${DRPATH}/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	cp -vfr $WORKDIR/patches/all/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	cp -vfr $WORKDIR/patches/${DRPATH}/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 }
 
 patchphilz() {
-	cp -vr $WORKDIR/patches/all/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-	cp -vr $WORKDIR/patches/${DRPATH}/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	cp -vfr $WORKDIR/patches/all/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	cp -vfr $WORKDIR/patches/${DRPATH}/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 }
 
 # TWRP
@@ -43,7 +43,7 @@ copytwrp() {
 			compiletwrp
 		fi
 	fi
-	cp $WORKDIR/src/cyanogen-twrp/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	cp -fr $WORKDIR/src/cyanogen-twrp/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio
@@ -66,7 +66,7 @@ maketwrp() {
 		rm -f $WORKDIR/tmp/recovery.twrp.cpio.lzma
 	fi
 	echo "copying source package"
-	cp -r $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp $WORKDIR/tmp/
+	cp -fr $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp $WORKDIR/tmp/
 	cd $WORKDIR/tmp/ramdisk.twrp
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.twrp.cpio
@@ -95,7 +95,7 @@ copycwm() {
 			compilecwm
 		fi
 	fi
-	cp $WORKDIR/src/cyanogen-cwm/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	cp -fr $WORKDIR/src/cyanogen-cwm/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio
@@ -118,7 +118,7 @@ makecwm() {
 		rm -f $WORKDIR/tmp/recovery.cwm.cpio.lzma
 	fi
 	echo "copying source package"
-	cp -r $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm $WORKDIR/tmp/
+	cp -fr $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm $WORKDIR/tmp/
 	cd $WORKDIR/tmp/ramdisk.cwm
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.cwm.cpio
@@ -140,7 +140,7 @@ copyphilz() {
 	else
 		mkdir $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 	fi
-	cp $WORKDIR/src/${DRPATH}/ramdisk-philz.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	cp -fr $WORKDIR/src/${DRPATH}/ramdisk-philz.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-philz.cpio
@@ -163,7 +163,7 @@ makephilz() {
 		rm -f $WORKDIR/tmp/recovery.philz.cpio.lzma
 	fi
 	echo "copying source package"
-	cp -r $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz $WORKDIR/tmp/
+	cp -fr $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz $WORKDIR/tmp/
 	cd $WORKDIR/tmp/ramdisk.philz/
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.philz.cpio
@@ -186,7 +186,7 @@ makestock() {
 		rm -f $WORKDIR/tmp/ramdisk.stock.cpio.lzma
 	fi
 	echo "copying source package"
-	cp -r $WORKDIR/ramdisks/${DRPATH}/ramdisk.stock $WORKDIR/tmp/
+	cp -fr $WORKDIR/ramdisks/${DRPATH}/ramdisk.stock $WORKDIR/tmp/
 	cd $WORKDIR/tmp/ramdisk.stock/
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/ramdisk.stock.cpio

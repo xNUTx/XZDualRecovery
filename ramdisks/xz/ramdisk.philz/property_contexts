@@ -21,9 +21,11 @@ dev.                    u:object_r:system_prop:s0
 runtime.                u:object_r:system_prop:s0
 hw.                     u:object_r:system_prop:s0
 sys.                    u:object_r:system_prop:s0
+sys.powerctl            u:object_r:powerctl_prop:s0
 service.                u:object_r:system_prop:s0
 wlan.                   u:object_r:system_prop:s0
 dhcp.                   u:object_r:system_prop:s0
+bluetooth.              u:object_r:bluetooth_prop:s0
 
 debug.                  u:object_r:shell_prop:s0
 log.                    u:object_r:shell_prop:s0
@@ -33,6 +35,7 @@ service.adb.tcp.port    u:object_r:shell_prop:s0
 persist.audio.          u:object_r:audio_prop:s0
 persist.sys.            u:object_r:system_prop:s0
 persist.service.        u:object_r:system_prop:s0
+persist.service.bdroid. u:object_r:bluetooth_prop:s0
 persist.security.       u:object_r:system_prop:s0
 
 # mmac persistent properties
@@ -52,7 +55,3 @@ crypto.                 u:object_r:vold_prop:s0
 ctl.dumpstate           u:object_r:ctl_dumpstate_prop:s0
 ctl.ril-daemon          u:object_r:ctl_rildaemon_prop:s0
 ctl.                    u:object_r:ctl_default_prop:s0
-#line 1 "device/sony/qcom-common/sepolicy/property_contexts"
-persist.service.bdroid.         u:object_r:bluetooth_prop:s0
-bluetooth.                      u:object_r:bluetooth_prop:s0
-net.rmnet_usb0.                 u:object_r:radio_prop:s0

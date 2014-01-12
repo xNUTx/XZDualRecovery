@@ -55,8 +55,8 @@ on init
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
-    # Making timedaemon run a little early, before the recovery is started
-    start timedaemon
+    # Starting the XZDR fix script before anything else gets started      
+    start xzdualrecovery
 
 on boot
 
@@ -69,14 +69,10 @@ on boot
 service ueventd /sbin/ueventd
     critical
 
-# time_daemon keeps throwing tantrums on LB... maybe this will help?
-service timedaemon /sbin/timedaemon.sh
+# This kills all filesystem locking applications still in memory and will attempt to fix the time.
+service xzdualrecovery /sbin/xzdualrecovery.sh
+    oneshot
     disabled
-    oneshot
-
-# Fixscript to make sure no filesystem locks are lingering.
-service xperiafix /sbin/xperialbfix.sh
-    oneshot
 
 service recovery /sbin/recovery
 

@@ -81,7 +81,7 @@ runinstall() {
 	echo ""
 	./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/install.sh"
 	./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/busybox"
-	if [ "$SUPERAPP" == "supersu" ]; then
+	if [ "$SUPERAPP" = "supersu" ]; then
 		echo "Look at your device and grant supersu access!"
 		./${ADBBINARY} shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
 		read -p "Press any key to continue AFTER granting root access."

@@ -11,25 +11,29 @@
 # Author: [NUT] on XDA
 #
 
-BUSYBOX=$1
+BUSYBOX="/sbin/busybox"
 
 LOG="/data/local/tmp/rickiller.log"
 
-echo "" > $LOG
+_PATH=$PATH
+
+PATH=".:/system/xbin:/system/bin"
+
+echo -n "" > $LOG
 
 ECHOL(){
 	_TIME=`$BUSYBOX date +"%H:%M:%S"`
-	echo "$_TIME: $*" >> ${LOG}
+	echo "$_TIME: $*" >> $LOG
 	return 0
 }
 
 EXECL(){
 	_TIME=`$BUSYBOX date +"%H:%M:%S"`
-	echo "$_TIME: $*" >> ${LOG}
-	$BUSYBOX $* 2>&1 >> ${LOG}
+	echo "$_TIME: $*" >> $LOG
+	$BUSYBOX $* 2>&1 >> $LOG
 	_RET=$?
-	echo "$_TIME: RET=$_RET" >> ${LOG}
-	return ${_RET}
+	echo "$_TIME: RET=$_RET" >> $LOG
+	return $_RET
 }
 
 
@@ -88,54 +92,37 @@ RicIsKilled() {
         fi
 }
 
-INITIALRICCHECK=$(ps | $BUSYBOX grep "bin/ric" | $BUSYBOX grep -v "grep" | $BUSYBOX awk '{ print $NF }')
-if [ "$INITIALRICCHECK" = "" ]; then
+# RIC is not running yet, so we can do to it whatever we want!
+# Lets find it first...
+RICPATH="/sbin/ric" # assuming it exists on the ramdisk
 
-	# RIC is not running yet, so we can do to it whatever we want!
-	# Lets find it first...
-	RICPATH="/sbin/ric" # assuming it exists on the ramdisk
+if [ -e "/system/bin/ric" ]; then # and then checking if it exists in the ROM...
 
-	if [ -e "/system/bin/ric" ]; then # and then checking if it exists in the ROM...
-
-		RICPATH="/system/bin/ric"
-
-	fi
-
-	# Just to make sure the rootfs has been remounted writable. It should already though...
-	$BUSYBOX mount -o remount,rw rootfs /
-
-	# Move the ric binary out of the way...
-	$BUSYBOX mv ${RICPATH} ${RICPATH}c
-
-	$BUSYBOX touch /tmp/killedric
+	RICPATH="/system/bin/ric"
 
 fi
 
-if [ ! -f "/tmp/killedric" ]; then
+# Just to make sure the rootfs has been remounted writable. It should already though...
+$BUSYBOX mount -o remount,rw /
 
-	until RicIsKilled
-	do
+# Replace the ric binary...
+EXECL rm -rf $RICPATH
 
-		RICPATH=$(ps | $BUSYBOX grep "bin/ric" | $BUSYBOX grep -v "grep" | $BUSYBOX awk '{ print $NF }')
+EXECL touch $RICPATH
+$BUSYBOX echo "#!/system/bin/sh" >> $RICPATH
+$BUSYBOX echo "while :" >> $RICPATH
+$BUSYBOX echo "do" >> $RICPATH
+$BUSYBOX echo "sleep 60" >> $RICPATH
+$BUSYBOX echo "done" >> $RICPATH
 
-		if [ "$RICPATH" != "" ]; then
+EXECL chmod 755 $RICPATH
 
-			$BUSYBOX mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && $BUSYBOX pkill -f ${RICPATH}
-
-		else
-
-			$BUSYBOX touch /tmp/killedric
-
-		fi
-
-		$BUSYBOX sleep 2
-
-	done
-
-fi
+EXECL touch /tmp/killedric
 
 ECHOL "Script finished, exitting!"
 
 $BUSYBOX mount -o remount,ro rootfs /
+
+PATH="$_PATH"
 
 exit 0

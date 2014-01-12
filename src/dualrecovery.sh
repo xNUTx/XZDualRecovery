@@ -354,6 +354,9 @@ else
 	ECHOL "Remount /system ro..."
 	mount -o remount,ro /system
 
+	ECHOL "Starting the rickiller to the background..."
+	nohup /system/bin/rickiller.sh &
+
 	ECHOL "Return to normal boot mode..."
 
 	# Ending log
