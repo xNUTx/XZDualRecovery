@@ -71,6 +71,7 @@ echo =============================================
 adb shell "mkdir /data/local/tmp/recovery"
 adb push dr.prop /data/local/tmp/recovery/dr.prop
 adb push chargemon.sh /data/local/tmp/recovery/chargemon
+adb push mr.sh /data/local/tmp/recovery/mr
 adb push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 adb push rickiller.sh /data/local/tmp/recovery/rickiller.sh
 adb push disableric /data/local/tmp/recovery/disableric
@@ -93,7 +94,7 @@ adb shell "chmod 755 /data/local/tmp/recovery/busybox"
 if "!menu_decision!" == "1" (
 	echo Look at your device and grant supersu access!
 	echo Press any key to continue AFTER granting root access.
-	adb shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
+	adb shell "/system/xbin/su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
 	pause
 )
 

@@ -63,6 +63,7 @@ runinstall() {
 	./${ADBBINARY} shell "mkdir /data/local/tmp/recovery"
 	./${ADBBINARY} push dr.prop /data/local/tmp/recovery/dr.prop
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
+	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 	./${ADBBINARY} push rickiller.sh /data/local/tmp/recovery/rickiller.sh
 	./${ADBBINARY} push disableric /data/local/tmp/recovery/disableric
@@ -84,9 +85,10 @@ runinstall() {
 	if [ "$SUPERAPP" = "supersu" ]; then
 		echo "Look at your device and grant supersu access!"
 		./${ADBBINARY} shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
-		read -p "Press any key to continue AFTER granting root access."
+		echo "Press any key to continue AFTER granting root access."
+		read
 	fi
-	./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"
+	./${ADBBINARY} shell "/system/xbin/su -c /data/local/tmp/recovery/install.sh"
 	echo "Waiting for your device to reconnect."
 	echo "After entering CWM for the first time, reboot to system to complete this installer if you want it to clean up after itself."
 	./${ADBBINARY} wait-for-device

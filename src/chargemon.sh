@@ -355,7 +355,7 @@ TEXECL touch ${DRPATH}/${LOGFILE}
 TEXECL chmod 660 ${DRPATH}/${LOGFILE}
 
 if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
-	echo "Will be calling /sbin/init.sh with arguments '$EVENTNODE', '$DRPATH', '$LOGFILE'" >> ${PREPLOG}
+	echo "Will be calling /sbin/init.sh with arguments '$EVENTNODE', '$POWERNODE', '$DRPATH', '$LOGFILE'" >> ${PREPLOG}
 fi
 
 # Ending log

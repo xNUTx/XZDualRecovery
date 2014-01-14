@@ -50,6 +50,16 @@ if [ -f "/data/local/tmp/recovery/ramdisk.stock.cpio.lzma" ]; then
 	${BUSYBOX} chmod 644 /system/bin/ramdisk.stock.cpio.lzma
 fi
 
+if [ ! -f /system/bin/mr.stock ]
+then
+	echo "Rename stock mr"
+	${BUSYBOX} mv /system/bin/mr /system/bin/mr.stock
+fi
+
+echo "Copy mr wrapper script to system."
+${BUSYBOX} cp /data/local/tmp/recovery/mr /system/bin/
+${BUSYBOX} chmod 755 /system/bin/mr
+
 if [ ! -f /system/bin/chargemon.stock ]
 then
 	echo "Rename stock chargemon"

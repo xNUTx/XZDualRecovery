@@ -2,6 +2,7 @@ import /init.recovery.${ro.hardware}.rc
 
 on early-init
     start ueventd
+    start healthd
 
 on init
     export PATH /sbin
@@ -48,15 +49,13 @@ on init
     mount tmpfs tmpfs /mnt/fuse mode=0775,gid=1000
 
     write /sys/class/android_usb/android0/enable 0
-    write /sys/class/android_usb/android0/idVendor 0FCE
-    write /sys/class/android_usb/android0/idProduct 619F
-    write /sys/class/android_usb/android0/functions mass_storage,adb
+    write /sys/class/android_usb/android0/idVendor 18D1
+    write /sys/class/android_usb/android0/idProduct D001
+    write /sys/class/android_usb/android0/functions adb
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
-    # Starting the XZDR fix script before anything else gets started
-    start xzdualrecovery
 
 on boot
 
@@ -69,10 +68,8 @@ on boot
 service ueventd /sbin/ueventd
     critical
 
-# This kills all filesystem locking applications still in memory and will attempt to fix the time.
-service xzdualrecovery /sbin/xzdualrecovery.sh
-    oneshot
-    disabled
+service healthd /sbin/healthd -n
+    critical
 
 service recovery /sbin/recovery
 
@@ -81,6 +78,7 @@ service setup_adbd /sbin/setup_adbd
 
 service adbd /sbin/adbd recovery
     disabled
+    socket adbd stream 660 system system
 
 service vold /sbin/minivold
     socket vold stream 0660 root mount

@@ -146,22 +146,22 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" ]; then
 
 	cd /
 
-	#read what CWM to use
-	CWM="$(DRGETPROP dr.recovery.boot)"
-	RECLOG="Booting to ${CWM}..."
-	RECOVERY="/sbin/recovery.${CWM}.cpio.lzma"
+	# boot file found, no keys pressed: read what recovery to use
+	if [ "$KEYCHECK" = "" ]; then
+		RECLOAD="$(DRGETPROP dr.recovery.boot)"
+		RECLOG="Booting to ${RECLOAD}..."
+		RECOVERY="/sbin/recovery.${RECLOAD}.cpio.lzma"
+	fi
 
-  	# Prepare CWM recovery
-	if [ -f "/system/bin/recovery.${CWM}.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
-		RECLOG="Booting Overridden by keypress..."
-		RECLOG="Booting to ${CWM}..."
-		RECOVERY="/sbin/recovery.${CWM}.cpio.lzma"
+  	# Prepare PhilZ recovery
+	if [ -f "/system/bin/recovery.philz.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
+		RECLOG="Booting recovery by keypress, booting to PhilZ Touch..."
+		RECOVERY="/sbin/recovery.philz.cpio.lzma"
 	fi
 
 	# Prepare TWRP recovery
 	if [ -f "/system/bin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
-		RECLOG="Booting Overridden by keypress..."
-		RECLOG="Booting twrp..."
+		RECLOG="Booting recovery by keypress, booting to TWRP..."
 		RECOVERY="/sbin/recovery.twrp.cpio.lzma"
 	fi
 
