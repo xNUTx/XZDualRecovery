@@ -78,6 +78,9 @@ echo "Copy rickiller.sh to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh /system/bin/
 ${BUSYBOX} chmod 755 /system/bin/rickiller.sh
 
+echo "Installing NDRUtils to system."
+${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
+${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 
 if [ "$(/system/bin/getprop ro.build.id)" = "14.2.A.0.290" ]; then
 	echo "Copy disableric to system."

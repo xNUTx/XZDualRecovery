@@ -65,6 +65,7 @@ runinstall() {
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
 	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
+	./${ADBBINARY} push NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk
 	./${ADBBINARY} push rickiller.sh /data/local/tmp/recovery/rickiller.sh
 	./${ADBBINARY} push disableric /data/local/tmp/recovery/disableric
 	./${ADBBINARY} push busybox /data/local/tmp/recovery/busybox
