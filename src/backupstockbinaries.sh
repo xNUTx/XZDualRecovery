@@ -25,6 +25,9 @@ if [ "${CHARGEMON}" = "#!/system/bin/sh" ]; then
 	elif [ "${MODEL}" = "C6502" -o "${MODEL}" = "C6503" -o "${MODEL}" = "C6506" ]; then
 		/sbin/busybox cp /tmp/chargemon.c650x /system/bin/chargemon.stock
 		/sbin/busybox chmod 755 /system/bin/chargemon.stock
+	elif [ "${MODEL}" = "C6902" -o "${MODEL}" = "C6903" -o "${MODEL}" = "C6906" -o "${MODEL}" = "C6943" ]; then
+		/sbin/busybox cp /tmp/chargemon.c690x /system/bin/chargemon.stock
+		/sbin/busybox chmod 755 /system/bin/chargemon.stock
 	fi
 
 fi
