@@ -54,7 +54,9 @@ MOUNTSDCARD(){
 		      TEXECL insmod /system/lib/modules/texfat.ko;
 		      TEXECL mount -t texfat ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
 		      return $?;;
-		83) TEXECL mount -t ext4 ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1; return $?;;
+		83) PTYPE=$(/system/xbin/busybox blkid ${BOOTREC_EXTERNAL_SDCARD} | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
+		    TEXECL mount -t $PTYPE ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
+		    return $?;;
 		 *) return 1;;
 	esac
 	TECHOL "### MOUNTSDCARD did not run with a parameter!";
