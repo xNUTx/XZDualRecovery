@@ -53,7 +53,8 @@ echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
 
 echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
-/sbin/busybox mount -t ext4 -o ro,barrier=1,discard /dev/block/platform/msm_sdcc.1/by-name/system /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard /dev/block/platform/msm_sdcc.1/by-name/system /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard /dev/block/platform/msm_sdcc.1/by-name/userdata /data 2>&1 >> /tmp/xzdr.log
 
 #cp /system/bin/time_daemon /sbin/
 #/sbin/busybox find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
@@ -70,12 +71,12 @@ if [ "$(getprop persist.sys.timezone)" != "" ]; then
 
 else
 
-	export TZ="GMT+1"
-	echo "Set GMT+1 timezone..." >> /tmp/xzdr.log
+	export TZ="GMT"
+	echo "Set GMT timezone..." >> /tmp/xzdr.log
 
 fi
 
-/system/bin/time_daemon & 2>&1 >> /tmp/xzdr.log
+/system/bin/time_daemon &
 
 /sbin/busybox sleep 2
 
@@ -84,6 +85,7 @@ fi
 /sbin/busybox sleep 2
 
 /sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
 
 echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
