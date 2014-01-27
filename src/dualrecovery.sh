@@ -133,7 +133,7 @@ EXECL killall cat
 EXECL rm -f /dev/keycheck
 EXECL rm -f /dev/keycheckout
 
-if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" ]; then
+if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665502' /proc/cmdline | wc -l)" = "1" ]; then
 
 	ECHOL "Recovery boot mode selected"
 

@@ -6,7 +6,7 @@ ui_print("|                                         |");
 ui_print("|  PhilZ Touch, CWM & TWRP dual recovery! |");
 ui_print("|       Maintained by [NUT] on XDA        |");
 ui_print("|                                         |");
-ui_print("============================================");
+ui_print("===========================================");
 
 ui_print("");
 show_progress(1.000000, 0);

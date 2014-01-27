@@ -2,9 +2,10 @@ import /init.recovery.${ro.hardware}.rc
 
 on early-init
     start ueventd
+    start healthd
 
 on init
-    export PATH /sbin
+    export PATH /sbin:/system/bin
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
     export EXTERNAL_STORAGE /sdcard
@@ -22,7 +23,7 @@ on init
     mkdir /system
     mkdir /data
     mkdir /cache
-    mount /tmp /tmp tmpfs
+    mount tmpfs tmpfs /tmp
 
     chown root shell /tmp
     chmod 0775 /tmp
@@ -48,12 +49,15 @@ on init
     mount tmpfs tmpfs /mnt/fuse mode=0775,gid=1000
 
     write /sys/class/android_usb/android0/enable 0
-    write /sys/class/android_usb/android0/idVendor 0FCE
-    write /sys/class/android_usb/android0/idProduct 619F
-    write /sys/class/android_usb/android0/functions mass_storage,adb
+    write /sys/class/android_usb/android0/idVendor 18D1
+    write /sys/class/android_usb/android0/idProduct D001
+    write /sys/class/android_usb/android0/functions adb
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
+
+    # Sony kernel, so lets set SELinux to permissive
+    write /sys/fs/selinux/enforce 0
 
     # Starting the XZDR fix script before anything else gets started
     start xzdualrecovery
@@ -69,10 +73,8 @@ on boot
 service ueventd /sbin/ueventd
     critical
 
-# This kills all filesystem locking applications still in memory and will attempt to fix the time.
-service xzdualrecovery /sbin/xzdualrecovery.sh
-    oneshot
-    disabled
+service healthd /sbin/healthd -n
+    critical
 
 service recovery /sbin/recovery
 
@@ -80,6 +82,12 @@ service setup_adbd /sbin/setup_adbd
     oneshot
 
 service adbd /sbin/adbd recovery
+    disabled
+    socket adbd stream 660 system system
+
+# This kills all filesystem locking applications still in memory and will attempt to fix the time.
+service xzdualrecovery /sbin/xzdualrecovery.sh
+    oneshot
     disabled
 
 service vold /sbin/minivold
