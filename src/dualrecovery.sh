@@ -96,6 +96,7 @@ PHNAME=$(DRGETPROP ro.semc.product.name)
 ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
 ECHOL "DR Keycheck..."
+EXECL mount -o remount,rw rootfs /
 
 cat ${EVENTNODE} > /dev/keycheck &
 
@@ -132,6 +133,8 @@ EXECL killall cat
 
 EXECL rm -f /dev/keycheck
 EXECL rm -f /dev/keycheckout
+
+EXECL mount -o remount,ro rootfs /
 
 if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665502' /proc/cmdline | wc -l)" = "1" ]; then
 
@@ -180,6 +183,8 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 
 		EXECL kill -9 $(ps | grep rmt_storage | grep -v "grep" | awk -F' ' '{print $1}')
 
+		EXECL mount -o remount,rw rootfs /
+
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."
 		EXECL umount -l /acct
@@ -218,7 +223,8 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 		# Ending log
 		DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
 		echo "STOP Dual Recovery at ${DATETIME}: Executing recovery init, have fun!" >> ${LOG}
-		umount -l /storage/sdcard1	# SDCard1
+		sleep 1
+		umount -f /storage/sdcard1	# SDCard1
 		umount -l /cache		# Cache
 		umount -l /proc
 		umount -l /sys
@@ -259,6 +265,7 @@ fi
 if [ -f "$(DRGETPROP dr.ramdisk.path)" -a "$(DRGETPROP dr.ramdisk.boot)" = "power" ]; then
 
 	ECHOL "Power keycheck..."
+	EXECL mount -o remount,rw rootfs /
 
 	cat ${POWERNODE} > /dev/keycheck &
 
@@ -293,6 +300,8 @@ if [ -f "$(DRGETPROP dr.ramdisk.path)" -a "$(DRGETPROP dr.ramdisk.boot)" = "powe
 	EXECL rm -f /dev/keycheck
 	EXECL rm -f /dev/keycheckout
 
+	EXECL mount -o remount,ro rootfs /
+
 fi
 
 if [ "$PACKED" != "" -a "$PACKED" != "lzma" -a "$PACKED" != "cpio" -a "$PACKED" != "tar" ]; then
@@ -305,6 +314,8 @@ fi
 # If the ramdisk is not present or if the setting in the XZDR.prop
 # file has been set to disabled, we do a regular boot.
 if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
+
+	EXECL mount -o remount,rw rootfs /
 
 	ECHOL "Known archive type, will copy it to /sbin now"
 	EXECL cp $STOCKRAMDISK /sbin/
@@ -349,13 +360,11 @@ else
 
 	fi
 
-	ECHOL "Remount rootfs ro..."
-	mount -o remount,ro rootfs /
-	ECHOL "Remount /system ro..."
-	mount -o remount,ro /system
-
 	ECHOL "Starting the rickiller to the background..."
 	nohup /system/bin/rickiller.sh &
+
+	EXECL mount -o remount,ro rootfs /
+	EXECL mount -o remount,ro /system
 
 	ECHOL "Return to normal boot mode..."
 

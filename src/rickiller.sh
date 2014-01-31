@@ -15,27 +15,26 @@ BUSYBOX="/sbin/busybox"
 
 LOG="/data/local/tmp/rickiller.log"
 
-_PATH=$PATH
+_PATH="$PATH"
 
-PATH=".:/system/xbin:/system/bin"
+export PATH=".:/system/xbin:/system/bin:/sbin"
 
-echo -n "" > $LOG
+$BUSYBOX echo -n "" > $LOG
 
 ECHOL(){
 	_TIME=`$BUSYBOX date +"%H:%M:%S"`
-	echo "$_TIME: $*" >> $LOG
+	$BUSYBOX echo "$_TIME: $*" >> $LOG
 	return 0
 }
 
 EXECL(){
 	_TIME=`$BUSYBOX date +"%H:%M:%S"`
-	echo "$_TIME: $*" >> $LOG
+	$BUSYBOX echo "$_TIME: $*" >> $LOG
 	$BUSYBOX $* 2>&1 >> $LOG
 	_RET=$?
-	echo "$_TIME: RET=$_RET" >> $LOG
+	$BUSYBOX echo "$_TIME: RET=$_RET" >> $LOG
 	return $_RET
 }
-
 
 DRGETPROP() {
 
@@ -49,7 +48,7 @@ DRGETPROP() {
 
         fi
 
-        echo $PROP
+        $BUSYBOX echo $PROP
 
 }
 
@@ -112,6 +111,9 @@ EXECL touch $RICPATH
 $BUSYBOX echo "#!/system/bin/sh" >> $RICPATH
 $BUSYBOX echo "while :" >> $RICPATH
 $BUSYBOX echo "do" >> $RICPATH
+$BUSYBOX echo 'if [ -f "/sys/kernel/security/sony_ric/enable" ]; then' >> $RICPATH
+$BUSYBOX echo "echo 0 > /sys/kernel/security/sony_ric/enable" >> $RICPATH
+$BUSYBOX echo "fi" >> $RICPATH
 $BUSYBOX echo "sleep 60" >> $RICPATH
 $BUSYBOX echo "done" >> $RICPATH
 

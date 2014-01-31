@@ -11,12 +11,9 @@
 #
 ###########################################################################
 
-if [ -f "/system/xbin/disableric" ]; then
-	/system/xbin/disableric
-fi
-
 set +x
 _PATH="$PATH"
+export PATH="/system/xbin:/system/bin:/sbin"
 
 # Constants
 LOGDIR="XZDualRecovery"
@@ -131,6 +128,10 @@ fi
 # We can actually safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
 ${BUSYBOX} mkdir /tmp/XZDualRecovery
 
+# Kickstarting log
+DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
+echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
+
 # The function to check if the found busybox is usable, if not, it will log that and exit this script
 if [ ! -n "${BUSYBOX}" ]; then
 
@@ -147,14 +148,17 @@ if [ ! -n "${BUSYBOX}" ]; then
 
 else
 
-	# Kickstarting log
-	DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
-	echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
+	TECHOL "Using ${BUSYBOX}"
 
-	TECHOL "Using ${BUSYBOX}."
+	TEXECL mount -o remount,rw rootfs /
+	TEXECL mount -o remount,rw /system
 
-	${BUSYBOX} mount -o remount,rw rootfs /
-	${BUSYBOX} mount -o remount,rw /system
+	if [ -f "/system/xbin/disableric" ]; then
+		TEXECL mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		TEXECL mkdir -p /sys/kernel/security/sony_ric
+		TEXECL chmod 755 /sys/kernel/security/sony_ric
+		TEXECL echo "0" > /sys/kernel/security/sony_ric/enable
+	fi
 
 	if [ -x "${BUSYBOX}" -a -x "/system/bin/dualrecovery.sh" ]; then
 
@@ -195,6 +199,9 @@ else
 
 	fi
 
+	TEXECL mount -o remount,ro rootfs /
+	TEXECL mount -o remount,ro /system
+
 fi
 
 # Checking if we can mount an external storage
@@ -207,7 +214,9 @@ fi
 
 # Create mountpoint if it doesn't exist
 if [ ! -d /storage/sdcard1 ]; then
+	TEXECL mount -o remount,rw rootfs /
 	TEXECL mkdir /storage/sdcard1
+	TEXECL mount -o remount,ro rootfs /
 fi
 
 # Mount external storage
@@ -339,7 +348,9 @@ if [ -e "${DRPATH}/drdebug.sh" ]; then
 	SETLED on 0 0 255
 
 	TECHOL "Found debugging script, copying it in place of /sbin/init.sh!"
+	TEXECL mount -o remount,rw rootfs /
 	cp ${DRPATH}/drdebug.sh /sbin/init.sh
+	TEXECL mount -o remount,ro rootfs /
 	LOGFILE="XZDebug.log"
 
 	sleep 2

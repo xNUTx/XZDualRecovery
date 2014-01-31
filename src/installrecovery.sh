@@ -82,7 +82,8 @@ echo "Installing NDRUtils to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
 ${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 
-if [ "$(/system/bin/getprop ro.build.id)" = "14.2.A.0.290" ]; then
+ROMVER=$(/system/bin/getprop ro.build.id)
+if [ "$ROMVER" = "14.2.A.0.290" -o "$ROMVER" = "14.2.A.1.136" ]; then
 	echo "Copy disableric to system."
 	${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
 	${BUSYBOX} chmod 755 /system/xbin/disableric
