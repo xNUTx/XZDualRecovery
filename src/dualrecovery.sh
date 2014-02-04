@@ -95,9 +95,9 @@ PHNAME=$(DRGETPROP ro.semc.product.name)
 
 ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
-ECHOL "DR Keycheck..."
 EXECL mount -o remount,rw rootfs /
 
+ECHOL "DR Keycheck..."
 cat ${EVENTNODE} > /dev/keycheck &
 
 # Vibrate to alert user to make a choice
@@ -149,24 +149,30 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 
 	cd /
 
+	EXECL mount -o remount,rw rootfs /
+
 	# boot file found, no keys pressed: read what recovery to use
 	if [ "$KEYCHECK" = "" ]; then
 		RECLOAD="$(DRGETPROP dr.recovery.boot)"
 		RECLOG="Booting to ${RECLOAD}..."
-		RECOVERY="/sbin/recovery.${RECLOAD}.cpio.lzma"
 	fi
 
   	# Prepare PhilZ recovery
 	if [ -f "/system/bin/recovery.philz.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
+		RECLOAD="philz"
 		RECLOG="Booting recovery by keypress, booting to PhilZ Touch..."
-		RECOVERY="/sbin/recovery.philz.cpio.lzma"
 	fi
 
 	# Prepare TWRP recovery
 	if [ -f "/system/bin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
+		RECLOAD="twrp"
 		RECLOG="Booting recovery by keypress, booting to TWRP..."
-		RECOVERY="/sbin/recovery.twrp.cpio.lzma"
 	fi
+
+	# Copy, unpack and prepare loading the recovery.
+	EXECL cp /system/bin/recovery.${RECLOAD}.cpio.lzma /sbin/
+	EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
+	RECOVERY="/sbin/recovery.${RECLOAD}.cpio"
 
 	# Boot the recovery, if the file exists
 	if [ -f "${RECOVERY}" ]; then
@@ -183,8 +189,6 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 
 		EXECL kill -9 $(ps | grep rmt_storage | grep -v "grep" | awk -F' ' '{print $1}')
 
-		EXECL mount -o remount,rw rootfs /
-
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."
 		EXECL umount -l /acct
@@ -193,46 +197,47 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 		EXECL umount -l /mnt/asec
 		EXECL umount -l /mnt/obb
 		EXECL umount -l /mnt/qcks
+		EXECL umount -l /mnt/idd	# Appslog
 		EXECL umount -l /data/idd	# Appslog
 		EXECL umount -l /data		# Userdata
 		EXECL umount -l /lta-label	# LTALabel
 
-		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
-
-		export PATH="/sbin"
-		busybox umount -l /system	# System
-
-		# rm symlinks & files.
-		busybox find . -maxdepth 1 \( -type l -o -type f \) -exec busybox rm -fv {} \; 2>&1 >> ${LOG}
-
-		for directory in `busybox find . -maxdepth 1 -type d`; do
-			if [ "$directory" != "." -a "$directory" != ".." -a "$directory" != "./" -a "$directory" != "./dev" -a "$directory" != "./proc" -a "$directory" != "./sys" -a "$directory" != "./sbin" -a "$directory" != "./cache" -a "$directory" != "./storage" ]; then
-				busybox echo "rm -vrf $directory" >> ${LOG}
-				busybox rm -vrf $directory 2>&1 >> ${LOG}
-			fi
-		done
+		# Create recovery directory to create a new root in.
+		EXECL mkdir /recovery
+		EXECL cd /recovery
 
 		# extract recovery
-		busybox echo "Extracting recovery..." >> ${LOG}
-		busybox lzcat ${RECOVERY} | busybox cpio -i -u
+		ECHOL "Extracting recovery..."
+		EXECL cpio -i -u < /sbin/recovery.${RECLOAD}.cpio
+
+		EXECL pwd
+		EXECL ls -la
 
 		# Turn off LED
 		SETLED off
 
 		# From here on, the log dies, as these are the locations we log to!
 		# Ending log
-		DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
-		echo "STOP Dual Recovery at ${DATETIME}: Executing recovery init, have fun!" >> ${LOG}
+		DATETIME=`date +"%d-%m-%Y %H:%M:%S"`
+		ECHOL "STOP Dual Recovery at ${DATETIME}: Executing recovery init, have fun!"
 		sleep 1
-		umount -f /storage/sdcard1	# SDCard1
+
+		umount -l /storage/sdcard1	# SDCard1
 		umount -l /cache		# Cache
 		umount -l /proc
 		umount -l /sys
 
+		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
+
+		export PATH="/sbin"
+		busybox umount -l /system	# System
+
 		# exec
-		exec /init
+		busybox chroot /recovery /init
 
 	else
+
+		EXECL mount -o remount,ro rootfs /
 
 		ECHOL "The recovery file does not exist, exitting with a visual warning!"
 		SETLED on 255 0 0

@@ -1,0 +1,7 @@
+    write /sys/class/android_usb/android0/idVendor 0FCE
+    write /sys/class/android_usb/android0/idProduct 619F
+    write /sys/class/android_usb/android0/functions mass_storage,adb
+
+    # Fixscript to make sure no filesystem locks are lingering.
+    exec /sbin/xperialbfix.sh
+

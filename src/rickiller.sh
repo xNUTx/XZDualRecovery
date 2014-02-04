@@ -103,6 +103,7 @@ fi
 
 # Just to make sure the rootfs has been remounted writable. It should already though...
 $BUSYBOX mount -o remount,rw /
+$BUSYBOX mount -o remount,rw /system
 
 # Replace the ric binary...
 EXECL rm -rf $RICPATH
@@ -123,7 +124,8 @@ EXECL touch /tmp/killedric
 
 ECHOL "Script finished, exitting!"
 
-$BUSYBOX mount -o remount,ro rootfs /
+$BUSYBOX mount -o remount,ro /system
+$BUSYBOX mount -o remount,ro /
 
 PATH="$_PATH"
 

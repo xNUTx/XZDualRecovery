@@ -187,9 +187,6 @@ else
 		TECHOL "Copying recovery files to /sbin"
 		TEXECL cp /system/bin/dualrecovery.sh /sbin/init.sh
 		TEXECL chmod 755 /sbin/init.sh
-		TEXECL cp /system/bin/recovery.cwm.cpio.lzma /sbin/
-		TEXECL cp /system/bin/recovery.philz.cpio.lzma /sbin/
-		TEXECL cp /system/bin/recovery.twrp.cpio.lzma /sbin/
 
 	else
 

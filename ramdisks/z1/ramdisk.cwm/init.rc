@@ -22,7 +22,10 @@ on init
     mkdir /system
     mkdir /data
     mkdir /cache
-    mount /tmp /tmp tmpfs
+    exec /sbin/busybox mount -t tmpfs tmpfs /tmp
+    exec /sbin/busybox mount -t sysfs sysfs /sys
+    exec /sbin/busybox mount -t proc proc /proc
+    exec /sbin/busybox mount -t devtmpfs devtmpfs /dev
 
     chown root shell /tmp
     chmod 0775 /tmp

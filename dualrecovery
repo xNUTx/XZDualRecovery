@@ -23,11 +23,16 @@ dualrecovery_menu_opt() {
 	echo ""
 	echo " Xperia DualRecovery Device Menu"
 	echo ""
-	echo "          1/ Xperia Z DualRecovery"
-	echo "          2/ Xperia Z1 DualRecovery"
-	echo "          3/ Xperia ZU DualRecovery"
-	echo "          4/ Xperia ZL DualRecovery"
-	echo "          5/ Xperia TabZ DualRecovery"
+	echo "          1 / Xperia Z DualRecovery"
+	echo "          2 / Xperia Z1 DualRecovery"
+	echo "          3 / Xperia ZU DualRecovery"
+	echo "          4 / Xperia ZL DualRecovery"
+	echo "          5 / Xperia TabZ DualRecovery"
+	echo "          6 / Xperia Z1 Compact DualRecovery"
+	echo "          7 / Xperia ZR DualRecovery"
+	echo "          8 / Xperia J DualRecovery"
+	echo "          9 / Xperia P DualRecovery"
+	echo "          10/ Xperia T DualRecovery"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -44,6 +49,11 @@ dualrecovery_menu_opt() {
 	        3) clear; buildzu;;
 	        4) clear; buildzl;;
 	        5) clear; buildtabz;;
+	        6) clear; buildz1c;;
+	        7) clear; buildzr;;
+	        8) clear; buildj;;
+	        9) clear; buildp;;
+	        10) clear; buildt;;
         	b|B) clear; projects_menu_opt;;
         	q|Q) clear; exit;;
         	*) echo "$num is not a valid option"; sleep 3; clear; dualrecovery_menu_opt;
@@ -55,6 +65,15 @@ buildxz() {
 	LABEL="XZ"
 	DRPATH="xz"
 	CODENAME="yuga"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildzr() {
+        cd $WORKDIR
+	LABEL="ZR"
+	DRPATH="zr"
+	CODENAME="dogo"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -91,6 +110,42 @@ buildtabz() {
 	LABEL="TabZ"
 	DRPATH="tabz"
 	CODENAME="pollux"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildz1c() {
+        cd $WORKDIR
+	LABEL="Z1C"
+	DRPATH="z1c"
+	CODENAME="amami"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildj() {
+        cd $WORKDIR
+	LABEL="XJ"
+	DRPATH="xj"
+	CODENAME="jlo"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildp() {
+        cd $WORKDIR
+	LABEL="XP"
+	DRPATH="xp"
+	CODENAME="nypon"
+        source scripts/buildmenu.sh
+	dualrecovery_action_menu_opt
+}
+
+buildt() {
+        cd $WORKDIR
+	LABEL="XT"
+	DRPATH="xt"
+	CODENAME="mint"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
