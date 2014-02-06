@@ -10,7 +10,7 @@
 
 set +x
 _PATH="$PATH"
-export PATH=/sbin
+export PATH=/system/xbin
 
 # Defining constants, from commandline
 DRPATH="$1"
@@ -26,9 +26,9 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
 #BOOTREC_CACHE="/dev/block/mmcblk0p25"
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-BOOTREC_LED_RED="/sys/class/leds/lm3533-red/brightness"
-BOOTREC_LED_GREEN="/sys/class/leds/lm3533-green/brightness"
-BOOTREC_LED_BLUE="/sys/class/leds/lm3533-blue/brightness"
+BOOTREC_LED_RED="/sys/class/leds/$(busybox ls -1 /sys/class/leds|busybox grep red)/brightness"
+BOOTREC_LED_GREEN="/sys/class/leds/$(busybox ls -1 /sys/class/leds|busybox grep green)/brightness"
+BOOTREC_LED_BLUE="/sys/class/leds/$(busybox ls -1 /sys/class/leds|busybox grep blue)/brightness"
 
 # Defining functions
 ECHOL(){
@@ -45,6 +45,9 @@ EXECL(){
   return ${_RET}
 }
 
+mount -o remount,rw rootfs /
+echo 0 > /sys/kernel/security/sony_ric/enable
+
 ECHOL "DR Keycheck..."
 
 # Vibrate to alert user to make a choice
@@ -58,38 +61,20 @@ echo 255 > ${BOOTREC_LED_GREEN}
 echo 255 > ${BOOTREC_LED_BLUE}
 
 SKIP=0
-INPUTS=12
-ECHOL "Working with $INPUTS event nodes, skipping $SKIP!"
 INPUTID=0
-INPUTNID=64
 
-LessTest() {
-	if [ "$INPUTID" = "$INPUTS" ]; then
-		return 0
-	else
-		return 1
-	fi
-}
-
-until LessTest
-do
+for INPUT in `find /dev/input/event* | sort -k1.17n`; do
 
 	if [ $INPUTID -lt $SKIP ]; then
-		INPUTID=`expr $INPUTID + 1`
-		INPUTNID=`expr $INPUTNID + 1`
-		continue
-	fi
+                INPUTID=`expr $INPUTID + 1`
+                continue
+        fi
 
-	BOOTREC_EVENT="/dev/input/event$INPUTID"
-	BOOTREC_EVENT_NODE="${BOOTREC_EVENT} c 13 $INPUTNID"
-	if [ ! -f ${BOOTREC_EVENT} ]; then
-		EXECL mknod -m 600 ${BOOTREC_EVENT_NODE}
-	fi
+	ECHOL "Listening on $INPUT"
 
-	cat ${BOOTREC_EVENT} > /dev/keycheck$INPUTID &
+	cat $INPUT > /dev/keycheck$INPUTID &
 
 	INPUTID=`expr $INPUTID + 1`
-	INPUTNID=`expr $INPUTNID + 1`
 
 done
 
@@ -98,8 +83,6 @@ echo 300 > /sys/class/timed_output/vibrator/enable
 EXECL sleep 3
 
 INPUTID=0
-
-EXECL killall cat
 
 for INPUT in `find /dev/input/event* | sort -k1.17n`; do
 
@@ -142,6 +125,58 @@ for INPUT in `find /dev/input/event* | sort -k1.17n`; do
 	INPUTID=`expr $INPUTID + 1`
 
 done
+
+EXECL rm -f /dev/keycheckout*
+
+echo 300 > /sys/class/timed_output/vibrator/enable
+
+EXECL sleep 3
+
+INPUTID=0
+
+for INPUT in `find /dev/input/event* | sort -k1.17n`; do
+
+	if [ $INPUTID -lt $SKIP ]; then
+		INPUTID=`expr $INPUTID + 1`
+		continue
+	fi
+
+	hexdump < /dev/keycheck$INPUTID > /dev/keycheckout$INPUTID
+
+	VOLKEYCHECK=`cat /dev/keycheckout$INPUTID`
+
+	ECHOL "Recorded POWER $INPUT: $VOLKEYCHECK"
+
+	INPUTID=`expr $INPUTID + 1`
+
+done
+
+EXECL rm -f /dev/keycheckout*
+
+echo 300 > /sys/class/timed_output/vibrator/enable
+
+EXECL sleep 3
+
+INPUTID=0
+
+for INPUT in `find /dev/input/event* | sort -k1.17n`; do
+
+	if [ $INPUTID -lt $SKIP ]; then
+		INPUTID=`expr $INPUTID + 1`
+		continue
+	fi
+
+	hexdump < /dev/keycheck$INPUTID > /dev/keycheckout$INPUTID
+
+	VOLKEYCHECK=`cat /dev/keycheckout$INPUTID`
+
+	ECHOL "Recorded CAMERA $INPUT: $VOLKEYCHECK"
+
+	INPUTID=`expr $INPUTID + 1`
+
+done
+
+EXECL killall cat
 
 EXECL rm -f /dev/keycheck*
 

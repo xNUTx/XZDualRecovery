@@ -12,9 +12,9 @@ DRGETPROP() {
 }
 
 if [ -x "/system/xbin/busybox" -a "`/system/xbin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-        BUSYBOX="/system/xbin/busybox"
+	BUSYBOX="/system/xbin/busybox"
 elif [ -x "/system/bin/busybox" -a "`/system/bin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-        BUSYBOX="/system/bin/busybox"
+	BUSYBOX="/system/bin/busybox"
 else
 	BUSYBOX="/data/local/tmp/recovery/busybox"
 fi

@@ -18,13 +18,11 @@ echo.
 echo ==============================================
 echo =                                            =
 echo =  PhilZ Touch, CWM and TWRP Dual Recovery   =
-echo =          Maintained by [NUT]               =
+echo =           Maintained by [NUT]              =
 echo =                                            =
-echo = For Xperia Z, ZL, Z Ultra, Z1 and Tablet Z =
+echo =       For Many Sony Xperia Devices!        =
 echo =                                            =
 echo ==============================================
-echo.
-echo BIG thanks to DooMLoRD and krabappel2548
 echo.
 
 cd files
@@ -32,25 +30,30 @@ cd files
 set menu_currentIndex=1
 set menu_choices=1
 
-echo [ !menu_currentIndex!. SuperSU ]
+echo [ !menu_currentIndex!. Installation on ROM rooted with SuperSU ]
 
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
 
-echo [ !menu_currentIndex!. SuperUser ]
+echo [ !menu_currentIndex!. Installation on ROM rooted with SuperUser ]
 
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
 
-echo [ !menu_currentIndex!. Abort! ]
+echo [ !menu_currentIndex!. Installation on unrooted ROM ]
 
-%CHOICE% /c:!menu_choices! %CHOICE_TEXT_PARAM% "Which root app do you use?"
+set /a menu_currentIndex+=1 >nul
+set menu_choices=!menu_choices!!menu_currentIndex!
+
+echo [ !menu_currentIndex!. Exit ]
+
+%CHOICE% /c:!menu_choices! %CHOICE_TEXT_PARAM% "Please choose install action."
 
 set menu_decision=%errorlevel%
 set menu_currentIndex=
 set menu_choices=
 
-if "!menu_decision!" == "3" (
+if "!menu_decision!" == "4" (
 	goto abort
 )
 
@@ -70,6 +73,9 @@ echo Step2 : Sending the recovery files.
 echo =============================================
 adb shell "mkdir /data/local/tmp/recovery"
 adb push dr.prop /data/local/tmp/recovery/dr.prop
+if "!menu_decision!" == "3" (
+	adb push getroot /data/local/tmp/recovery/getroot
+)
 adb push chargemon.sh /data/local/tmp/recovery/chargemon
 adb push mr.sh /data/local/tmp/recovery/mr
 adb push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
@@ -95,11 +101,32 @@ adb shell "chmod 755 /data/local/tmp/recovery/busybox"
 if "!menu_decision!" == "1" (
 	echo Look at your device and grant supersu access!
 	echo Press any key to continue AFTER granting root access.
-	adb shell "/system/xbin/su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
+	adb shell "/system/xbin/su -c /data/local/tmp/recovery/busybox ls -la /data/local/tmp/recovery/busybox"
 	pause
 )
 
-adb shell "su -c /data/local/tmp/recovery/install.sh"
+if "!menu_decision!" == "2" if "!menu_decision!" == "1" (
+	adb shell "su -c /data/local/tmp/recovery/install.sh"
+)
+
+if "!menu_decision!" == "3" (
+	echo =============================================
+	echo Attempting to get root access for installation using rootkitXperia now.
+	echo.
+	echo NOTE: this only works on certain ROM/Kernel versions!
+	echo.
+	echo If it fails, please check the development thread on XDA for more details.
+	echo.
+	echo REMEMBER THIS:
+	echo.
+	echo XZDualRecovery does NOT install any superuser app!!
+	echo.
+	echo You can use one of the recoveries to root your device.
+	echo =============================================
+
+	adb shell "chmod 755 /data/local/tmp/recovery/getroot"
+	adb shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
+)
 
 echo Waiting for your device to reconnect.
 echo After entering CWM for the first time, reboot to system to complete this installer if you want it to clean up after itself.

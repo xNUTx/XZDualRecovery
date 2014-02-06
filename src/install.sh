@@ -26,12 +26,13 @@ rootappmenu() {
 	echo "=                                            ="
 	echo "=============================================="
 	echo ""
-	echo "          What root app do you use?"
+	echo "          Choose an installation option:"
 	echo ""
-	echo "          1/ SuperSU"
-	echo "          2/ SuperUser"
+	echo "          1/ Installation on device rooted with SuperSU"
+	echo "          2/ Installation on device rooted with SuperUser"
+	echo "          3/ Attempt installation on unrooted device"
 	echo ""
-	echo "          Q/ Abort!"
+	echo "          Q/ Exit"
 	echo ""
 	echo "    Enter option:"
 	echo ""
@@ -39,6 +40,7 @@ rootappmenu() {
 	case $num in
 	        1) clear; echo "Ajusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
 	        2) clear; echo "Ajusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
+	        3) clear; echo "Will attempt to get root to install!"; SUPERAPP="getroot"; runinstall;;
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
 	esac
@@ -62,6 +64,9 @@ runinstall() {
 	echo ""
 	./${ADBBINARY} shell "mkdir /data/local/tmp/recovery"
 	./${ADBBINARY} push dr.prop /data/local/tmp/recovery/dr.prop
+	if [ "$SUPERAPP" = "getroot" ]; then
+		./${ADBBINARY} push getroot /data/local/tmp/recovery/getroot
+	fi
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
 	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
@@ -83,13 +88,41 @@ runinstall() {
 	echo ""
 	./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/install.sh"
 	./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/busybox"
+
 	if [ "$SUPERAPP" = "supersu" ]; then
 		echo "Look at your device and grant supersu access!"
 		./${ADBBINARY} shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
 		echo "Press any key to continue AFTER granting root access."
 		read
 	fi
-	./${ADBBINARY} shell "/system/xbin/su -c /data/local/tmp/recovery/install.sh"
+
+	if [ "$SUPERAPP" = "superuser" -o "$SUPERAPP" = "supersu" ]; then
+		./${ADBBINARY} shell "/system/xbin/su -c /data/local/tmp/recovery/install.sh"
+	fi
+
+	if [ "$SUPERAPP" = "getroot" ]; then
+		echo "============================================="
+		echo "Attempting to get root access for installation using rootkitXperia now."
+		echo ""
+		echo "NOTE: this only works on certain ROM/Kernel versions!"
+		echo ""
+		echo "If it fails, please check the development thread on XDA for more details."
+		echo "============================================="
+
+		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
+		./${ADBBINARY} shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
+
+		echo "============================================="
+		echo ""
+		echo "REMEMBER THIS:"
+		echo ""
+		echo "XZDualRecovery does NOT install any superuser app!!"
+		echo ""
+		echo "You can use one of the recoveries to root your device."
+		echo ""
+		echo "============================================="
+	fi
+
 	echo "Waiting for your device to reconnect."
 	echo "After entering CWM for the first time, reboot to system to complete this installer if you want it to clean up after itself."
 	./${ADBBINARY} wait-for-device

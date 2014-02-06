@@ -16,10 +16,8 @@ _PATH="$PATH"
 export PATH="/system/xbin:/system/bin:/sbin"
 
 # Defining constants, from commandline
-EVENTNODE="$1"
-POWERNODE="$2"
-DRPATH="$3"
-LOGFILE="$4"
+DRPATH="$1"
+LOGFILE="$2"
 LOG="${DRPATH}/${LOGFILE}"
 
 # Kickstarting log
@@ -92,6 +90,7 @@ ECHOL "Checking device model..."
 MODEL=$(DRGETPROP ro.product.model)
 VERSION=$(DRGETPROP ro.build.id)
 PHNAME=$(DRGETPROP ro.semc.product.name)
+EVENTNODE=$(DRGETPROP dr.gpiokeys.node)
 
 ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
@@ -269,6 +268,7 @@ fi
 
 if [ -f "$(DRGETPROP dr.ramdisk.path)" -a "$(DRGETPROP dr.ramdisk.boot)" = "power" ]; then
 
+	POWERNODE=$(DRGETPROP dr.pwrkey.node)
 	ECHOL "Power keycheck..."
 	EXECL mount -o remount,rw rootfs /
 

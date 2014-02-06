@@ -110,6 +110,51 @@ DRGETPROP() {
 
 }
 
+# Find the gpio-keys node, to listen on the right input event
+gpioKeysSearch() {
+	TECHOL "Trying to find the gpio-keys event node."
+	for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			TECHOL "Found and will be using /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			break
+		fi
+
+	done
+}
+
+# Find the power key node, to listen on the right input event
+pwrkeySearch() {
+	TECHOL "Trying to find the power key event node."
+	# pm8xxx (xperia Z and similar)
+	for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*pm8xxx*" -path "*pwrkey*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			TECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			break
+		fi
+
+	done
+	# qpnp_pon (xperia Z1 and similar)
+	for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			TECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			break
+		fi
+
+	done
+}
+
 # Busybox setup, chosing the one that supports lzcat, as it is vital for this recovery setup!
 if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
 	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzcat | /system/xbin/busybox wc -l`
@@ -303,40 +348,16 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 		TECHOL "dr.ramdisk.path will be empty (default)"
 		echo "dr.ramdisk.path=" >> ${DRPATH}/XZDR.prop
 	fi
+	echo "dr.gpiokeys.node=$(gpioKeysSearch)" >> ${DRPATH}/XZDR.prop
+	echo "dr.pwrkey.node=$(pwrkeySearch)" >> ${DRPATH}/XZDR.prop
 fi
 
-# Find the gpio-keys node, to listen on the right input event
-# /sys/devices/platform/gpio-keys/input/input9/event9/
-# for INPUT in `find /dev/input/event* | sort -k1.17n`; do
-# Androxyde to the rescue again...
-# EVENTNODE=$(find /sys/devices|grep gpio|grep keys|grep event|grep subsystem|awk -F '/' '{print $(NF-1)}')
-TECHOL "Trying to find the gpio-keys event node."
-EVENTNODE="none"
-for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
-
-	INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
-
-	if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
-		EVENTNODE="/dev/${INPUTDEV}"
-		TECHOL "Found and will be using /dev/${INPUTDEV}!"
-		break
-	fi
-
-done
-
-TECHOL "Trying to find the pmic8xxx_pwrkey event node."
-POWERNODE="none"
-for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*pm8xxx*" -path "*pwrkey*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
-
-	INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
-
-	if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
-		POWERNODE="/dev/${INPUTDEV}"
-		TECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
-		break
-	fi
-
-done
+# Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
+if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -a "$(DRGETPROP dr.pwrkey.node)" = "" ]; then
+	echo "" >> ${DRPATH}/XZDR.prop
+	echo "dr.gpiokeys.node=$(gpioKeysSearch)" >> ${DRPATH}/XZDR.prop
+	echo "dr.pwrkey.node=$(pwrkeySearch)" >> ${DRPATH}/XZDR.prop
+fi
 
 # Debugging substitution, for ease of use in debugging specific user problems
 if [ -e "${DRPATH}/drdebug.sh" ]; then
@@ -388,7 +409,7 @@ if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
 
 	export PATH="${_PATH}"
 
-	exec /sbin/init.sh $EVENTNODE $POWERNODE $DRPATH $LOGFILE
+	exec /sbin/init.sh $DRPATH $LOGFILE
 
 else
 
