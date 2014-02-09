@@ -65,6 +65,7 @@ packflashable() {
 	echo "Creating flashable zip..."
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
+	zip -T $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
 }
 
 packinstaller() {
@@ -90,4 +91,5 @@ packinstaller() {
 	echo "Creating installer zip..."
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip
+	zip -T $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip
 }
