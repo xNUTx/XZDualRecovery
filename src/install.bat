@@ -105,7 +105,7 @@ if "!menu_decision!" == "1" (
 	pause
 )
 
-if "!menu_decision!" != "3" (
+if NOT "!menu_decision!" == "3" (
 	adb shell "su -c /data/local/tmp/recovery/install.sh"
 )
 
