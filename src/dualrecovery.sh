@@ -96,51 +96,67 @@ ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
 EXECL mount -o remount,rw rootfs /
 
-ECHOL "DR Keycheck..."
-cat ${EVENTNODE} > /dev/keycheck &
-
-# Vibrate to alert user to make a choice
-ECHOL "Trigger vibrator"
-echo 150 > /sys/class/timed_output/vibrator/enable
-usleep 300000
-echo 150 > /sys/class/timed_output/vibrator/enable
-
-# Turn on green LED as a visual cue
-SETLED on 0 255 0
-
-EXECL sleep 3
-
+RECOVERYBOOT="false"
 KEYCHECK=""
 
-hexdump < /dev/keycheck > /dev/keycheckout
+if [ "$(grep 'warmboot=0x77665502' /proc/cmdline | wc -l)" = "1" ]; then
 
-VOLUKEYCHECK=`cat /dev/keycheckout | grep '0001 0073' | wc -l`
-VOLDKEYCHECK=`cat /dev/keycheckout | grep '0001 0072' | wc -l`
+	ECHOL "Reboot 'recovery' trigger found."
+	RECOVERYBOOT="true"
 
-if [ "$VOLUKEYCHECK" != "0" ]; then
-	ECHOL "Recorded VOL-UP on ${EVENTNODE}!"
-	KEYCHECK="UP"
-elif [ "$VOLDKEYCHECK" != "0" ]; then
-	ECHOL "Recorded VOL-DOWN on ${EVENTNODE}!"
-	KEYCHECK="DOWN"
-elif [ "$VOLUKEYCHECK" != "0" -a "$VOLDKEYCHECK" != "0" ]; then
-	ECHOL "Recorded BOTH VOL-UP & VOL-DOWN on ${EVENTNODE}! Making the choice to go to the UP target..."
-	KEYCHECK="UP"
-fi
+elif [ -f "/cache/recovery/boot" -o -f "${DRPATH}/boot" ]; then
 
-EXECL killall cat
+	ECHOL "Recovery 'boot file' trigger found."
+	RECOVERYBOOT="true"
 
-EXECL rm -f /dev/keycheck
-EXECL rm -f /dev/keycheckout
+else
 
-EXECL mount -o remount,ro rootfs /
+	ECHOL "DR Keycheck..."
+	cat ${EVENTNODE} > /dev/keycheck &
 
-if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665502' /proc/cmdline | wc -l)" = "1" ]; then
+	# Vibrate to alert user to make a choice
+	ECHOL "Trigger vibrator"
+	echo 150 > /sys/class/timed_output/vibrator/enable
+	usleep 300000
+	echo 150 > /sys/class/timed_output/vibrator/enable
 
-	ECHOL "Recovery boot mode selected"
+	# Turn on green LED as a visual cue
+	SETLED on 0 255 0
+
+	EXECL sleep 3
+
+	hexdump < /dev/keycheck > /dev/keycheckout
+
+	VOLUKEYCHECK=`cat /dev/keycheckout | grep '0001 0073' | wc -l`
+	VOLDKEYCHECK=`cat /dev/keycheckout | grep '0001 0072' | wc -l`
+
+	if [ "$VOLUKEYCHECK" != "0" ]; then
+		ECHOL "Recorded VOL-UP on ${EVENTNODE}!"
+		KEYCHECK="UP"
+	elif [ "$VOLDKEYCHECK" != "0" ]; then
+		ECHOL "Recorded VOL-DOWN on ${EVENTNODE}!"
+		KEYCHECK="DOWN"
+	elif [ "$VOLUKEYCHECK" != "0" -a "$VOLDKEYCHECK" != "0" ]; then
+		ECHOL "Recorded BOTH VOL-UP & VOL-DOWN on ${EVENTNODE}! Making the choice to go to the UP target..."
+		KEYCHECK="UP"
+	fi
+
+	EXECL killall cat
+
+	EXECL rm -f /dev/keycheck
+	EXECL rm -f /dev/keycheckout
+
+	EXECL mount -o remount,ro rootfs /
 
 	# Recovery boot mode notification
 	SETLED on 255 0 255
+
+	ECHOL "Recovery 'volume button' trigger found."
+	RECOVERYBOOT="true"
+
+fi
+
+if [ "$RECOVERYBOOT" = "true" ]; then
 
 	if [ -f "/cache/recovery/boot" ]; then
 		EXECL rm -f /cache/recovery/boot
@@ -150,19 +166,19 @@ if [ "$KEYCHECK" != "" -o -f "/cache/recovery/boot" -o "$(grep 'warmboot=0x77665
 
 	EXECL mount -o remount,rw rootfs /
 
-	# boot file found, no keys pressed: read what recovery to use
+	# reboot recovery trigger or boot file found, no keys pressed: read what recovery to use
 	if [ "$KEYCHECK" = "" ]; then
 		RECLOAD="$(DRGETPROP dr.recovery.boot)"
 		RECLOG="Booting to ${RECLOAD}..."
 	fi
 
-  	# Prepare PhilZ recovery
+  	# Prepare PhilZ recovery - by button press
 	if [ -f "/system/bin/recovery.philz.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
 		RECLOAD="philz"
 		RECLOG="Booting recovery by keypress, booting to PhilZ Touch..."
 	fi
 
-	# Prepare TWRP recovery
+	# Prepare TWRP recovery - by button press
 	if [ -f "/system/bin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
 		RECLOAD="twrp"
 		RECLOG="Booting recovery by keypress, booting to TWRP..."

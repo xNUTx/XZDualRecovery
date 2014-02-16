@@ -221,7 +221,7 @@
 # Preload files
 #
 /preload(/.*)?		u:object_r:system_file:s0
-#line 1 "device/sony/qcom-common/sepolicy/file_contexts"
+#line 1 "device/sony/fusion3-common/sepolicy/file_contexts"
 /dev/msm_acdb                  u:object_r:audio_device:s0
 /dev/msm_mp3                   u:object_r:audio_device:s0
 /dev/msm_rtac                  u:object_r:audio_device:s0
