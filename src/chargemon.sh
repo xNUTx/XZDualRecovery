@@ -1,6 +1,6 @@
 #!/system/bin/sh
 #
-# Dual Recovery for the Xperia Z, ZL, Tablet Z, Z Ultra and Z1!
+# Dual Recovery for many Sony Xperia devices!
 #
 # Author:
 #   [NUT]
@@ -20,9 +20,7 @@ LOGDIR="XZDualRecovery"
 PREPLOG="/tmp/${LOGDIR}/preperation.log"
 LOGFILE="XZDualRecovery.log"
 
-# Z setup
-#BOOTREC_CACHE_NODE="/dev/block/mmcblk0p25 b 179 25"
-#BOOTREC_CACHE="/dev/block/mmcblk0p25"
+# Nodes setup
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
 BOOTREC_LED_RED="/sys/class/leds/$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep red)/brightness"
@@ -171,7 +169,13 @@ if [ -x "/system/bin/busybox" ]; then
 fi
 
 # We can actually safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
+${BUSYBOX} mount -o remount,rw rootfs /
+if [ ! -d "/tmp" ]; then
+	mkdir /tmp
+	${BUSYBOX} mount -t tmpfs tmpfs /tmp
+fi
 ${BUSYBOX} mkdir /tmp/XZDualRecovery
+${BUSYBOX} mount -o remount,ro rootfs /
 
 # Kickstarting log
 DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
@@ -257,7 +261,7 @@ fi
 # Create mountpoint if it doesn't exist
 if [ ! -d /storage/sdcard1 ]; then
 	TEXECL mount -o remount,rw rootfs /
-	TEXECL mkdir /storage/sdcard1
+	TEXECL mkdir -p /storage/sdcard1
 	TEXECL mount -o remount,ro rootfs /
 fi
 
