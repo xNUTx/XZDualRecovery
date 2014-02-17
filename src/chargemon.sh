@@ -95,12 +95,12 @@ EXIT2CM(){
 DRGETPROP() {
 
 	# If it's empty, see if what was requested was a XZDR.prop value!
-	PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+	PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
 	if [ "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
-		PROP=`grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
+		PROP=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
 
 	fi
 
@@ -117,9 +117,9 @@ DRSETPROP() {
 	PROP=$(DRGETPROP $1)
 
 	if [ "$PROP" != "" ]; then
-		sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
+		${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
 	else
-		echo "$1=$2" >> ${DRPATH}/XZDR.prop
+		${BUSYBOX} echo "$1=$2" >> ${DRPATH}/XZDR.prop
 	fi
 	return 0
 
