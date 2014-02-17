@@ -107,6 +107,23 @@ DRGETPROP() {
 	echo $PROP
 
 }
+DRSETPROP() {
+
+	# We want to set this only if the XZDR.prop file exists...
+	if [ ! -f "${DRPATH}/XZDR.prop" ]; then
+		return 0
+	fi
+
+	PROP=$(DRGETPROP $1)
+
+	if [ "$PROP" != "" ]; then
+		sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
+	else
+		echo "$1=$2" >> ${DRPATH}/XZDR.prop
+	fi
+	return 0
+
+}
 
 # Find the gpio-keys node, to listen on the right input event
 gpioKeysSearch() {
@@ -333,34 +350,34 @@ fi
 # Initial setup of the XZDR.prop file, only once or whenever the file was removed
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 	TECHOL "Creating XZDR.prop file."
+	touch ${DRPATH}/XZDR.prop
 	if [ -f "${DRPATH}/default" -a "`cat ${DRPATH}/default`" = "twrp" ]; then
 		TECHOL "dr.recovery.boot will be set to TWRP"
-		echo "dr.recovery.boot=twrp" > ${DRPATH}/XZDR.prop
+		DRSETPROP dr.recovery.boot twrp
 		rm -f ${DRPATH}/default
 	else
 		TECHOL "dr.recovery.boot will be set to PhilZ (default)"
-		echo "dr.recovery.boot=philz" > ${DRPATH}/XZDR.prop
+		DRSETPROP dr.recovery.boot philz
 	fi
 	TECHOL "dr.initd.active will be set to false (default)"
-	echo "dr.initd.active=false" >> ${DRPATH}/XZDR.prop
+	DRSETPROP dr.initd.active false
 	TECHOL "dr.ramdisk.boot will be set to false (default)"
-	echo "dr.ramdisk.boot=false" >> ${DRPATH}/XZDR.prop
+	DRSETPROP dr.ramdisk.boot false
 	if [ -f "/system/bin/ramdisk.stock.cpio.lzma" ]; then
 		TECHOL "dr.ramdisk.path will /system/bin/ramdisk.stock.cpio.lzma"
-		echo "dr.ramdisk.path=/system/bin/ramdisk.stock.cpio.lzma" >> ${DRPATH}/XZDR.prop
+		DRSETPROP dr.ramdisk.path /system/bin/ramdisk.stock.cpio.lzma
 	else
 		TECHOL "dr.ramdisk.path will be empty (default)"
-		echo "dr.ramdisk.path=" >> ${DRPATH}/XZDR.prop
+		DRSETPROP dr.ramdisk.path
 	fi
-	echo "dr.gpiokeys.node=$(gpioKeysSearch)" >> ${DRPATH}/XZDR.prop
-	echo "dr.pwrkey.node=$(pwrkeySearch)" >> ${DRPATH}/XZDR.prop
+	DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
+	DRSETPROP dr.pwrkey.node $(pwrkeySearch)
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
 if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -a "$(DRGETPROP dr.pwrkey.node)" = "" ]; then
-	echo "" >> ${DRPATH}/XZDR.prop
-	echo "dr.gpiokeys.node=$(gpioKeysSearch)" >> ${DRPATH}/XZDR.prop
-	echo "dr.pwrkey.node=$(pwrkeySearch)" >> ${DRPATH}/XZDR.prop
+	DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
+	DRSETPROP dr.pwrkey.node $(pwrkeySearch)
 fi
 
 # Debugging substitution, for ease of use in debugging specific user problems

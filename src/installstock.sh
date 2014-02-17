@@ -32,7 +32,7 @@ DRSETPROP() {
 	PROP=$(DRGETPROP $1)
 
 	if [ "$PROP" != "" ]; then
-		sed -i -e '/$1=/ s/=$PROP/=$2/' ${DRPATH}/XZDR.prop
+		sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
 	else
 		echo "$1=$2" >> ${DRPATH}/XZDR.prop
 	fi

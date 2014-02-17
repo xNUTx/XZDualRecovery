@@ -85,6 +85,24 @@ DRGETPROP() {
 	echo $PROP
 
 }
+DRSETPROP() {
+
+	# We want to set this only if the XZDR.prop file exists...
+	if [ ! -f "${DRPATH}/XZDR.prop" ]; then
+		return 0
+	fi
+
+	PROP=$(DRGETPROP $1)
+
+	if [ "$PROP" != "" ]; then
+		sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
+	else
+		echo "$1=$2" >> ${DRPATH}/XZDR.prop
+	fi
+	return 0
+
+}
+
 
 ECHOL "Checking device model..."
 MODEL=$(DRGETPROP ro.product.model)
@@ -148,15 +166,19 @@ else
 
 	EXECL mount -o remount,ro rootfs /
 
-	# Recovery boot mode notification
-	SETLED on 255 0 255
+	if [ "$KEYCHECK" != "" ]; then
 
-	ECHOL "Recovery 'volume button' trigger found."
-	RECOVERYBOOT="true"
+		ECHOL "Recovery 'volume button' trigger found."
+		RECOVERYBOOT="true"
+
+	fi
 
 fi
 
 if [ "$RECOVERYBOOT" = "true" ]; then
+
+	# Recovery boot mode notification
+	SETLED on 255 0 255
 
 	if [ -f "/cache/recovery/boot" ]; then
 		EXECL rm -f /cache/recovery/boot
@@ -185,6 +207,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	fi
 
 	# Copy, unpack and prepare loading the recovery.
+	DRSETPROP dr.recovery.boot ${RECLOAD}
 	EXECL cp /system/bin/recovery.${RECLOAD}.cpio.lzma /sbin/
 	EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
 	RECOVERY="/sbin/recovery.${RECLOAD}.cpio"
