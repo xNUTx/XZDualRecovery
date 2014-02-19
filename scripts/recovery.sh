@@ -201,7 +201,7 @@ makestock() {
 }
 
 compiletwrp() {
-	cd /home/nut/development/xperia/cyanogen/$REPO/twrp/android/system
+	cd $WORKDIR/src/cyanogen/$REPO/twrp/android/system
 	rm -rf out/target/product/${CODENAME}
 	echo "repo sync?"
 	read answer
@@ -221,7 +221,7 @@ compiletwrp() {
 }
 
 compilecwm() {
-	cd /home/nut/development/xperia/cyanogen/$REPO/cwm/android/system
+	cd $WORKDIR/src/cyanogen/$REPO/cwm/android/system
 	rm -rf out/target/product/${CODENAME}
 	echo "repo sync?"
 	read answer
