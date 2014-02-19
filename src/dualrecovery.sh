@@ -67,22 +67,29 @@ SETLED() {
 DRGETPROP() {
 
 	# Get the property from getprop
+	VAR=`$*`
 	PROP=`/system/bin/getprop $*`
 
 	if [ "$PROP" = "" ]; then
 
 		# If it's empty, see if what was requested was a XZDR.prop value!
+		VAR=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
 		PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
 	fi
-	if [ "$PROP" = "" ]; then
+	if [ "$VAR" = "" -a "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
+		VAR=`grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
 		PROP=`grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
 
 	fi
 
-	echo $PROP
+	if [ "$VAR" != "" ]; then
+		echo $PROP
+	else
+		echo "false"
+	fi
 
 }
 DRSETPROP() {
@@ -94,7 +101,7 @@ DRSETPROP() {
 
 	PROP=$(DRGETPROP $1)
 
-	if [ "$PROP" != "" ]; then
+	if [ "$PROP" != "false" ]; then
 		sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
 	else
 		echo "$1=$2" >> ${DRPATH}/XZDR.prop
@@ -102,7 +109,6 @@ DRSETPROP() {
 	return 0
 
 }
-
 
 ECHOL "Checking device model..."
 MODEL=$(DRGETPROP ro.product.model)

@@ -6,10 +6,60 @@ export PATH="/system/bin:/system/xbin:/sbin"
 
 BUSYBOX=""
 
+LOGDIR="XZDualRecovery"
+SECUREDIR="/system/.XZDualRecovery"
+DRPATH="/storage/sdcard1/${LOGDIR}"
+
+if [ ! -d "$DRPATH" ]; then
+	DRPATH="/cache/${LOGDIR}"
+fi
+
 DRGETPROP() {
-	PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
-	echo $PROP
+
+        VAR=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
+        PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
+
+	if [ "$VAR" = "" -a "$PROP" = "" ]; then
+
+		# If it's empty, see if what was requested was a XZDR.prop value!
+        	VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
+        	PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+
+        	if [ "$VAR" = "" -a "$PROP" = "" ]; then
+
+        	        # If it still is empty, try to get it from the build.prop
+                	VAR=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
+                	PROP=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
+
+        	fi
+
+	fi
+
+	if [ "$VAR" != "" ]; then
+        	echo $PROP
+	else
+		echo "false"
+	fi
+
 }
+DRSETPROP() {
+
+        # We want to set this only if the XZDR.prop file exists...
+        if [ ! -f "${DRPATH}/XZDR.prop" ]; then
+                return 0
+        fi
+
+        PROP=$(DRGETPROP $1)
+
+        if [ "$PROP" != "false" ]; then
+                ${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
+        else
+                ${BUSYBOX} echo "$1=$2" >> ${DRPATH}/XZDR.prop
+        fi
+        return 0
+
+}
+
 
 if [ -x "/system/xbin/busybox" -a "`/system/xbin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
 	BUSYBOX="/system/xbin/busybox"
@@ -22,7 +72,7 @@ fi
 echo ""
 echo "##########################################################"
 echo "#"
-echo "# Installing DR version $(DRGETPROP version)"
+echo "# Installing XZDR version $(DRGETPROP version) $(DRGETPROP release)"
 echo "#"
 echo "#####"
 echo ""
@@ -89,8 +139,14 @@ if [ "$ROMVER" = "14.2.A.0.290" -o "$ROMVER" = "14.2.A.1.136" -o "$ROMVER" = "14
 	${BUSYBOX} chmod 755 /system/xbin/disableric
 fi
 
+if [ ! -d "$SECUREDIR" ]; then
+	echo "Creating $SECUREDIR to store a backup copy of busybox."
+	mkdir $SECUREDIR
+fi
+
 echo "Copy busybox to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/
+${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
 ${BUSYBOX} chmod 755 /system/xbin/busybox
 
 FOLDER1=/sdcard/clockworkmod/
@@ -120,6 +176,9 @@ else
 	${BUSYBOX} mkdir /cache/recovery/
 	${BUSYBOX} touch /cache/recovery/boot
 fi
+
+DRSETPROP dr.xzdr.version $(DRGETPROP version)
+DRSETPROP dr.release.type $(DRGETPROP release)
 
 echo ""
 echo "============================================="

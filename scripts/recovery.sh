@@ -43,7 +43,7 @@ copytwrp() {
 			compiletwrp
 		fi
 	fi
-	cp -fr $WORKDIR/src/cyanogen-twrp/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	cp -fr $WORKDIR/src/cyanogen/$REPO/twrp/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio
@@ -95,7 +95,7 @@ copycwm() {
 			compilecwm
 		fi
 	fi
-	cp -fr $WORKDIR/src/cyanogen-cwm/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	cp -fr $WORKDIR/src/cyanogen/$REPO/cwm/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio
@@ -201,7 +201,7 @@ makestock() {
 }
 
 compiletwrp() {
-	cd /home/nut/development/xperia/cyanogen/twrp/android/system
+	cd /home/nut/development/xperia/cyanogen/$REPO/twrp/android/system
 	rm -rf out/target/product/${CODENAME}
 	echo "repo sync?"
 	read answer
@@ -221,7 +221,7 @@ compiletwrp() {
 }
 
 compilecwm() {
-	cd /home/nut/development/xperia/cyanogen/cwm/android/system
+	cd /home/nut/development/xperia/cyanogen/$REPO/cwm/android/system
 	rm -rf out/target/product/${CODENAME}
 	echo "repo sync?"
 	read answer

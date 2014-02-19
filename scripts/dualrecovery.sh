@@ -67,6 +67,7 @@ buildxz() {
 	LABEL="XZ"
 	DRPATH="xz"
 	CODENAME="yuga"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -76,6 +77,7 @@ buildzr() {
 	LABEL="ZR"
 	DRPATH="zr"
 	CODENAME="dogo"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -85,6 +87,7 @@ buildz1() {
 	LABEL="Z1"
 	DRPATH="z1"
 	CODENAME="honami"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -94,6 +97,7 @@ buildzu() {
 	LABEL="ZU"
 	DRPATH="zu"
 	CODENAME="togari"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -103,6 +107,7 @@ buildzl() {
 	LABEL="ZL"
 	DRPATH="zl"
 	CODENAME="odin"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -112,6 +117,7 @@ buildtabz() {
 	LABEL="TabZ"
 	DRPATH="tabz"
 	CODENAME="pollux"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -121,6 +127,7 @@ buildz1c() {
 	LABEL="Z1C"
 	DRPATH="z1c"
 	CODENAME="amami"
+	REPO="cm10.2"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -130,6 +137,7 @@ buildj() {
 	LABEL="XJ"
 	DRPATH="xj"
 	CODENAME="jlo"
+	REPO="jellybean"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -139,6 +147,7 @@ buildp() {
 	LABEL="XP"
 	DRPATH="xp"
 	CODENAME="nypon"
+	REPO="jellybean"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -148,6 +157,7 @@ buildt() {
 	LABEL="XT"
 	DRPATH="xt"
 	CODENAME="mint"
+	REPO="cm10.1"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -157,6 +167,7 @@ buildsp() {
 	LABEL="XSP"
 	DRPATH="xsp"
 	CODENAME="huashan"
+	REPO="cm10.1"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }

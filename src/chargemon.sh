@@ -17,6 +17,7 @@ export PATH="/system/xbin:/system/bin:/sbin"
 
 # Constants
 LOGDIR="XZDualRecovery"
+SECUREDIR="/system/.XZDualRecovery"
 PREPLOG="/tmp/${LOGDIR}/preperation.log"
 LOGFILE="XZDualRecovery.log"
 
@@ -95,16 +96,22 @@ EXIT2CM(){
 DRGETPROP() {
 
 	# If it's empty, see if what was requested was a XZDR.prop value!
+	VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
 	PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
-	if [ "$PROP" = "" ]; then
+	if [ "$VAR" = "" -a "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
+		VAR=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
 		PROP=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
 
 	fi
 
-	echo $PROP
+	if [ "$VAR" != "" ]; then
+		echo $PROP
+	else
+		echo "false"
+	fi
 
 }
 DRSETPROP() {
@@ -116,7 +123,7 @@ DRSETPROP() {
 
 	PROP=$(DRGETPROP $1)
 
-	if [ "$PROP" != "" ]; then
+	if [ "$PROP" != "false" ]; then
 		${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
 	else
 		${BUSYBOX} echo "$1=$2" >> ${DRPATH}/XZDR.prop
@@ -170,26 +177,62 @@ pwrkeySearch() {
 	done
 }
 
+NOGOODBUSYBOX="true"
 # Busybox setup, chosing the one that supports lzcat, as it is vital for this recovery setup!
 if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
 	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzcat | /system/xbin/busybox wc -l`
 	if [ "$CHECK" -gt "0" ]; then
  		BUSYBOX="/system/xbin/busybox"
+		NOGOODBUSYBOX="false"
 	fi
 fi
 # Fallback to the one in /system/bin, but only if it supports lzcat...
-if [ -x "/system/bin/busybox" ]; then
+if [ -x "/system/bin/busybox" -a "$NOGOODBUSYBOX" = "true" ]; then
 	CHECK=`/system/bin/busybox --list | /system/bin/busybox grep lzcat | /system/bin/busybox wc -l`
 	if [ "$CHECK" -gt "0" ]; then
 		BUSYBOX="/system/bin/busybox"
+		NOGOODBUSYBOX="false"
 	fi
+fi
+
+# If no good busybox has been found, we will replace the one in xbin
+# This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
+# this missing busybox will break full root provided by XZDualRecovery making these
+# user errors that more painful.
+if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
+
+	$SECUREDIR/busybox mount -o remount,rw /system
+	$SECUREDIR/busybox cp $SECUREDIR/busybox /system/xbin/
+	chmod 755 /system/xbin/busybox
+	BUSYBOX="/system/xbin/busybox"
+	${BUSYBOX} mount -o remount,ro /system
+
+fi
+
+MADESECDIR="false"
+if [ ! -d "$SECUREDIR" -a -x "${BUSYBOX}" ]; then
+
+	${BUSYBOX} mount -o remount,rw /system
+	${BUSYBOX} mkdir $SECUREDIR
+	if [ "$?" = "0" ]; then
+		MADESECDIR="true"
+		${BUSYBOX} cp ${BUSYBOX} $SECUREDIR/
+		${BUSYBOX} mount -o remount,ro /system
+	fi
+
 fi
 
 # We can actually safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
 ${BUSYBOX} mount -o remount,rw rootfs /
+MADETMP="false"
 if [ ! -d "/tmp" ]; then
+
 	mkdir /tmp
 	${BUSYBOX} mount -t tmpfs tmpfs /tmp
+	if [ "$?" = "0" ]; then
+		MADETMP="true"
+	fi
+
 fi
 ${BUSYBOX} mkdir /tmp/XZDualRecovery
 ${BUSYBOX} mount -o remount,ro rootfs /
@@ -198,21 +241,28 @@ ${BUSYBOX} mount -o remount,ro rootfs /
 DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
 echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
 
-# The function to check if the found busybox is usable, if not, it will log that and exit this script
-if [ ! -n "${BUSYBOX}" ]; then
+# If $SECUREDIR was created, it will be noted in the log.
+if [ "$MADESECDIR" = "true" ]; then
 
-	if [ "${BUSYBOX}" = "/system/xbin/busybox" ]; then
-		echo "The busybox inside /system/xbin does not support lzcat!" >> ${PREPLOG}
-		/system/xbin/busybox 2>&1 >> ${PREPLOG}
-	elif [ "${BUSYBOX}" = "/system/bin/busybox" ]; then
-		echo "The busybox inside /system/bin does not support lzcat!" >> ${PREPLOG}
-		/system/bin/busybox 2>&1 >> ${PREPLOG}
-	else
-		echo "No busybox found at all!" >> ${PREPLOG}
-	fi
-	EXIT2CM
+	echo "Created $SECUREDIR!" >> ${PREPLOG}
 
-else
+fi
+
+# If /tmp was created, it will be noted in the log.
+if [ "$MADETMP" = "true" ]; then
+
+	echo "Created /tmp!" >> ${PREPLOG}
+
+fi
+
+# If the busybox binary has been replaced by a known good one, this will let us know in the log.
+if [ "$NOGOODBUSYBOX" = "true" ]; then
+
+	echo "Replaced busybox in /system/xbin!" >> ${PREPLOG}
+
+fi
+
+if [ -x "${BUSYBOX}" ]; then
 
 	TECHOL "Using ${BUSYBOX}"
 
@@ -375,9 +425,11 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
-if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -a "$(DRGETPROP dr.pwrkey.node)" = "" ]; then
-	DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
+if [ "$(DRGETPROP dr.pwrkey.node)" = "" -o "$(DRGETPROP dr.pwrkey.node)" = "false" ]; then
 	DRSETPROP dr.pwrkey.node $(pwrkeySearch)
+fi
+if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -o "$(DRGETPROP dr.gpiokeys.node)" = "false" ]; then
+	DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
 fi
 
 # Debugging substitution, for ease of use in debugging specific user problems
@@ -407,7 +459,7 @@ TEXECL touch ${DRPATH}/${LOGFILE}
 TEXECL chmod 660 ${DRPATH}/${LOGFILE}
 
 if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
-	echo "Will be calling /sbin/init.sh with arguments '$EVENTNODE', '$POWERNODE', '$DRPATH', '$LOGFILE'" >> ${PREPLOG}
+	echo "Will be calling /sbin/init.sh with arguments '$DRPATH' and '$LOGFILE'" >> ${PREPLOG}
 fi
 
 # Ending log

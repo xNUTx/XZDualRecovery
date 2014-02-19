@@ -31,6 +31,7 @@ set_progress(0.350000);
 
 ui_print("  Extracting new recovery files to SYSTEM...");
 package_extract_dir("system", "/system");
+run_program("/sbin/cp", "/system/xbin/busybox", "/system/.XZDualRecovery/busybox");
 set_progress(0.600000);
 
 ui_print("  Stock ramdisk needed?");
@@ -40,6 +41,11 @@ run_program("/tmp/installstock.sh");
 set_perm(0, 0, 0755, "/tmp/installdisableric.sh");
 run_program("/tmp/installdisableric.sh");
 set_progress(0.700000);
+
+ui_print("  Saving version...");
+set_perm(0, 0, 0755, "/tmp/setversion.sh");
+run_program("/tmp/setversion.sh");
+set_progress(0.750000);
 
 ui_print("  Correcting permissions...");
 set_perm(0, 2000, 0644, "/system/bin/recovery.cwm.cpio.lzma");
