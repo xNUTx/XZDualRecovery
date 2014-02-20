@@ -50,8 +50,8 @@
 /dev/kgsl-3d0             0666   system     system
 /dev/msm_rotator          0664   system     system
 
-/dev/smd2                 0660   bluetooth  net_bt_stack
-/dev/smd3                 0660   bluetooth  net_bt_stack
+/dev/smd2                 0660   bluetooth  bluetooth
+/dev/smd3                 0660   bluetooth  bluetooth
 /dev/ttyHS0               0600   bluetooth  bluetooth
 /dev/uinput               0660   system     bluetooth
 

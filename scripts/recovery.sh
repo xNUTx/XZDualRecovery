@@ -43,7 +43,7 @@ copytwrp() {
 			compiletwrp
 		fi
 	fi
-	cp -fr $WORKDIR/src/cyanogen/$REPO/twrp/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	cp -fr $WORKDIR/src/cyanogen/$REPO/twrp/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio
@@ -95,7 +95,7 @@ copycwm() {
 			compilecwm
 		fi
 	fi
-	cp -fr $WORKDIR/src/cyanogen/$REPO/cwm/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	cp -fr $WORKDIR/src/cyanogen/$REPO/cwm/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	echo "unpacking source package"
 	cpio -i -u < ramdisk-recovery.cpio

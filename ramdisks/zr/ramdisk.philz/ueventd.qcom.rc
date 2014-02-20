@@ -1,26 +1,37 @@
-# Permissions for AKM8963 sensor
-/sys/devices/virtual/input/input*   interval    0640  system   system
-/sys/devices/virtual/input/input*   single      0640  system   system
-/sys/devices/virtual/input/input*   registers   0640  system   system
-
-# the DIAG device node is not world writable/readable.
-/dev/diag                 0660   system     qcom_diag
-
+/dev/block/mmcblk0p8      0660   system     system
+/dev/block/mmcblk0p9      0660   system     system
+/dev/gemini0              0660   system     camera
 /dev/genlock              0666   system     system
+/dev/hw_random            0660   system     system
+/dev/ion                  0664   system     system
 /dev/kgsl                 0666   system     system
 /dev/kgsl-3d0             0666   system     system
 /dev/kgsl-2d0             0666   root       root
 /dev/kgsl-2d1             0666   root       root
-/dev/ion                  0664   system     system
+/dev/mdm                  0660   system     radio
+/dev/media*               0660   system     camera
+/dev/mercury0             0660   system     camera
+/dev/mpu                  0600   system     system
+/dev/mpuirq               0600   system     system
+/dev/msm_camera/*         0660   system     camera
+/dev/msm_rotator          0660   system     system
+/dev/msm_vidc_reg         0660   system     audio
+/dev/msm_vidc_dec         0660   system     audio
+/dev/msm_vidc_dec_sec     0660   system     audio
+/dev/msm_vidc_enc         0660   system     audio
+/dev/msm_vidc_enc_sec     0660   system     audio
+/dev/msm_vpe_standalone   0660   system     camera
+/dev/pn544                0600   nfc        nfc
+/dev/qseecom              0660   system     drmrpc
+/dev/rfcomm0              0660   bluetooth  bluetooth
+/dev/rmnet_mux_ctrl       0640   radio      radio
 /dev/rtc0                 0600   system     system
 /dev/smd0                 0660   system     system
+/dev/smd2                 0660   bluetooth  net_bt_stack
+/dev/smd3                 0660   bluetooth  net_bt_stack
 /dev/smd4                 0660   system     system
-/dev/smd_cxm_qmi          0640   radio      radio
 /dev/smd7                 0660   bluetooth  bluetooth
-/dev/radio0               0640   fm_radio   fm_radio
-/dev/rfcomm0              0660   bluetooth  bluetooth
-/dev/rfkill               0660   wifi       root
-/dev/gss                  0660   gps        gps
+/dev/smd_cxm_qmi          0640   radio      radio
 /dev/smdcntl0             0640   radio      radio
 /dev/smdcntl1             0640   radio      radio
 /dev/smdcntl2             0640   radio      radio
@@ -39,7 +50,6 @@
 /dev/smdcnt_rev7          0640   radio      radio
 /dev/smdcnt_rev8          0640   radio      radio
 /dev/smuxctl32            0640   radio      radio
-/dev/smuxctl33            0640   radio      radio
 /dev/sdioctl0             0640   radio      radio
 /dev/sdioctl1             0640   radio      radio
 /dev/sdioctl2             0640   radio      radio
@@ -49,48 +59,21 @@
 /dev/sdioctl6             0640   radio      radio
 /dev/sdioctl7             0640   radio      radio
 /dev/sdioctl8             0640   radio      radio
-/dev/rmnet_mux_ctrl       0640   radio      radio
 /dev/hsicctl0             0640   radio      radio
 /dev/hsicctl1             0640   radio      radio
 /dev/hsicctl2             0640   radio      radio
 /dev/hsicctl3             0640   radio      radio
-/dev/hsicctl4             0640   radio      radio
-/dev/hsicctl5             0640   radio      radio
-/dev/hsicctl6             0640   radio      radio
-/dev/hsicctl7             0640   radio      radio
-/dev/hsicctl8             0640   radio      radio
-/dev/hsicctl9             0640   radio      radio
-/dev/hsicctl10            0640   radio      radio
-/dev/hsicctl11            0640   radio      radio
-/dev/hsicctl12            0640   radio      radio
-/dev/hsicctl13            0640   radio      radio
-/dev/hsicctl14            0640   radio      radio
-/dev/hsicctl15            0640   radio      radio
-/dev/hsicctl16            0640   radio      radio
-/dev/hsusbctl0            0640   radio      radio
-/dev/hsusbctl1            0640   radio      radio
-/dev/hsusbctl2            0640   radio      radio
-/dev/hsusbctl3            0640   radio      radio
-/dev/video*               0660   system     camera
-/dev/media*               0660   system     camera
 /dev/v4l-subdev*          0660   system     camera
-/dev/qseecom              0660   system     drmrpc
-/dev/gemini0              0660   system     camera
-/dev/jpeg0                0660   system     camera
-/dev/jpeg1                0660   system     camera
-/dev/jpeg2                0660   system     camera
-/dev/msm_camera/*         0660   system     camera
-/dev/msm_vpe_standalone   0660   system     camera
-/dev/gemini/              0660   system     camera
-/dev/mercury0             0660   system     camera
-/dev/msm_vidc_reg         0660   system     audio
-/dev/msm_vidc_dec         0660   system     audio
-/dev/msm_vidc_dec_sec     0660   system     audio
-/dev/msm_vidc_enc         0660   system     audio
-/dev/msm_rotator          0664   system     system
-/dev/hw_random            0660   system     system
+/dev/video*               0660   system     camera
+/dev/ttyHSL1              0660   system     system
+/dev/radio0               0644   system     system
+/dev/gss                  0660   gps        gps
+/dev/rfkill               0660   wifi       wifi
+/sys/devices/virtual/smdpkt/smdcntl*       open_timeout   0664 radio radio
+/dev/ks_hsic_bridge       0660   system     system
+/dev/efs_hsic_bridge      0660   system     system
 
-#permissions for audio
+# permissions for audio
 /dev/msm_qcelp            0660   system     audio
 /dev/msm_evrc             0660   system     audio
 /dev/msm_wma              0660   system     audio
@@ -114,32 +97,23 @@
 /dev/msm_preproc_ctl      0660   system     audio
 /dev/msm_rtac             0660   system     audio
 /dev/msm_voicememo        0660   system     audio
-/dev/radio0               0640   fm_radio   fm_radio
-/dev/smd3                 0660   bluetooth  net_bt_stack
-/dev/smd2                 0660   bluetooth  net_bt_stack
-/dev/ttyHSL1              0660   system     system
-/dev/mdm                  0660   system     radio
-/sys/devices/virtual/smdpkt/smdcntl*       open_timeout   0664 radio radio
-/dev/sdio_tty_ciq_00      0660   system     system
-/dev/tty_sdio_00          0660   system     system
-/dev/ttyGS0               0660   system     system
-/dev/i2c-5                0660   media       media
 
-/dev/hidraw0              0666  system   system
-/dev/hidraw1              0666  system   system
+/sys/devices/virtual/graphics/fb1   edid_modes          0440 system system
+/sys/devices/virtual/graphics/fb1   product_description 0640 system system
+/sys/devices/virtual/graphics/fb1   vendor_name         0640 system system
+/sys/devices/virtual/input/input*   bma250_calib_eeprom 0220 system system
+/sys/devices/virtual/input/input*   bma250_calib_image  0660 system system
+/sys/devices/virtual/input/input*   bma250_calib_offset 0440 system system
+/sys/devices/virtual/input/input*   bma250_calib_set    0220 system system
+/sys/devices/virtual/input/input*   bma250_rate 0640  system   system
+/sys/devices/virtual/input/input*   interval    0640  system   system
+/sys/devices/virtual/input/input*   registers   0640  system   system
+/sys/devices/virtual/input/input*   single      0640  system   system
 
-# NFC device permission
-/dev/pn544                0600   nfc        nfc
+# LM3533 ALS
+/sys/devices/i2c-0/0-0036 als_enable 0600 system system
+/sys/devices/i2c-0/0-0036 als_result 0400 system system
 
-# DVB devices
-/dev/dvb/adapter0/demux*  0444   media       media
-/dev/dvb/adapter0/dvr*    0664   media       media
-/dev/dvb/adapter0/video*  0664   media       media
-
-# native sensors
-/sys/devices/i2c-12/12-*  pollrate_ms 0664 system system
-/sys/devices/i2c-12/12-*  enable  0664 system system
-/sys/devices/i2c-12/12-*  poll_delay 0664 system system
-
-# wlan
-/dev/wcnss_wlan           0660   system     system
+# IR Remote
+/dev/ttyHSL2                                    0660  system   system
+/sys/devices/platform/ir_remote_control  enable 0220  system   system
