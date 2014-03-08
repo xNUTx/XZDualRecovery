@@ -7,7 +7,7 @@ cleanuptmp() {
 
 cleanupout() {
 	echo "removing previous ${LABEL} builds..."
-	rm -f $WORKDIR/out/${LABEL}-*
+	rm -f $WORKDIR/out/${LABEL}-$1*
 }
 
 copysource() {
@@ -22,13 +22,13 @@ doall() {
 		incrrevision
 	fi
 	cleanuptmp
-	cleanupout
+	cleanupout lockeddualrecovery
 	copysource
-	maketwrp auto
-	makecwm auto
-	makephilz auto
+	maketwrp $PACKRAMDISK auto
+	makecwm $PACKRAMDISK auto
+	makephilz $PACKRAMDISK auto
 	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.stock" ]; then
-		makestock auto
+		makestock $PACKRAMDISK auto
 	fi
 	packflashable
 	packinstaller
@@ -37,6 +37,52 @@ doall() {
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		uploadfiles
 	fi
+}
+
+doallkernel() {
+	echo "Increment revision? (y/n)"
+	read answer
+	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		incrrevision
+	fi
+	cleanuptmp
+	cleanupout XZDRKernel
+	copysource
+	selectkernel
+	unpackkernel auto
+	maketwrp $PACKKERNELRAMDISK auto
+	makecwm $PACKKERNELRAMDISK auto
+	makephilz $PACKKERNELRAMDISK auto
+	patchramdisk auto
+	packramdisk auto
+	packkernel auto
+	packflashablekernel
+	echo "Upload files now? (y/n)"
+	read answer
+	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		uploadfiles
+	fi
+}
+
+packflashablekernel() {
+	cd $WORKDIR/tmp/
+	echo "Flashable Kernel: copying files to their locations..."
+	cp $WORKDIR/tmp/$KERNEL.img $WORKDIR/tmp/flashable/boot.img
+	cp $WORKDIR/src/setversion.sh $WORKDIR/tmp/flashable/tmp/setversion.sh
+	cp $WORKDIR/src/mr.sh $WORKDIR/tmp/flashable/system/bin/mr
+	cp $WORKDIR/tmp/busybox $WORKDIR/tmp/flashable/tmp/busybox
+	cp $WORKDIR/src/kernel-backupstockbinaries.sh $WORKDIR/tmp/flashable/tmp/backupstockbinaries.sh
+	cp $WORKDIR/src/kernel-flashkernel.sh $WORKDIR/tmp/flashable/tmp/flashkernel.sh
+	cp $WORKDIR/src/kernel-updater-script $WORKDIR/tmp/flashable/META-INF/com/google/android/updater-script
+	cp $WORKDIR/tmp/NDRUtils.apk $WORKDIR/tmp/flashable/system/app/NDRUtils.apk
+	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/tmp/flashable/dr.prop
+	echo "release=${RELEASE}" >> $WORKDIR/tmp/flashable/dr.prop
+
+	cd $WORKDIR/tmp/flashable
+	echo "Creating flashable zip..."
+	zip -r -b /tmp $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip *
+	chmod 644 $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
+	zip -T $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
 }
 
 packflashable() {
@@ -60,6 +106,7 @@ packflashable() {
 	cp $WORKDIR/tmp/busybox $WORKDIR/tmp/flashable/system/xbin/busybox
 	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/tmp/flashable/backupstockbinaries.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/tmp/flashable/META-INF/com/google/android/updater-script
+	cp $WORKDIR/tmp/NDRUtils.apk $WORKDIR/tmp/flashable/system/app/NDRUtils.apk
 	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/tmp/flashable/dr.prop
 	echo "release=${RELEASE}" >> $WORKDIR/tmp/flashable/dr.prop
 

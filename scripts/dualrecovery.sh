@@ -68,6 +68,13 @@ buildxz() {
 	DRPATH="xz"
 	CODENAME="yuga"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -78,6 +85,13 @@ buildzr() {
 	DRPATH="zr"
 	CODENAME="dogo"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -88,6 +102,14 @@ buildz1() {
 	DRPATH="z1"
 	CODENAME="honami"
 	REPO="cm10.2"
+	BASE="0x00000000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -98,6 +120,14 @@ buildzu() {
 	DRPATH="zu"
 	CODENAME="togari"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -108,6 +138,13 @@ buildzl() {
 	DRPATH="zl"
 	CODENAME="odin"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -118,6 +155,13 @@ buildtabz() {
 	DRPATH="tabz"
 	CODENAME="pollux"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -128,6 +172,13 @@ buildz1c() {
 	DRPATH="z1c"
 	CODENAME="amami"
 	REPO="cm10.2"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -138,6 +189,13 @@ buildj() {
 	DRPATH="xj"
 	CODENAME="jlo"
 	REPO="jellybean"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -148,6 +206,13 @@ buildp() {
 	DRPATH="xp"
 	CODENAME="nypon"
 	REPO="jellybean"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -158,6 +223,13 @@ buildt() {
 	DRPATH="xt"
 	CODENAME="mint"
 	REPO="cm10.1"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }
@@ -168,6 +240,13 @@ buildsp() {
 	DRPATH="xsp"
 	CODENAME="huashan"
 	REPO="cm10.1"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }

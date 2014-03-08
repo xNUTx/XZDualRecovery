@@ -6,6 +6,7 @@ REVISION=`cat $WORKDIR/scripts/revision`
 RELEASE=`cat $WORKDIR/scripts/release`
 
 source scripts/recovery.sh
+source scripts/kernel.sh
 source scripts/version.sh
 source scripts/upload.sh
 source scripts/build.sh
@@ -20,7 +21,9 @@ dualrecovery_action_menu_opt() {
 	echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
 	echo "          Current type: ${RELEASE}"
 	echo ""
-	echo "          B/ Build menu"
+	echo "          B/ LB Build menu"
+	echo ""
+	echo "          K/ Kernel Build menu"
 	echo ""
 	echo "          R/ Recovery menu"
 	echo ""
@@ -35,7 +38,8 @@ dualrecovery_action_menu_opt() {
 	echo ""
 	read num
 	case $num in
-	        b|B) clear; buildparts_menu_opt;;
+	        b|B) clear; buildlockedparts_menu_opt;;
+	        k|K) clear; buildkernelparts_menu_opt;;
 	        r|R) clear; recovery_menu_opt;;
                 v|V) clear; version_menu_opt;;
 	        u|U) clear; uploadfiles; dualrecovery_action_menu_opt;;
@@ -45,11 +49,63 @@ dualrecovery_action_menu_opt() {
 	esac
 }
 
-buildparts_menu_opt() {
+buildkernelparts_menu_opt() {
         clear
         echo ""
         echo ""
-        echo " Xperia DualRecovery Build Menu"
+        echo " XZDualRecovery AdvStock Kernel Build Menu"
+        echo ""
+	echo "          Current device: ${LABEL} (${CODENAME})"
+	echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
+	echo "          Current type: ${RELEASE}"
+        echo ""
+        echo "          1/ Choose Kernel"
+        echo "          2/ Unpack $KERNEL"
+        echo ""
+        echo "          3/ Build TWRP cpio"
+        echo "          4/ Build PhilZ cpio"
+        echo "          5/ Build CWM cpio"
+        echo ""
+        echo "          6/ Patch $KERNEL"
+        echo "          7/ Pack $KERNEL Ramdisk"
+        echo "          8/ Pack $KERNEL"
+        echo ""
+        echo "          9/ Create flashable zip"
+        echo ""
+        echo "          C/ Cleanup /tmp and /out"
+        echo "          S/ Copy package base to /tmp"
+        echo "          A/ Do all of the above"
+        echo ""
+	echo "          B/ Back to Action menu"
+        echo "          Q/ Quit"
+        echo ""
+        echo "    Enter option:"
+        echo ""
+        read num
+        case $num in
+                1) clear; selectkernel; buildkernelparts_menu_opt;;
+                2) clear; unpackkernel; buildkernelparts_menu_opt;;
+                3) clear; maketwrp $PACKKERNELRAMDISK; buildkernelparts_menu_opt;;
+                4) clear; makephilz $PACKKERNELRAMDISK; buildkernelparts_menu_opt;;
+                5) clear; makecwm $PACKKERNELRAMDISK; buildkernelparts_menu_opt;;
+                6) clear; patchramdisk; buildkernelparts_menu_opt;;
+                7) clear; packramdisk; buildkernelparts_menu_opt;;
+                8) clear; packkernel; buildkernelparts_menu_opt;;
+                9) clear; packflashablekernel; buildkernelparts_menu_opt;;
+                c|C) clear; cleanuptmp; cleanupout XZDRKernel; buildkernelparts_menu_opt;;
+                s|S) clear; copyxzsource; buildkernelparts_menu_opt;;
+                a|A) clear; doallkernel; buildkernelparts_menu_opt;;
+                b|B) clear; dualrecovery_action_menu_opt;;
+                q|Q) clear; exit;;
+                *) echo "$num is not a valid option"; sleep 3; clear; buildkernelparts_menu_opt;
+        esac
+}
+
+buildlockedparts_menu_opt() {
+        clear
+        echo ""
+        echo ""
+        echo " XZDualRecovery Locked Bootloader Build Menu"
         echo ""
 	echo "          Current device: ${LABEL} (${CODENAME})"
 	echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
@@ -77,18 +133,18 @@ buildparts_menu_opt() {
         echo ""
         read num
         case $num in
-                1) clear; maketwrp; buildparts_menu_opt;;
-                2) clear; makephilz; buildparts_menu_opt;;
-                3) clear; makecwm; buildparts_menu_opt;;
-                4) clear; makestock; buildparts_menu_opt;;
-                5) clear; packflashable; buildparts_menu_opt;;
-                6) clear; packinstaller; buildparts_menu_opt;;
-                c|C) clear; cleanuptmp; cleanupout; buildparts_menu_opt;;
-                s|S) clear; copyxzsource; buildparts_menu_opt;;
-                a|A) clear; doall; buildparts_menu_opt;;
+                1) clear; maketwrp $PACKRAMDISK; buildlockedparts_menu_opt;;
+                2) clear; makephilz $PACKRAMDISK; buildlockedparts_menu_opt;;
+                3) clear; makecwm $PACKRAMDISK; buildlockedparts_menu_opt;;
+                4) clear; makestock $PACKRAMDISK; buildlockedparts_menu_opt;;
+                5) clear; packflashable; buildlockedparts_menu_opt;;
+                6) clear; packinstaller; buildlockedparts_menu_opt;;
+                c|C) clear; cleanuptmp; cleanupout lockeddualrecovery; buildlockedparts_menu_opt;;
+                s|S) clear; copyxzsource; buildlockedparts_menu_opt;;
+                a|A) clear; doall; buildlockedparts_menu_opt;;
                 b|B) clear; dualrecovery_action_menu_opt;;
                 q|Q) clear; exit;;
-                *) echo "$num is not a valid option"; sleep 3; clear; buildparts_menu_opt;
+                *) echo "$num is not a valid option"; sleep 3; clear; buildlockedparts_menu_opt;
         esac
 }
 

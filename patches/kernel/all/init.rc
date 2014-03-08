@@ -1,0 +1,6 @@
+# This introduces XZDualRecovery to the init
+
+import /init.original.rc
+
+on post-fs
+    exec /sbin/xzdr.sh
