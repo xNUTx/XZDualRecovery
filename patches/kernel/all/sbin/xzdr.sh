@@ -267,6 +267,14 @@ elif [ -f "/cache/recovery/boot" -o -f "${DRPATH}/boot" ]; then
         ECHOL "Recovery 'boot file' trigger found."
         RECOVERYBOOT="true"
 
+        if [ -f "/cache/recovery/boot" ]; then
+                EXECL rm -f /cache/recovery/boot
+        fi
+
+        if [ -f "${DRPATH}/boot" ]; then
+                EXECL rm -f ${DRPATH}/boot
+        fi
+
 else
 
         ECHOL "DR Keycheck..."
@@ -288,10 +296,10 @@ else
         VOLUKEYCHECK=`cat /dev/keycheckout | grep '0001 0073' | wc -l`
         VOLDKEYCHECK=`cat /dev/keycheckout | grep '0001 0072' | wc -l`
 
-        if [ "$VOLUKEYCHECK" != "0" ]; then
+        if [ "$VOLUKEYCHECK" != "0" -a "$VOLDKEYCHECK" = "0" ]; then
                 ECHOL "Recorded VOL-UP on ${EVENTNODE}!"
                 KEYCHECK="UP"
-        elif [ "$VOLDKEYCHECK" != "0" ]; then
+        elif [ "$VOLDKEYCHECK" != "0" -a "$VOLUKEYCHECK" = "0" ]; then
                 ECHOL "Recorded VOL-DOWN on ${EVENTNODE}!"
                 KEYCHECK="DOWN"
         elif [ "$VOLUKEYCHECK" != "0" -a "$VOLDKEYCHECK" != "0" ]; then
@@ -318,10 +326,6 @@ if [ "$RECOVERYBOOT" = "true" ]; then
         # Recovery boot mode notification
         SETLED on 255 0 255
 
-        if [ -f "/cache/recovery/boot" ]; then
-                EXECL rm -f /cache/recovery/boot
-        fi
-
         cd /
 
         # reboot recovery trigger or boot file found, no keys pressed: read what recovery to use
@@ -342,7 +346,9 @@ if [ "$RECOVERYBOOT" = "true" ]; then
                 RECLOG="Booting recovery by keypress, booting to TWRP..."
         fi
 
-	DRSETPROP dr.recovery.boot $RECLOAD
+	if [ "$KEYCHECK" != "" ]; then
+		DRSETPROP dr.recovery.boot $RECLOAD
+	fi
 	RAMDISK="/sbin/recovery.$RECLOAD.cpio"
 
 	EXECL mkdir /recovery

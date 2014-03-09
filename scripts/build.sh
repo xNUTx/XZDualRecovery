@@ -67,7 +67,7 @@ doallkernel() {
 packflashablekernel() {
 	cd $WORKDIR/tmp/
 	echo "Flashable Kernel: copying files to their locations..."
-	cp $WORKDIR/tmp/$KERNEL.img $WORKDIR/tmp/flashable/boot.img
+	cp $WORKDIR/tmp/$KERNEL.img $WORKDIR/tmp/flashable/tmp/boot.img
 	cp $WORKDIR/src/setversion.sh $WORKDIR/tmp/flashable/tmp/setversion.sh
 	cp $WORKDIR/src/mr.sh $WORKDIR/tmp/flashable/system/bin/mr
 	cp $WORKDIR/tmp/busybox $WORKDIR/tmp/flashable/tmp/busybox
@@ -75,8 +75,8 @@ packflashablekernel() {
 	cp $WORKDIR/src/kernel-flashkernel.sh $WORKDIR/tmp/flashable/tmp/flashkernel.sh
 	cp $WORKDIR/src/kernel-updater-script $WORKDIR/tmp/flashable/META-INF/com/google/android/updater-script
 	cp $WORKDIR/tmp/NDRUtils.apk $WORKDIR/tmp/flashable/system/app/NDRUtils.apk
-	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/tmp/flashable/dr.prop
-	echo "release=${RELEASE}" >> $WORKDIR/tmp/flashable/dr.prop
+	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/tmp/flashable/tmp/dr.prop
+	echo "release=${RELEASE}" >> $WORKDIR/tmp/flashable/tmp/dr.prop
 
 	cd $WORKDIR/tmp/flashable
 	echo "Creating flashable zip..."
