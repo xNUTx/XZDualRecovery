@@ -57,6 +57,7 @@ doallkernel() {
 	packramdisk auto
 	packkernel auto
 	packflashablekernel
+	sideloadkernel auto
 	echo "Upload files now? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then

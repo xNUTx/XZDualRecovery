@@ -90,7 +90,7 @@ unpackkernel() {
 	if [ "$1" = "auto" ]; then
 		sleep 2
 	else
-		echo "Press enter to return to the recovery menu!"
+		echo "Press enter to return to the build menu!"
 		read
 	fi
 
@@ -107,7 +107,7 @@ patchramdisk() {
 	if [ "$1" = "auto" ]; then
 		sleep 2
 	else
-		echo "Press enter to return to the recovery menu!"
+		echo "Press enter to return to the build menu!"
 		read
 	fi
 
@@ -128,7 +128,7 @@ packramdisk() {
 	if [ "$1" = "auto" ]; then
 		sleep 2
 	else
-		echo "Press enter to return to the recovery menu!"
+		echo "Press enter to return to the build menu!"
 		read
 	fi
 
@@ -186,25 +186,59 @@ packkernel() {
 	eval $MKBOOTCMDS
 
 	if [ "$1" = "auto" ]; then
+		sleep 2
+	else
+		echo "Press enter to return to the build menu!"
+		read
+	fi
 
-		if [ "`$WORKDIR/bin/adb devices | grep '\<device\>' | wc -l`" = "1" ]; then
-			echo "Flash it to the connected device? (y/n)"
-			read answer
-			if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-				$WORKDIR/bin/adb reboot bootloader
-				$WORKDIR/bin/fastboot flash boot $WORKDIR/tmp/$KERNEL.img
-				if [ "$?" = "0" ]; then
-					$WORKDIR/bin/fastboot reboot
-				fi
+}
+
+fastbootkernel() {
+
+	if [ "`$WORKDIR/bin/adb devices | grep '\<device\>' | wc -l`" = "1" ]; then
+
+		echo "Flash it to the connected device? (y/n)"
+		read answer
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			$WORKDIR/bin/adb reboot bootloader
+			$WORKDIR/bin/fastboot flash boot $WORKDIR/tmp/$KERNEL.img
+			if [ "$?" = "0" ]; then
+				$WORKDIR/bin/fastboot reboot
 			fi
 		fi
 
+	else
+
+		echo "No device found, skipping!"
+
 	fi
 
-	if [ "$1" = "auto" ]; then
-		sleep 2
+	if [ "$1" != "auto" ]; then
+		echo "Press enter to return to the build menu!"
+		read
+	fi
+
+}
+
+sideloadkernel() {
+
+	if [ "`$WORKDIR/bin/adb devices | grep '\<device\>' | wc -l`" = "1" ]; then
+
+		echo "Sideload it to the connected device? (y/n)"
+		read answer
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			$WORKDIR/bin/adb sideload $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
+		fi
+
 	else
-		echo "Press enter to return to the recovery menu!"
+
+		echo "No device found, skipping!"
+
+	fi
+
+	if [ "$1" != "auto" ]; then
+		echo "Press enter to return to the build menu!"
 		read
 	fi
 

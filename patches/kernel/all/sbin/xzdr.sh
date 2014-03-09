@@ -255,7 +255,7 @@ BOOTREC_LED_GREEN="/sys/class/leds/$(ls -1 /sys/class/leds|grep green)/brightnes
 BOOTREC_LED_BLUE="/sys/class/leds/$(ls -1 /sys/class/leds|grep blue)/brightness"
 EVENTNODE=$(DRGETPROP dr.gpiokeys.node)
 RECOVERYBOOT="false"
-KEYCHECK=""
+KEYCHECK="false"
 
 if [ "$(grep 'warmboot=0x77665502' /proc/cmdline | wc -l)" = "1" ]; then
 
@@ -312,7 +312,7 @@ else
         EXECL rm -f /dev/keycheck
         EXECL rm -f /dev/keycheckout
 
-        if [ "$KEYCHECK" != "" ]; then
+        if [ "$KEYCHECK" != "false" ]; then
 
                 ECHOL "Recovery 'volume button' trigger found."
                 RECOVERYBOOT="true"
@@ -329,7 +329,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
         cd /
 
         # reboot recovery trigger or boot file found, no keys pressed: read what recovery to use
-        if [ "$KEYCHECK" = "" ]; then
+        if [ "$KEYCHECK" = "false" ]; then
                 RECLOAD="$(DRGETPROP dr.recovery.boot)"
                 RECLOG="Booting to ${RECLOAD}..."
         fi
@@ -346,7 +346,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
                 RECLOG="Booting recovery by keypress, booting to TWRP..."
         fi
 
-	if [ "$KEYCHECK" != "" ]; then
+	if [ "$KEYCHECK" != "false" ]; then
 		DRSETPROP dr.recovery.boot $RECLOAD
 	fi
 	RAMDISK="/sbin/recovery.$RECLOAD.cpio"
