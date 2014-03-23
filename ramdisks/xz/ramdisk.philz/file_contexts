@@ -4,7 +4,7 @@
 /			u:object_r:rootfs:s0
 
 # Data files
-/adb_keys		u:object_r:rootfs:s0
+/adb_keys		u:object_r:adb_keys_file:s0
 /default.prop		u:object_r:rootfs:s0
 /fstab\..*		u:object_r:rootfs:s0
 /init\..*		u:object_r:rootfs:s0
@@ -186,14 +186,13 @@
 /data/misc/wifi(/.*)?		u:object_r:wifi_data_file:s0
 /data/misc/camera(/.*)?	u:object_r:camera_calibration_file:s0
 /data/misc/dhcp(/.*)?           u:object_r:dhcp_data_file:s0
+/data/misc/adb(/.*)?            u:object_r:adb_keys_file:s0
 # App sandboxes
 /data/data/.*		u:object_r:app_data_file:s0
 # Wallpaper file.
 /data/data/com.android.settings/files/wallpaper	u:object_r:wallpaper_file:s0
 # Wallpaper file for other users
 /data/system/users/[0-9]+/wallpaper		u:object_r:wallpaper_file:s0
-# Downloaded files
-/data/data/com.android.providers.downloads/cache u:object_r:download_file:s0
 #############################
 # efs files
 #
@@ -217,10 +216,6 @@
 # asec containers
 /mnt/asec(/.*)?         u:object_r:asec_apk_file:s0
 /data/app-asec(/.*)?    u:object_r:asec_image_file:s0
-#############################
-# Preload files
-#
-/preload(/.*)?		u:object_r:system_file:s0
 #line 1 "device/sony/fusion3-common/sepolicy/file_contexts"
 /dev/msm_acdb                  u:object_r:audio_device:s0
 /dev/msm_mp3                   u:object_r:audio_device:s0
@@ -295,7 +290,7 @@
 
 # Data labeling
 /data/misc/audio(/.*)?         u:object_r:audio_firmware_file:s0
-/data/qcks(/.*)?               u:object_r:kickstart_data_file:s0
+/cache/qcks(/.*)?              u:object_r:kickstart_data_file:s0
 /data/etc/bluetooth_bdaddr     u:object_r:bluetooth_data_file:s0
 /data/etc/wlan_macaddr[0-3]    u:object_r:wifi_data_file:s0
 
