@@ -93,7 +93,7 @@ runinstall() {
 		echo "Look at your device and grant supersu access!"
 		./${ADBBINARY} shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
 		echo "Press any key to continue AFTER granting root access."
-		read
+		read blah
 	fi
 
 	if [ "$SUPERAPP" = "superuser" -o "$SUPERAPP" = "supersu" ]; then

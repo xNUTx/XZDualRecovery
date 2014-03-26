@@ -95,6 +95,8 @@ buildkernelparts_menu_opt() {
                 7) clear; packramdisk; buildkernelparts_menu_opt;;
                 8) clear; packkernel; buildkernelparts_menu_opt;;
                 9) clear; packflashablekernel; buildkernelparts_menu_opt;;
+                f|F) clear; fastbootkernel; buildkernelparts_menu_opt;;
+                l|L) clear; sideloadkernel; buildkernelparts_menu_opt;;
                 c|C) clear; cleanuptmp; cleanupout XZDRKernel; buildkernelparts_menu_opt;;
                 s|S) clear; copyxzsource; buildkernelparts_menu_opt;;
                 a|A) clear; doallkernel; buildkernelparts_menu_opt;;

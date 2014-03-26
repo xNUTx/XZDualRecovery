@@ -11,6 +11,7 @@ BUSYBOX="/sbin/busybox"
 DRLOG="$PREPLOG"
 
 ${BUSYBOX} cd /
+${BUSYBOX} mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system") /system
 ${BUSYBOX} date > ${DRLOG}
 
 # create directories and setup the temporary bin path
@@ -350,6 +351,12 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		DRSETPROP dr.recovery.boot $RECLOAD
 	fi
 	RAMDISK="/sbin/recovery.$RECLOAD.cpio"
+	PACKED="false"
+
+	if [ ! -f "$RAMDISK" ]; then
+		ECHOL "CPIO Archive not found, accepting it probably is an lzma version!"
+		EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
+	fi
 
 	EXECL mkdir /recovery
 	EXECL cd /recovery

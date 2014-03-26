@@ -8,5 +8,5 @@
 /dev/block/platform/msm_sdcc.1/by-name/cache     /cache   ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,errors=panic  wait,check
 /dev/block/platform/msm_sdcc.1/by-name/userdata  /data    ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,errors=panic  wait,check,encryptable=footer,length=-16384
 
-/devices/platform/msm_sdcc.3/mmc_host/mmc1       auto  auto  defaults  voldmanaged=sdcard1:auto
-/devices/platform/msm_hsusb_host/usb             auto  auto  defaults  voldmanaged=usbdisk:auto
+/devices/platform/msm_sdcc.3/mmc_host/mmc1       /storage/sdcard1  auto  defaults  voldmanaged=sdcard1:auto
+/devices/platform/msm_hsusb_host/usb             /storage/usbdisk  auto  defaults  voldmanaged=usbdisk:auto

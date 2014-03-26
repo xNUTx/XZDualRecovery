@@ -2,5 +2,5 @@
 
 import /init.original.rc
 
-on post-fs
+on early-fs
     exec /sbin/xzdr.sh

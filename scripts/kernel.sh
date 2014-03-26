@@ -196,7 +196,7 @@ packkernel() {
 
 fastbootkernel() {
 
-	if [ "`$WORKDIR/bin/adb devices | grep '\<device\>' | wc -l`" = "1" ]; then
+	if [ "`$WORKDIR/bin/adb devices | grep -E '\<device\>|recovery' | wc -l`" = "1" ]; then
 
 		echo "Flash it to the connected device? (y/n)"
 		read answer

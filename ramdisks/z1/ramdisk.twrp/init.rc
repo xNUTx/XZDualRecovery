@@ -38,7 +38,7 @@ on init
     # Starting the XZDR fix script before anything else gets started
     start xzdualrecovery
 
-on boot
+on early-boot
 
     ifup lo
     hostname localhost

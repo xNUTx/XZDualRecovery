@@ -44,6 +44,10 @@
 /dev/smdcntl5             0640   radio      radio
 /dev/smdcntl6             0640   radio      radio
 /dev/smdcntl7             0640   radio      radio
+/dev/smdcntl8             0640   radio      radio
+/dev/smdcntl9             0640   radio      radio
+/dev/smdcntl10            0640   radio      radio
+/dev/smdcntl11            0640   radio      radio
 /dev/smdcnt_rev0          0640   radio      radio
 /dev/smdcnt_rev1          0640   radio      radio
 /dev/smdcnt_rev2          0640   radio      radio
@@ -113,7 +117,7 @@
 /dev/msm_preproc_ctl      0660   system     audio
 /dev/msm_rtac             0660   system     audio
 /dev/msm_voicememo        0660   system     audio
-/dev/input/event9         0660   input      camera
+/dev/input/event8         0660   input      camera
 
 /sys/devices/virtual/graphics/fb1   edid_modes          0440 system system
 /sys/devices/virtual/graphics/fb1   product_description 0640 system system
@@ -125,7 +129,7 @@
 #
 # Change file permission and owner for sensors
 #
-/dev/adsprpc-smd          0660   system     system
+/dev/adsprpc-smd          0664   system     system
 
 /sys/devices/f9925000.i2c/i2c-0/0-* enable          0660     input     system
 /sys/devices/f9925000.i2c/i2c-0/0-* poll_delay      0660     input     system

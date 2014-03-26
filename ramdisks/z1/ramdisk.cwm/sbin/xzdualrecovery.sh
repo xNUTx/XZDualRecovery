@@ -8,6 +8,10 @@ _PATH="$PATH"
 export LD_LIBRARY_PATH=".:/sbin:/system/vendor/lib:/system/lib"
 export PATH="/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
 
+#https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
+#The busybox in all of the recoveries has not yet been patched to take this in account.
+/sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+
 BOOTREC_LED_RED="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep red)/brightness"
 BOOTREC_LED_GREEN="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep green)/brightness"
 BOOTREC_LED_BLUE="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep blue)/brightness"
@@ -53,8 +57,14 @@ echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
 
 echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard /dev/block/platform/msm_sdcc.1/by-name/system /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard /dev/block/platform/msm_sdcc.1/by-name/userdata /data 2>&1 >> /tmp/xzdr.log
+SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
+
+SYSTEM_PTYPE=$(blkid $SYSTEM | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
+USERDATA_PTYPE=$(blkid $USERDATA | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
+
+/sbin/busybox mount -t $SYSTEM_PTYPE -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount -t $USERDATA_PTYPE -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
 
 #cp /system/bin/time_daemon /sbin/
 #/sbin/busybox find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
