@@ -132,8 +132,7 @@ echo "Installing NDRUtils to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
 ${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 
-ROMVER=$(/system/bin/getprop ro.build.id)
-if [ "$ROMVER" = "14.2.A.0.290" -o "$ROMVER" = "14.2.A.1.136" -o "$ROMVER" = "14.2.A.1.114" -o "$ROMVER" = "14.3.A.0.681"]; then
+if [ "$(${BUSYBOX} grep -R '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
 	echo "Copy disableric to system."
 	${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
 	${BUSYBOX} chmod 755 /system/xbin/disableric
@@ -186,4 +185,4 @@ echo "DEVICE WILL NOW REBOOT!"
 echo "============================================="
 echo ""
 
-reboot
+/system/bin/am start -a android.intent.action.REBOOT
