@@ -85,6 +85,7 @@ if [ "$RICPATH" != "" ]; then
 fi
 sleep 2
 ${BUSYBOX} mount -o remount,rw /
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 ${BUSYBOX} mount -o remount,rw /system
 
 echo "Copy recovery files to system."
@@ -132,7 +133,7 @@ echo "Installing NDRUtils to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
 ${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 
-if [ "$(${BUSYBOX} grep -R '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
+if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
 	echo "Copy disableric to system."
 	${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
 	${BUSYBOX} chmod 755 /system/xbin/disableric
@@ -185,4 +186,4 @@ echo "DEVICE WILL NOW REBOOT!"
 echo "============================================="
 echo ""
 
-/system/bin/am start -a android.intent.action.REBOOT
+/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null

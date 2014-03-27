@@ -195,6 +195,10 @@ if [ -x "/system/bin/busybox" -a "$NOGOODBUSYBOX" = "true" ]; then
 	fi
 fi
 
+#https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
+#The busybox in all of the recoveries has not yet been patched to take this in account.
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+
 # If no good busybox has been found, we will replace the one in xbin
 # This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
 # this missing busybox will break full root provided by XZDualRecovery making these
