@@ -17,7 +17,7 @@ Currently supported are:
 * Sony Xperia Z1 Compact
 * Sony Xperia T/V/TX/TL
 
-The main device menu is split up in to 2 major parts, 'Build' and 'Recovery'.
+The main device menu is split up in to 3 major parts, 'Build' and 'Recovery'.
 
 The 'Recovery' choice allows you to compile the recoveries from source without breaking a sweat ;)
 After building you can apply the 'private' patches. Make sure the patches are still compatible
