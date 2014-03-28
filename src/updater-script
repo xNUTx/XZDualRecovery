@@ -16,6 +16,7 @@ ui_print("Installing version ", file_getprop("/tmp/dr.prop","version"));
 set_progress(0.050000);
 
 ui_print("  Mounting SYSTEM...");
+run_program("/sbin/busybox", "blockdev", "--setrw", "/dev/block/platform/msm_sdcc.1/by-name/system");
 mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
 set_progress(0.150000);
 
