@@ -18,21 +18,16 @@ ui_print("Installing version ", file_getprop("/tmp/dr.prop","version"));
 set_progress(0.050000);
 
 ui_print("  Mounting SYSTEM...");
+run_program("/sbin/busybox", "blockdev", "--setrw", "/dev/block/platform/msm_sdcc.1/by-name/system");
 mount("ext4", "EMMC", "/dev/block/platform/msm_sdcc.1/by-name/system", "/system");
 set_progress(0.150000);
-
-ui_print("  Making sure original binaries remain...");
-set_perm(0, 0, 0755, "/tmp/backupstockbinaries.sh");
-run_program("/tmp/backupstockbinaries.sh");
-set_progress(0.350000);
 
 ui_print("  Flashing new kernel...");
 set_perm(0, 0, 0755, "/tmp/flashkernel.sh");
 run_program("/tmp/flashkernel.sh");
 set_progress(0.550000);
 
-ui_print("  Installing supporting files...");
-package_extract_file("system/bin/mr", "/system/bin/mr");
+ui_print("  Installing NDRUtils...");
 package_extract_file("system/app/NDRUtils.apk", "/system/app/NDRUtils.apk");
 set_progress(0.650000);
 
@@ -42,7 +37,7 @@ run_program("/tmp/setversion.sh");
 set_progress(0.750000);
 
 ui_print("  Correcting permissions...");
-set_perm(0, 2000, 0755, "/system/bin/mr");
+set_perm(0, 2000, 0644, "/system/app/NDRUtils.apk");
 set_progress(0.850000);
 
 ui_print("  Unmounting SYSTEM...");

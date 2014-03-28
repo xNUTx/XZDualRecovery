@@ -100,9 +100,21 @@ patchramdisk() {
 
 	echo "Patching kernel ramdisk."
 
-	mv $WORKDIR/tmp/kernelramdisk/init.rc $WORKDIR/tmp/kernelramdisk/init.original.rc
-	cp -r $WORKDIR/patches/kernel/all/* $WORKDIR/tmp/kernelramdisk/
-	cp $WORKDIR/includes/busybox $WORKDIR/tmp/kernelramdisk/sbin/
+	mv -v $WORKDIR/tmp/kernelramdisk/init.rc $WORKDIR/tmp/kernelramdisk/init.original.rc
+	cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/tmp/kernelramdisk/
+	cp -v $WORKDIR/includes/busybox $WORKDIR/tmp/kernelramdisk/sbin/
+
+	# Comment out the sony_ric
+	#    mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
+	#    write /sys/kernel/security/sony_ric/enable 1
+	sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/tmp/kernelramdisk/init.*
+	sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/tmp/kernelramdisk/init.*
+
+	# Set fstab to rw
+	sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/tmp/kernelramdisk/fstab.qcom
+
+	# Disable the ric service
+	sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/tmp/kernelramdisk/init.*
 
 	if [ "$1" = "auto" ]; then
 		sleep 2
@@ -223,7 +235,7 @@ fastbootkernel() {
 
 sideloadkernel() {
 
-	if [ "`$WORKDIR/bin/adb devices | grep '\<device\>' | wc -l`" = "1" ]; then
+	if [ "`$WORKDIR/bin/adb devices | grep 'sideload' | wc -l`" = "1" ]; then
 
 		echo "Sideload it to the connected device? (y/n)"
 		read answer

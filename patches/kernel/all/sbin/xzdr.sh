@@ -392,7 +392,9 @@ fi
 
 ECHOL "Booting Android."
 
-umount -l /drbin
+/sbin/busybox umount /drbin
+/sbin/busybox umount /system
+/sbin/busybox umount -l /storage/removable/sdcard1
 export PATH="$_PATH"
 /sbin/busybox rm -r /drbin
 

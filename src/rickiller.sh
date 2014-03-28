@@ -115,6 +115,9 @@ $BUSYBOX echo "do" >> $RICPATH
 $BUSYBOX echo 'if [ -f "/sys/kernel/security/sony_ric/enable" ]; then' >> $RICPATH
 $BUSYBOX echo "echo 0 > /sys/kernel/security/sony_ric/enable" >> $RICPATH
 $BUSYBOX echo "fi" >> $RICPATH
+$BUSYBOX echo 'if [ "$(busybox blockdev --getro $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system))" = "1" ]; then' >> $RICPATH
+$BUSYBOX echo "busybox blockdev --setrw $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system)" >> $RICPATH
+$BUSYBOX echo "fi" >> $RICPATH
 $BUSYBOX echo "sleep 60" >> $RICPATH
 $BUSYBOX echo "done" >> $RICPATH
 
