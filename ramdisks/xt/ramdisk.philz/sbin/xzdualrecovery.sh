@@ -8,6 +8,10 @@ _PATH="$PATH"
 export LD_LIBRARY_PATH=".:/sbin:/system/vendor/lib:/system/lib"
 export PATH="/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
 
+#https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
+#The busybox in all of the recoveries has not yet been patched to take this in account.
+/sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+
 BOOTREC_LED_RED="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep red)/brightness"
 BOOTREC_LED_GREEN="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep green)/brightness"
 BOOTREC_LED_BLUE="/sys/class/leds/$(/sbin/busybox ls -1 /sys/class/leds|grep blue)/brightness"
