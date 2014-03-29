@@ -214,8 +214,10 @@
 /sys/class/rfkill/rfkill[0-9]*/type -- u:object_r:sysfs_bluetooth_writable:s0
 #############################
 # asec containers
-/mnt/asec(/.*)?         u:object_r:asec_apk_file:s0
-/data/app-asec(/.*)?    u:object_r:asec_image_file:s0
+/mnt/asec(/.*)?           u:object_r:asec_apk_file:s0
+/mnt/asec/[^/]+/res.zip   u:object_r:asec_public_file:s0
+/mnt/asec/[^/]+/lib(/.*)? u:object_r:asec_public_file:s0
+/data/app-asec(/.*)?      u:object_r:asec_image_file:s0
 #line 1 "device/sony/rhine-common/sepolicy/file_contexts"
 # GPU device
 /dev/kgsl-3d0       u:object_r:gpu_device:s0
