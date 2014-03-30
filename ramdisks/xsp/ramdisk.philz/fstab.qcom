@@ -1,12 +1,15 @@
 # Android fstab file.
-#<src>                                                  <mnt_point>         <type>    <mnt_flags and options>                               <fs_mgr_flags>
 # The filesystem that contains the filesystem checker binary (typically /system) cannot
 # specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
-/dev/block/platform/msm_sdcc.1/by-name/Kernel    /boot    emmc  defaults                                                                   recoveryonly
-/dev/block/platform/msm_sdcc.1/by-name/System    /system  ext4  ro,barrier=1                                                               wait
-/dev/block/platform/msm_sdcc.1/by-name/Cache     /cache   ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,errors=panic  wait,check
-/dev/block/platform/msm_sdcc.1/by-name/Userdata  /data    ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,errors=panic  wait,check,encryptable=footer,length=-16384
+#TODO: Add 'check' as fs_mgr_flags with data partition.
+# Currently we dont have e2fsck compiled. So fs check would failed.
 
-/devices/platform/msm_sdcc.3/mmc_host/mmc1       auto     auto  defaults  voldmanaged=sdcard1:auto
-/devices/platform/msm_hsusb_host/usb             auto     auto  defaults  voldmanaged=usbdisk:auto
+#<src>                                                <mnt_point>         <type>  <mnt_flags and options>                                     <fs_mgr_flags>
+/dev/block/platform/msm_sdcc.1/by-name/Kernel         /boot               emmc    defaults                                                    recoveryonly
+/dev/block/platform/msm_sdcc.1/by-name/System         /system             ext4    ro,barrier=1,discard                                        wait,check
+/dev/block/platform/msm_sdcc.1/by-name/Userdata       /data               ext4    nosuid,nodev,noatime,barrier=1,noauto_da_alloc,discard      wait,check,encryptable=footer,length=-16384
+/dev/block/platform/msm_sdcc.1/by-name/Cache          /cache              ext4    nosuid,nodev,noatime,barrier=1,discard                      wait,check
+
+/devices/platform/msm_sdcc.3/mmc_host/mmc1            auto                auto    nosuid,nodev                                                voldmanaged=sdcard1:auto
+/devices/platform/msm_hsusb_host/usb                  auto                auto    nosuid,nodev                                                voldmanaged=usbdisk:auto
