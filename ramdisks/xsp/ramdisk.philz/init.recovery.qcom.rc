@@ -1,0 +1,8 @@
+on init
+    write /sys/class/android_usb/android0/idVendor 0fce
+    write /sys/class/android_usb/android0/idProduct 6182
+
+# Remap boot and FOTA for lk if lk is present
+on property:ro.bootloader=lk
+    start remap
+    setprop lk.remap 1
