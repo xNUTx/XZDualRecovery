@@ -193,8 +193,6 @@
 /data/data/com.android.settings/files/wallpaper	u:object_r:wallpaper_file:s0
 # Wallpaper file for other users
 /data/system/users/[0-9]+/wallpaper		u:object_r:wallpaper_file:s0
-# Downloaded files
-/data/data/com.android.providers.downloads/cache u:object_r:download_file:s0
 #############################
 # efs files
 #
@@ -216,8 +214,10 @@
 /sys/class/rfkill/rfkill[0-9]*/type -- u:object_r:sysfs_bluetooth_writable:s0
 #############################
 # asec containers
-/mnt/asec(/.*)?         u:object_r:asec_apk_file:s0
-/data/app-asec(/.*)?    u:object_r:asec_image_file:s0
+/mnt/asec(/.*)?           u:object_r:asec_apk_file:s0
+/mnt/asec/[^/]+/res.zip   u:object_r:asec_public_file:s0
+/mnt/asec/[^/]+/lib(/.*)? u:object_r:asec_public_file:s0
+/data/app-asec(/.*)?      u:object_r:asec_image_file:s0
 #line 1 "device/sony/fusion3-common/sepolicy/file_contexts"
 /dev/msm_acdb                  u:object_r:audio_device:s0
 /dev/msm_mp3                   u:object_r:audio_device:s0

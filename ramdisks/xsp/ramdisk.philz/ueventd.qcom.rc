@@ -1,7 +1,43 @@
+# Copyright (c) 2012-2013, The Linux Foundation. All rights reserved.
+# Copyright (c) 2013 Sony Mobile Communications AB.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above copyright
+#       notice, this list of conditions and the following disclaimer in the
+#       documentation and/or other materials provided with the distribution.
+#     * Neither the name of The Linux Foundation nor
+#       the names of its contributors may be used to endorse or promote
+#       products derived from this software without specific prior written
+#       permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+# AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+# IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+# NON-INFRINGEMENT ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR
+# CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+# EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+#permissions for sensors
+/sys/devices/virtual/input/input*   bma250_rate        0640  system   system
+
 # Permissions for AKM8963 sensor
 /sys/devices/virtual/input/input*   interval    0640  system   system
 /sys/devices/virtual/input/input*   single      0640  system   system
 /sys/devices/virtual/input/input*   registers   0640  system   system
+
+# Gyroscope device permission
+/dev/mpu                  0600  system      system
+/dev/mpuirq               0600  system      system
+/dev/timerirq             0600  system      system
 
 # the DIAG device node is not world writable/readable.
 /dev/diag                 0660   system     qcom_diag
@@ -17,9 +53,8 @@
 /dev/smd4                 0660   system     system
 /dev/smd_cxm_qmi          0640   radio      radio
 /dev/smd7                 0660   bluetooth  bluetooth
-/dev/radio0               0640   fm_radio   fm_radio
+/dev/radio0               0640   system     system
 /dev/rfcomm0              0660   bluetooth  bluetooth
-/dev/rfkill               0660   wifi       root
 /dev/gss                  0660   gps        gps
 /dev/smdcntl0             0640   radio      radio
 /dev/smdcntl1             0640   radio      radio
@@ -39,7 +74,6 @@
 /dev/smdcnt_rev7          0640   radio      radio
 /dev/smdcnt_rev8          0640   radio      radio
 /dev/smuxctl32            0640   radio      radio
-/dev/smuxctl33            0640   radio      radio
 /dev/sdioctl0             0640   radio      radio
 /dev/sdioctl1             0640   radio      radio
 /dev/sdioctl2             0640   radio      radio
@@ -87,7 +121,7 @@
 /dev/msm_vidc_dec         0660   system     audio
 /dev/msm_vidc_dec_sec     0660   system     audio
 /dev/msm_vidc_enc         0660   system     audio
-/dev/msm_rotator          0664   system     system
+/dev/msm_rotator          0660   system     system
 /dev/hw_random            0660   system     system
 
 #permissions for audio
@@ -125,12 +159,6 @@
 /dev/ttyGS0               0660   system     system
 /dev/i2c-5                0660   media       media
 
-/dev/hidraw0              0666  system   system
-/dev/hidraw1              0666  system   system
-
-# NFC device permission
-/dev/pn544                0600   nfc        nfc
-
 # DVB devices
 /dev/dvb/adapter0/demux*  0444   media       media
 /dev/dvb/adapter0/dvr*    0664   media       media
@@ -141,5 +169,20 @@
 /sys/devices/i2c-12/12-*  enable  0664 system system
 /sys/devices/i2c-12/12-*  poll_delay 0664 system system
 
+# BT
+/dev/hidraw0                                     0666  system  system
+/dev/hidraw1                                     0666  system  system
+
+# NFC
+/dev/pn544                0600   nfc         nfc
 # wlan
 /dev/wcnss_wlan           0660   system     system
+
+# MHL
+/sys/devices/i2c-10/10-0039/mhl/sii8334  adopter_id 0440  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  device_id  0440  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  rap        0640  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  scpd       0640  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  mouse_mode 0660  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  mouse_move_distance_dx  0660  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  mouse_move_distance_dy  0660  system  system
