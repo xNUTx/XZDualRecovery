@@ -1,9 +1,15 @@
-# mount point	fstype		device			[device2]   fstype2
+# Android fstab file.
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
 
-/boot		emmc		/dev/block/mmcblk0p4
-/system		ext4		/dev/block/mmcblk0p13
-/cache		ext4		/dev/block/mmcblk0p14
-/data		ext4		/dev/block/mmcblk0p15	length=-16384
-/sdcard		datamedia	/dev/null
-/external_sd	auto		/dev/block/mmcblk1p1	/dev/block/mmcblk1
-	
+#TODO: Add 'check' as fs_mgr_flags with data partition.
+# Currently we dont have e2fsck compiled. So fs check would failed.
+
+#<src>                                                <mnt_point>         <type>  <mnt_flags and options>                                     <fs_mgr_flags>
+/dev/block/platform/msm_sdcc.1/by-name/Kernel         /boot               emmc    defaults                                                    recoveryonly
+/dev/block/platform/msm_sdcc.1/by-name/System         /system             ext4    ro,barrier=1,discard                                        wait,check
+/dev/block/platform/msm_sdcc.1/by-name/Userdata       /data               ext4    nosuid,nodev,noatime,barrier=1,noauto_da_alloc,discard      wait,check,encryptable=footer,length=-16384
+/dev/block/platform/msm_sdcc.1/by-name/Cache          /cache              ext4    nosuid,nodev,noatime,barrier=1,discard                      wait,check
+
+/devices/platform/msm_sdcc.3/mmc_host/mmc1            auto                auto    nosuid,nodev                                                voldmanaged=sdcard1:auto
+/devices/platform/msm_hsusb_host/usb                  auto                auto    nosuid,nodev                                                voldmanaged=usbdisk:auto

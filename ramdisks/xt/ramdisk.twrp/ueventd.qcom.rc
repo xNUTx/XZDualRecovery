@@ -1,0 +1,119 @@
+# permissions for audio
+/dev/msm_qcelp            0660   system     audio
+/dev/msm_evrc             0660   system     audio
+/dev/msm_wma              0660   system     audio
+/dev/msm_wmapro           0660   system     audio
+/dev/msm_amrnb            0660   system     audio
+/dev/msm_amrwb            0660   system     audio
+/dev/msm_amrwbplus        0660   system     audio
+/dev/msm_aac              0660   system     audio
+/dev/msm_multi_aac        0660   system     audio
+/dev/msm_aac_in           0660   system     audio
+/dev/msm_qcelp_in         0660   system     audio
+/dev/msm_evrc_in          0660   system     audio
+/dev/msm_amrnb_in         0640   system     audio
+/dev/msm_a2dp_in          0660   system     audio
+/dev/msm_ac3              0660   system     audio
+/dev/msm_acdb             0660   system     audio
+/dev/msm_cad              0660   system     audio
+/dev/msm_fm               0660   system     audio
+/dev/msm_mvs              0660   system     audio
+/dev/msm_pcm_lp_dec       0660   system     audio
+/dev/msm_preproc_ctl      0660   system     audio
+/dev/msm_rtac             0660   system     audio
+/dev/msm_voicememo        0660   system     audio
+
+/dev/msm_vidc_dec         0660   system     audio
+/dev/msm_vidc_dec_sec     0660   system     audio
+/dev/msm_vidc_enc         0660   system     audio
+/dev/msm_vidc_enc_sec     0660   system     audio
+/dev/msm_vidc_reg         0660   system     audio
+
+/dev/msm_vpe_standalone   0660   system     camera
+/dev/msm_camera/*         0660   system     camera
+/dev/gemini0              0660   system     camera
+/dev/video*               0660   system     camera
+/dev/media*               0660   system     camera
+/dev/v4l-subdev*          0660   system     camera
+/dev/media*               0660   system     camera
+
+/dev/qseecom              0666   system     drmrpc
+/dev/block/mmcblk0p12     0660   system     system
+/dev/block/mmcblk0p13     0660   system     system
+/dev/block/mmcblk0p15     0660   system     system
+/dev/oncrpc/*             0660   root       qcom_oncrpc
+
+/dev/genlock              0666   system     system
+/dev/ion                  0664   system     system
+/dev/kgsl-2d0             0666   root       root
+/dev/kgsl-2d1             0666   root       root
+/dev/kgsl-3d0             0666   system     system
+/dev/msm_rotator          0664   system     system
+
+/dev/smd2                 0660   bluetooth  bluetooth
+/dev/smd3                 0660   bluetooth  bluetooth
+/dev/ttyHS0               0600   bluetooth  bluetooth
+/dev/uinput               0660   system     bluetooth
+
+/dev/smd4                 0660   system     system
+
+/dev/smd0                 0640   radio      radio
+/dev/smd7                 0640   radio      radio
+/dev/smdcntl0             0640   radio      radio
+/dev/smdcntl1             0640   radio      radio
+/dev/smdcntl2             0640   radio      radio
+/dev/smdcntl3             0640   radio      radio
+/dev/smdcntl4             0640   radio      radio
+/dev/smdcntl5             0640   radio      radio
+/dev/smdcntl6             0640   radio      radio
+/dev/smdcntl7             0640   radio      radio
+/dev/smuxctl32            0640   radio      radio
+/dev/sdioctl0             0640   radio      radio
+/dev/sdioctl1             0640   radio      radio
+/dev/sdioctl2             0640   radio      radio
+/dev/sdioctl3             0640   radio      radio
+/dev/sdioctl4             0640   radio      radio
+/dev/sdioctl5             0640   radio      radio
+/dev/sdioctl6             0640   radio      radio
+/dev/sdioctl7             0640   radio      radio
+/dev/sdioctl8             0640   radio      radio
+/dev/rmnet_mux_ctrl       0640   radio      radio
+/dev/hsicctl0             0640   radio      radio
+/dev/hsicctl1             0640   radio      radio
+/dev/hsicctl2             0640   radio      radio
+/dev/hsicctl3             0640   radio      radio
+/dev/smd_cxm_qmi          0640   radio      radio
+
+/dev/pn544                0600   nfc        nfc
+
+/dev/rfkill               0660   wifi       wifi
+
+/dev/radio0               0644   system     system
+
+/dev/rtc0                 0600   system     system
+/dev/mpu                  0600   system     system
+/dev/mpuirq               0600   system     system
+/dev/i2c-0                0664   root       system
+/dev/i2c-1                0664   root       system
+/dev/i2c-2                0664   root       system
+/dev/i2c-4                0664   root       system
+/dev/hw_random            0660   system     system
+/dev/cpu_dma_latency      0660   system     system
+
+/sys/devices/virtual/input/input*          bma250_rate    0640  system   system
+/sys/devices/virtual/smdpkt/smdcntl*       open_timeout   0664  radio    radio
+
+# MHL
+/sys/devices/i2c-10/10-0039/mhl/sii8334  adopter_id 0440  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  device_id  0440  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  rap        0640  system  system
+/sys/devices/i2c-10/10-0039/mhl/sii8334  scpd       0640  system  system
+
+# HDMI
+/sys/devices/virtual/graphics/fb1  edid_modes     0440  system  system
+/sys/devices/virtual/graphics/fb1  edid_3d_modes  0440  system  system
+/sys/devices/virtual/graphics/fb1  hdmi_mode      0440  system  system
+/sys/devices/virtual/graphics/fb1  hpd            0640  system  system
+/sys/devices/virtual/graphics/fb1  scan_info      0440  system  system
+/sys/devices/virtual/graphics/fb1  video_mode     0640  system  system
+/sys/devices/virtual/graphics/fb1  video_mode_str 0440  system  system
