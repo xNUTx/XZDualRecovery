@@ -67,7 +67,7 @@ runinstall() {
 	if [ "$SUPERAPP" = "getroot" ]; then
 		./${ADBBINARY} push getroot /data/local/tmp/recovery/getroot
 	fi
-	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
+	./${ADBBINARY} push bootstrap.sh /data/local/tmp/recovery/bootstrap.sh
 	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 	./${ADBBINARY} push NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk

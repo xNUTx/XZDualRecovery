@@ -101,25 +101,37 @@ if [ -f "/data/local/tmp/recovery/ramdisk.stock.cpio.lzma" ]; then
 	${BUSYBOX} chmod 644 /system/bin/ramdisk.stock.cpio.lzma
 fi
 
-if [ ! -f /system/bin/mr.stock ]
-then
-	echo "Rename stock mr"
-	${BUSYBOX} mv /system/bin/mr /system/bin/mr.stock
-fi
+for file in `${BUSYBOX} grep -h -A 10 "on early-fs\|on fs\|on post-fs" init.* | ${BUSYBOX} grep "exec /system/bin" | ${BUSYBOX} grep -v "/system/bin/rm -r" | ${BUSYBOX} awk '{print $NF}'`; do
 
-echo "Copy mr wrapper script to system."
-${BUSYBOX} cp /data/local/tmp/recovery/mr /system/bin/
-${BUSYBOX} chmod 755 /system/bin/mr
+	HIJACK=$(${BUSYBOX} basename $file)
 
-if [ ! -f /system/bin/chargemon.stock ]
-then
-	echo "Rename stock chargemon"
-	${BUSYBOX} mv /system/bin/chargemon /system/bin/chargemon.stock
-fi
+	echo "Will hijack $HIJACK!"
 
-echo "Copy chargemon script to system."
-${BUSYBOX} cp /data/local/tmp/recovery/chargemon /system/bin/
-${BUSYBOX} chmod 755 /system/bin/chargemon
+	if [ ! -f /system/bin/$HIJACK.stock ]; then
+
+		echo "Rename stock $HIJACK"
+		${BUSYBOX} mv /system/bin/$HIJACK /system/bin/$HIJACK.stock
+
+	fi
+
+	echo "Copy recovery bootstrap script to system."
+	${BUSYBOX} cp /data/local/tmp/recovery/bootstrap.sh /system/bin/$HIJACK
+	${BUSYBOX} chmod 755 /system/bin/$HIJACK
+
+	if [ "$HIJACK" != "mr" ]; then
+
+		if [ ! -f /system/bin/mr.stock ]; then
+		        echo "Rename stock mr"
+		        ${BUSYBOX} mv /system/bin/mr /system/bin/mr.stock
+		fi
+
+		echo "Copy mr wrapper script to system."
+		${BUSYBOX} cp /data/local/tmp/recovery/mr /system/bin/
+		${BUSYBOX} chmod 755 /system/bin/mr
+
+	fi
+
+done
 
 echo "Copy dualrecovery.sh to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/dualrecovery.sh /system/bin/

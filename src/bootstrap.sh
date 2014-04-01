@@ -90,7 +90,7 @@ EXIT2CM(){
 
 	export PATH="${_PATH}"
 
-	exec /system/bin/chargemon.stock
+	exec /system/bin/$0.stock
 	exit 0
 }
 DRGETPROP() {
@@ -356,9 +356,7 @@ if [ -b ${BOOTREC_EXTERNAL_SDCARD} ]; then
 
 		# We can! Lets do it, this will keep recovery working even if cache is somehow destroyed.
 		TECHOL "### Mounted SDCard1!"
-		# Cleanup old chargemon directories
 		if [ -d "/cache/${LOGDIR}" ]; then
-			TEXECL rm -rf /cache/chargemon
 			TEXECL rm -rf /cache/${LOGDIR}
 		fi
 
@@ -367,9 +365,6 @@ if [ -b ${BOOTREC_EXTERNAL_SDCARD} ]; then
 		if [ ! -d "${DRPATH}" ]; then
 			TECHOL "Creating the ${LOGDIR} directory on SDCard1."
 			TEXECL mkdir ${DRPATH}
-		else
-			TECHOL "Removing old chargemon logs..."
-			TEXECL rm -f ${DRPATH}/chargemon*
 		fi
 
 	else
@@ -486,7 +481,7 @@ if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
 
 	export PATH="${_PATH}"
 
-	exec /sbin/init.sh $DRPATH $LOGFILE
+	exec /sbin/init.sh $DRPATH $LOGFILE $0
 
 else
 

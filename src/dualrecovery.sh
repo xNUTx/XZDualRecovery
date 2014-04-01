@@ -18,6 +18,7 @@ export PATH="/system/xbin:/system/bin:/sbin"
 # Defining constants, from commandline
 DRPATH="$1"
 LOGFILE="$2"
+BINARY="$3"
 LOG="${DRPATH}/${LOGFILE}"
 
 # Kickstarting log
@@ -429,6 +430,6 @@ else
 	export PATH="${_PATH}"
 
 	# Continue booting
-	exec /system/bin/chargemon.stock
+	exec /system/bin/${BINARY}.stock
 
 fi

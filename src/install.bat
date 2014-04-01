@@ -76,7 +76,7 @@ adb push dr.prop /data/local/tmp/recovery/dr.prop
 if "!menu_decision!" == "3" (
 	adb push getroot /data/local/tmp/recovery/getroot
 )
-adb push chargemon.sh /data/local/tmp/recovery/chargemon
+adb push bootstrap.sh /data/local/tmp/recovery/bootstrap.sh
 adb push mr.sh /data/local/tmp/recovery/mr
 adb push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 adb push NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk

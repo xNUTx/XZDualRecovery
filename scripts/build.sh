@@ -97,7 +97,7 @@ packflashable() {
 	cp $WORKDIR/src/installstock.sh $WORKDIR/tmp/flashable/tmp/installstock.sh
 	cp $WORKDIR/src/setversion.sh $WORKDIR/tmp/flashable/tmp/setversion.sh
 	cp $WORKDIR/src/mr.sh $WORKDIR/tmp/flashable/system/bin/mr
-	cp $WORKDIR/src/chargemon.sh $WORKDIR/tmp/flashable/system/bin/chargemon
+	cp $WORKDIR/src/bootstrap.sh $WORKDIR/tmp/flashable/system/bin/bootstrap.sh
 	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/tmp/flashable/system/bin/dualrecovery.sh
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/tmp/flashable/system/bin/rickiller.sh
 	cp $WORKDIR/src/disableric.sh $WORKDIR/tmp/flashable/tmp/disableric
@@ -126,7 +126,7 @@ packinstaller() {
 	fi
 	cp $WORKDIR/tmp/busybox $WORKDIR/tmp/installer/lockeddualrecovery/files/busybox
 	cp $WORKDIR/src/mr.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/mr.sh
-	cp $WORKDIR/src/chargemon.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/chargemon.sh
+	cp $WORKDIR/src/bootstrap.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/bootstrap.sh
 	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/dualrecovery.sh
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/rickiller.sh
 	cp $WORKDIR/src/disableric.sh $WORKDIR/tmp/installer/lockeddualrecovery/files/disableric
