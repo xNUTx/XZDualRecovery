@@ -236,7 +236,7 @@ buildt() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
         source scripts/buildmenu.sh
 	dualrecovery_action_menu_opt
 }

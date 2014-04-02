@@ -110,6 +110,13 @@ class unpackBoot {
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
 			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+		} else {
+			$part = substr ( $this->file_contents , $start, $this->filesize);
+			$this->bootcmd_str = trim($this->hexToStr($part));
+			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
+			fwrite($file, $this->bootcmd_str);
+			fclose($file);
+			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
 		}
 		
 	}
