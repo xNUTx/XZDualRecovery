@@ -187,3 +187,6 @@ echo "============================================="
 echo ""
 
 /system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
+if [ "$?" != "0" ]; then
+	reboot
+fi

@@ -228,16 +228,26 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		ECHOL "Stop init services..."
 		for SVCRUNNING in $(getprop | grep -E '^\[init\.svc\..*\]: \[running\]'); do
 			SVCNAME=$(expr ${SVCRUNNING} : '\[init\.svc\.\(.*\)\]:.*')
-			EXECL stop ${SVCNAME}
+			if [ "${SVCNAME}" != "" ]; then
+				EXECL stop ${SVCNAME}
+				if [ -f "/system/bin/${SVCNAME}" ]; then
+					EXECL pkill -f /system/bin/${SVCNAME}
+				fi
+			fi
 		done
 
-		EXECL kill -9 $(ps | grep rmt_storage | grep -v "grep" | awk -F' ' '{print $1}')
+		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+			BINARY=$(ps | grep " $LOCKINGPID " | grep -v "grep" | awk '{print $5}')
+			ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!"
+			EXECL kill -9 $LOCKINGPID
+		done
 
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."
 		EXECL umount -l /acct
 		EXECL umount -l /dev/cpuctl
 		EXECL umount -l /dev/pts
+		EXECL umount -l /mnt/int_storage
 		EXECL umount -l /mnt/asec
 		EXECL umount -l /mnt/obb
 		EXECL umount -l /mnt/qcks
