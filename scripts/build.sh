@@ -35,7 +35,7 @@ doall() {
 	echo "Upload files now? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		uploadfiles
+		uploadfiles lockeddualrecovery
 	fi
 }
 
@@ -61,7 +61,7 @@ doallkernel() {
 	echo "Upload files now? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		uploadfiles
+		uploadfiles XZDRKernel
 	fi
 }
 
