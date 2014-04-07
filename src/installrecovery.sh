@@ -190,13 +190,13 @@ ${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
 ${BUSYBOX} chmod 755 /system/xbin/busybox
 
 echo "Trying to find and update the gpio-keys event node."
-GPIOINPUTDEV="/dev/$(gpioKeysSearch)"
+GPIOINPUTDEV="$(gpioKeysSearch)"
 echo "Found and will be using ${GPIOINPUTDEV}!"
 DRSETPROP dr.gpiokeys.node ${GPIOINPUTDEV}
 
 echo "Trying to find and update the power key event node."
-PWRINPUTDEV="/dev/$(pwrkeySearch)"
-echo "Found and will be monitoring /dev/${PWRINPUTDEV}!"
+PWRINPUTDEV="$(pwrkeySearch)"
+echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
 FOLDER1=/sdcard/clockworkmod/

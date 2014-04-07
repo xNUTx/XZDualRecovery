@@ -274,12 +274,11 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		# Ending log
 		DATETIME=`date +"%d-%m-%Y %H:%M:%S"`
 		ECHOL "STOP Dual Recovery at ${DATETIME}: Executing recovery init, have fun!"
-		sleep 1
 
 		umount -l /storage/sdcard1	# SDCard1
 		umount -l /cache		# Cache
-		umount -l /proc
-		umount -l /sys
+#		umount -l /proc
+#		umount -l /sys
 
 		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
 

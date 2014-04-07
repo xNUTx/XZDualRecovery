@@ -12,6 +12,7 @@ on init
 
     symlink /system/etc /etc
 
+    mkdir /tmp
     mkdir /boot
     mkdir /recovery
     mkdir /sdcard

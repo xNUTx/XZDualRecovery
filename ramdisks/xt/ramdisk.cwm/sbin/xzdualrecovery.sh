@@ -60,11 +60,11 @@ echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
 
-SYSTEM_PTYPE=$(blkid $SYSTEM | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
-USERDATA_PTYPE=$(blkid $USERDATA | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
 
-/sbin/busybox mount -t $SYSTEM_PTYPE -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox mount -t $USERDATA_PTYPE -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
+#/sbin/busybox mount /system 2>&1 >> /tmp/xzdr.log
+#/sbin/busybox mount /data 2>&1 >> /tmp/xzdr.log
 
 #cp /system/bin/time_daemon /sbin/
 #/sbin/busybox find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
