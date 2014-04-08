@@ -40,7 +40,7 @@ pwrkeySearch() {
 
         done
         # qpnp_pon (xperia Z1 and similar)
-        for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+        for INPUTUEVENT in `${BUSYBOX} find $(${BUSYBOX} find /sys/devices/ -name "name" -exec ${BUSYBOX} grep -l "qpnp_pon" {} \; | ${BUSYBOX} awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
                 INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
