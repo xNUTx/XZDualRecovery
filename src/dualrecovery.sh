@@ -29,9 +29,9 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
 #BOOTREC_CACHE="/dev/block/mmcblk0p25"
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-BOOTREC_LED_RED="/sys/class/leds/$(ls -1 /sys/class/leds|grep red)/brightness"
-BOOTREC_LED_GREEN="/sys/class/leds/$(ls -1 /sys/class/leds|grep green)/brightness"
-BOOTREC_LED_BLUE="/sys/class/leds/$(ls -1 /sys/class/leds|grep blue)/brightness"
+BOOTREC_LED_RED="/sys/class/leds/$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep \"red\|LED1_R\")/brightness"
+BOOTREC_LED_GREEN="/sys/class/leds/$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep \"green\|LED1_G\")/brightness"
+BOOTREC_LED_BLUE="/sys/class/leds/$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep \"blue\|LED1_B\")/brightness"
 
 # Defining functions
 ECHOL(){
