@@ -29,11 +29,11 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
 #BOOTREC_CACHE="/dev/block/mmcblk0p25"
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED1_R")
+REDLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "red\|LED2_R")
 BOOTREC_LED_RED="/sys/class/leds/$REDLED/brightness"
-GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED1_G")
+GREENLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "green\|LED2_G")
 BOOTREC_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
-BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED1_B")
+BLUELED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "blue\|LED2_B")
 BOOTREC_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
 
 # Defining functions
@@ -69,26 +69,24 @@ SETLED() {
 }
 DRGETPROP() {
 
-	# Get the property from getprop
+	# Attempt to get the property from XZDR.prop
 	VAR=`$*`
-	PROP=`/system/bin/getprop $*`
+	PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
 	if [ "$PROP" = "" ]; then
 
-		# If it's empty, see if what was requested was a XZDR.prop value!
-		VAR=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-		PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
-
-	fi
-	if [ "$VAR" = "" -a "$PROP" = "" ]; then
-
-		# If it still is empty, try to get it from the build.prop
-		VAR=`grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
+		# If it's empty, see if what was requested was a build.prop value
 		PROP=`grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
 
 	fi
+	if [ "$PROP" = "" ]; then
 
-	if [ "$VAR" != "" ]; then
+		# If it still is empty, try to get it through getprop
+		PROP=`/system/bin/getprop $*`
+
+	fi
+
+	if [ "$VAR" != "" -a "$PROP" != "" ]; then
 		echo $PROP
 	else
 		echo "false"
@@ -99,7 +97,7 @@ DRSETPROP() {
 
 	# We want to set this only if the XZDR.prop file exists...
 	if [ ! -f "${DRPATH}/XZDR.prop" ]; then
-		return 0
+		echo "" > ${DRPATH}/XZDR.prop
 	fi
 
 	PROP=$(DRGETPROP $1)
