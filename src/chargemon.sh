@@ -24,11 +24,11 @@ LOGFILE="XZDualRecovery.log"
 # Nodes setup
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED1_R")
+REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED2_R")
 BOOTREC_LED_RED="/sys/class/leds/$REDLED/brightness"
-GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED1_G")
+GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED2_G")
 BOOTREC_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
-BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED1_B")
+BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED2_B")
 BOOTREC_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
 
 # Function definitions
@@ -99,18 +99,17 @@ EXIT2CM(){
 DRGETPROP() {
 
 	# If it's empty, see if what was requested was a XZDR.prop value!
-	VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-	PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+	VAR="$*"
+	PROP=$(${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | ${BUSYBOX} awk -F'=' '{ print $NF }')`
 
 	if [ "$VAR" = "" -a "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
-		VAR=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
-		PROP=`${BUSYBOX} grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
+		PROP=$(${BUSYBOX} grep "$*" /system/build.prop | ${BUSYBOX} awk -F'=' '{ print $NF }')
 
 	fi
 
-	if [ "$VAR" != "" ]; then
+	if [ "$VAR" != "" -a "$PROP" != "" ]; then
 		echo $PROP
 	else
 		echo "false"
@@ -121,7 +120,7 @@ DRSETPROP() {
 
 	# We want to set this only if the XZDR.prop file exists...
 	if [ ! -f "${DRPATH}/XZDR.prop" ]; then
-		return 0
+		echo "" > ${DRPATH}/XZDR.prop
 	fi
 
 	PROP=$(DRGETPROP $1)
