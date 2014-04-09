@@ -67,6 +67,7 @@ doallkernel() {
 
 packflashablekernel() {
 	cd $WORKDIR/tmp/
+	mkdir -p $WORKDIR/tmp/flashable/tmp/
 	echo "Flashable Kernel: copying files to their locations..."
 	cp $WORKDIR/tmp/$KERNEL.img $WORKDIR/tmp/flashable/tmp/boot.img
 	cp $WORKDIR/src/setversion.sh $WORKDIR/tmp/flashable/tmp/setversion.sh
