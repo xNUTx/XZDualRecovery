@@ -87,6 +87,9 @@ packflashablekernel() {
 
 packflashable() {
 	cd $WORKDIR/tmp/
+	mkdir -p $WORKDIR/tmp/flashable/system/bin
+	mkdir -p $WORKDIR/tmp/flashable/tmp
+	mkdir -p $WORKDIR/tmp/flashable/system/xbin
 	echo "Flashable: copying files to their locations..."
 	# Flashable
 	cp $WORKDIR/tmp/recovery.cwm.cpio.lzma $WORKDIR/tmp/flashable/system/bin/recovery.cwm.cpio.lzma
