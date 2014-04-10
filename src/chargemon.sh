@@ -24,9 +24,10 @@ LOGFILE="XZDualRecovery.log"
 # Nodes setup
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED2_R")
-GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED2_G")
-BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED2_B")
+
+REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED1_R")
+GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED1_G")
+BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED1_B")
 
 # Function definitions
 TECHOL(){
