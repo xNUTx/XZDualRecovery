@@ -40,7 +40,7 @@ pwrkeySearch() {
 
         done
         # qpnp_pon (xperia Z1 and similar)
-        for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`$
+        for INPUTUEVENT in `${BUSYBOX} find $(${BUSYBOX} find /sys/devices/ -name "name" -exec ${BUSYBOX} grep -l "qpnp_pon" {} \; | ${BUSYBOX} awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
                 INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
@@ -102,13 +102,13 @@ DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
 
 #echo "Trying to find and update the gpio-keys event node."
-GPIOINPUTDEV="/dev/$(gpioKeysSearch)"
+GPIOINPUTDEV="$(gpioKeysSearch)"
 #echo "Found and will be using ${GPIOINPUTDEV}!"
 DRSETPROP dr.gpiokeys.node ${GPIOINPUTDEV}
 
 #echo "Trying to find and update the power key event node."
-PWRINPUTDEV="/dev/$(pwrkeySearch)"
-#echo "Found and will be monitoring /dev/${PWRINPUTDEV}!"
+PWRINPUTDEV="$(pwrkeySearch)"
+#echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
 exit 0

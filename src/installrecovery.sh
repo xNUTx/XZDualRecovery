@@ -1,4 +1,4 @@
-#!/system/bin/sh
+#!/data/local/tmp/recovery/busybox sh
 set +x
 
 _PATH="$PATH"
@@ -12,6 +12,14 @@ DRPATH="/storage/sdcard1/${LOGDIR}"
 
 if [ ! -d "$DRPATH" ]; then
 	DRPATH="/cache/${LOGDIR}"
+fi
+
+if [ -x "/system/xbin/busybox" -a "`/system/xbin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
+	BUSYBOX="/system/xbin/busybox"
+elif [ -x "/system/bin/busybox" -a "`/system/bin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
+	BUSYBOX="/system/bin/busybox"
+else
+	BUSYBOX="/data/local/tmp/recovery/busybox"
 fi
 
 # Find the gpio-keys node, to listen on the right input event
@@ -42,7 +50,7 @@ pwrkeySearch() {
 
         done
         # qpnp_pon (xperia Z1 and similar)
-        for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`$
+        for INPUTUEVENT in `${BUSYBOX} find $(${BUSYBOX} find /sys/devices/ -name "name" -exec ${BUSYBOX} grep -l "qpnp_pon" {} \; | ${BUSYBOX} awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
                 INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
@@ -100,15 +108,6 @@ DRSETPROP() {
         return 0
 
 }
-
-
-if [ -x "/system/xbin/busybox" -a "`/system/xbin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-	BUSYBOX="/system/xbin/busybox"
-elif [ -x "/system/bin/busybox" -a "`/system/bin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-	BUSYBOX="/system/bin/busybox"
-else
-	BUSYBOX="/data/local/tmp/recovery/busybox"
-fi
 
 echo ""
 echo "##########################################################"
@@ -191,13 +190,13 @@ ${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
 ${BUSYBOX} chmod 755 /system/xbin/busybox
 
 echo "Trying to find and update the gpio-keys event node."
-GPIOINPUTDEV="/dev/$(gpioKeysSearch)"
+GPIOINPUTDEV="$(gpioKeysSearch)"
 echo "Found and will be using ${GPIOINPUTDEV}!"
 DRSETPROP dr.gpiokeys.node ${GPIOINPUTDEV}
 
 echo "Trying to find and update the power key event node."
-PWRINPUTDEV="/dev/$(pwrkeySearch)"
-echo "Found and will be monitoring /dev/${PWRINPUTDEV}!"
+PWRINPUTDEV="$(pwrkeySearch)"
+echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
 FOLDER1=/sdcard/clockworkmod/
