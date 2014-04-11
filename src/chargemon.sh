@@ -237,15 +237,17 @@ if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
 fi
 
 MADESECDIR="false"
-if [ ! -d "$SECUREDIR" -a -x "${BUSYBOX}" ]; then
+if [ ! -d "$SECUREDIR" -o -x "$SECUREDIR/busybox" ] && [ -x "${BUSYBOX}" ]; then
 
+	MADESECDIR="true"
 	${BUSYBOX} mount -o remount,rw /system
-	${BUSYBOX} mkdir $SECUREDIR
-	if [ "$?" = "0" ]; then
-		MADESECDIR="true"
-		${BUSYBOX} cp ${BUSYBOX} $SECUREDIR/
-		${BUSYBOX} mount -o remount,ro /system
+	if [ ! -d "$SECUREDIR" ]; then
+		${BUSYBOX} mkdir $SECUREDIR
 	fi
+	if [ ! -x "$SECUREDIR/busybox" ]; then
+		${BUSYBOX} cp ${BUSYBOX} $SECUREDIR/
+	fi
+	${BUSYBOX} mount -o remount,ro /system
 
 fi
 
@@ -271,7 +273,7 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
 # If $SECUREDIR was created, it will be noted in the log.
 if [ "$MADESECDIR" = "true" ]; then
 
-	echo "Created $SECUREDIR!" >> ${PREPLOG}
+	echo "Created $SECUREDIR and put a busybox safety copy away in it.!" >> ${PREPLOG}
 
 fi
 
