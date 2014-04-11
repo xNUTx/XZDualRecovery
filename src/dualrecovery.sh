@@ -29,12 +29,10 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
 #BOOTREC_CACHE="/dev/block/mmcblk0p25"
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
-REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED1_R")
-BOOTREC_LED_RED="/sys/class/leds/$REDLED/brightness"
-GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED1_G")
-BOOTREC_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
-BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED1_B")
-BOOTREC_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
+
+REDLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "red\|LED1_R")
+GREENLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "green\|LED1_G")
+BLUELED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "blue\|LED1_B")
 
 # Defining functions
 ECHOL(){
@@ -51,44 +49,64 @@ EXECL(){
   return ${_RET}
 }
 SETLED() {
+
+	BRIGHTNESS_LED_RED="/sys/class/leds/$REDLED/brightness"
+	CURRENT_LED_RED="/sys/class/leds/$REDLED/led_current"
+	BRIGHTNESS_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
+	CURRENT_LED_GREEN="/sys/class/leds/$GREENLED/led_current"
+	BRIGHTNESS_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
+	CURRENT_LED_BLUE="/sys/class/leds/$BLUELED/led_current"
+
         if [ "$1" = "on" ]; then
 
                 ECHOL "Turn on LED R: $2 G: $3 B: $4"
-                echo "$2" > ${BOOTREC_LED_RED}
-                echo "$3" > ${BOOTREC_LED_GREEN}
-                echo "$4" > ${BOOTREC_LED_BLUE}
+                echo "$2" > ${BRIGHTNESS_LED_RED}
+                echo "$3" > ${BRIGHTNESS_LED_GREEN}
+                echo "$4" > ${BRIGHTNESS_LED_BLUE}
+
+		if [ -f "$CURRENT_LED_RED" -a -f "$CURRENT_LED_GREEN" -a -f "$CURRENT_LED_BLUE" ]; then
+
+			echo "$2" > ${CURRENT_LED_RED}
+			echo "$3" > ${CURRENT_LED_GREEN}
+			echo "$4" > ${CURRENT_LED_BLUE}
+		fi
 
         else
 
                 ECHOL "Turn off LED"
-                echo "0" > ${BOOTREC_LED_RED}
-                echo "0" > ${BOOTREC_LED_GREEN}
-                echo "0" > ${BOOTREC_LED_BLUE}
+                echo "0" > ${BRIGHTNESS_LED_RED}
+                echo "0" > ${BRIGHTNESS_LED_GREEN}
+                echo "0" > ${BRIGHTNESS_LED_BLUE}
+
+		if [ -f "$CURRENT_LED_RED" -a -f "$CURRENT_LED_GREEN" -a -f "$CURRENT_LED_BLUE" ]; then
+
+			echo "0" > ${CURRENT_LED_RED}
+			echo "0" > ${CURRENT_LED_GREEN}
+			echo "0" > ${CURRENT_LED_BLUE}
+		fi
 
         fi
 }
 DRGETPROP() {
 
-	# Get the property from getprop
-	VAR=`$*`
-	PROP=`/system/bin/getprop $*`
+	# Attempt to get the property from XZDR.prop
+	VAR="$*"
+	PROP=$(grep "$VAR" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }')
 
 	if [ "$PROP" = "" ]; then
 
-		# If it's empty, see if what was requested was a XZDR.prop value!
-		VAR=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-		PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+		# If it's empty, see if what was requested was a build.prop value
+		PROP=$(grep "$VAR" /system/build.prop | awk -F'=' '{ print $NF }')
 
 	fi
-	if [ "$VAR" = "" -a "$PROP" = "" ]; then
+	if [ "$PROP" = "" ]; then
 
-		# If it still is empty, try to get it from the build.prop
-		VAR=`grep "$*" /system/build.prop | awk -F'=' '{ print $1 }'`
-		PROP=`grep "$*" /system/build.prop | awk -F'=' '{ print $NF }'`
+		# If it still is empty, try to get it through getprop
+		PROP=$(/system/bin/getprop $VAR)
 
 	fi
 
-	if [ "$VAR" != "" ]; then
+	if [ "$VAR" != "" -a "$PROP" != "" ]; then
 		echo $PROP
 	else
 		echo "false"
@@ -99,7 +117,7 @@ DRSETPROP() {
 
 	# We want to set this only if the XZDR.prop file exists...
 	if [ ! -f "${DRPATH}/XZDR.prop" ]; then
-		return 0
+		echo "" > ${DRPATH}/XZDR.prop
 	fi
 
 	PROP=$(DRGETPROP $1)
@@ -239,10 +257,12 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 			fi
 		done
 
-		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
-			BINARY=$(ps | grep " $LOCKINGPID " | grep -v "grep" | awk '{print $5}')
-			ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!"
-			EXECL kill -9 $LOCKINGPID
+		for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i \"name\" | awk -F':\t' '{print $2}')
+			if [ "$BINARY" != "" ]; then
+				ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
+				EXECL kill -9 $LOCKINGPID
+			fi
 		done
 
 		# umount partitions, stripping the ramdisk to bare metal
