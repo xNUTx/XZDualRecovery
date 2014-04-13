@@ -26,7 +26,6 @@ SETLED() {
 
         if [ "$1" = "on" ]; then
 
-                TECHOL "Turn on LED R: $2 G: $3 B: $4"
                 echo "$2" > ${BRIGHTNESS_LED_RED}
                 echo "$3" > ${BRIGHTNESS_LED_GREEN}
                 echo "$4" > ${BRIGHTNESS_LED_BLUE}
@@ -40,7 +39,6 @@ SETLED() {
 
         else
 
-                TECHOL "Turn off LED"
                 echo "0" > ${BRIGHTNESS_LED_RED}
                 echo "0" > ${BRIGHTNESS_LED_GREEN}
                 echo "0" > ${BRIGHTNESS_LED_BLUE}
