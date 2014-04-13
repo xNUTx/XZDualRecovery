@@ -449,6 +449,8 @@ else
 	EXECL mount -o remount,ro /system
 
 	ECHOL "Return to normal boot mode..."
+	
+	/system/bin/setprop dr.xzdr.install true
 
 	# Ending log
 	DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`

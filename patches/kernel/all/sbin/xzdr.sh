@@ -392,6 +392,8 @@ fi
 
 ECHOL "Booting Android."
 
+/system/bin/setprop dr.xzdr.install true
+
 /sbin/busybox umount /drbin
 /sbin/busybox umount /system
 /sbin/busybox umount -l /storage/removable/sdcard1
