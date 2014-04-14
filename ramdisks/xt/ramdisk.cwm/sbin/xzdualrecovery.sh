@@ -12,40 +12,6 @@ export PATH="/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
 #The busybox in all of the recoveries has not yet been patched to take this in account.
 /sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 
-echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
-
-SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
-
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
-
-# Initialize system clock.
-if [ "$(getprop persist.sys.timezone)" != "" ]; then
-
-	export TZ=$(getprop persist.sys.timezone)
-	echo "Set $(getprop persist.sys.timezone) timezone..." >> /tmp/xzdr.log
-
-else
-
-	export TZ="GMT"
-	echo "Set GMT timezone..." >> /tmp/xzdr.log
-
-fi
-
-/system/bin/time_daemon &
-
-/sbin/busybox sleep 2
-
-/sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
-
-/sbin/busybox sleep 2
-
-/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
-
-echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
-
 REDLED=$(busybox ls -1 /sys/class/leds|grep "red\|LED1_R")
 GREENLED=$(busybox ls -1 /sys/class/leds|grep "green\|LED1_G")
 BLUELED=$(busybox ls -1 /sys/class/leds|grep "blue\|LED1_B")
@@ -60,7 +26,6 @@ SETLED() {
 
         if [ "$1" = "on" ]; then
 
-                TECHOL "Turn on LED R: $2 G: $3 B: $4"
                 echo "$2" > ${BRIGHTNESS_LED_RED}
                 echo "$3" > ${BRIGHTNESS_LED_GREEN}
                 echo "$4" > ${BRIGHTNESS_LED_BLUE}
@@ -74,7 +39,6 @@ SETLED() {
 
         else
 
-                TECHOL "Turn off LED"
                 echo "0" > ${BRIGHTNESS_LED_RED}
                 echo "0" > ${BRIGHTNESS_LED_GREEN}
                 echo "0" > ${BRIGHTNESS_LED_BLUE}
@@ -111,6 +75,40 @@ if [ $REMAINING -gt 0 ]; then
 fi
 
 echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
+
+echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
+
+SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
+
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
+
+# Initialize system clock.
+if [ "$(getprop persist.sys.timezone)" != "" ]; then
+
+	export TZ=$(getprop persist.sys.timezone)
+	echo "Set $(getprop persist.sys.timezone) timezone..." >> /tmp/xzdr.log
+
+else
+
+	export TZ="GMT"
+	echo "Set GMT timezone..." >> /tmp/xzdr.log
+
+fi
+
+/system/bin/time_daemon &
+
+/sbin/busybox sleep 2
+
+/sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
+
+/sbin/busybox sleep 2
+
+/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
+
+echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
 # Returning values to their original settings
 export LD_LIBRARY_PATH="$_LDLIBPATH"

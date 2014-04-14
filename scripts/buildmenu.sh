@@ -1,9 +1,9 @@
 #! /bin/bash
 
-MAJOR=`cat $WORKDIR/scripts/version`
-MINOR=`cat $WORKDIR/scripts/minor`
-REVISION=`cat $WORKDIR/scripts/revision`
-RELEASE=`cat $WORKDIR/scripts/release`
+#MAJOR=`cat $WORKDIR/scripts/version`
+#MINOR=`cat $WORKDIR/scripts/minor`
+#REVISION=`cat $WORKDIR/scripts/revision`
+#RELEASE=`cat $WORKDIR/scripts/release`
 
 source scripts/recovery.sh
 source scripts/kernel.sh
@@ -27,8 +27,6 @@ dualrecovery_action_menu_opt() {
 	echo ""
 	echo "          R/ Recovery menu"
 	echo ""
-        echo "          V/ Version Menu"
-        echo ""
 	echo "          U/ Upload Files"
 	echo ""
         echo "          D/ Back to Device menu"
@@ -41,7 +39,6 @@ dualrecovery_action_menu_opt() {
 	        b|B) clear; buildlockedparts_menu_opt;;
 	        k|K) clear; buildkernelparts_menu_opt;;
 	        r|R) clear; recovery_menu_opt;;
-                v|V) clear; version_menu_opt;;
 	        u|U) clear; uploadfiles; dualrecovery_action_menu_opt;;
 		d|D) clear; dualrecovery_menu_opt;;
         	q|Q) clear; exit;;

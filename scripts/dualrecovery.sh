@@ -17,29 +17,45 @@ if [ ! -d "$WORKDIR/tmp" ]; then
 	mkdir $WORKDIR/tmp
 fi
 
+MAJOR=`cat $WORKDIR/scripts/version`
+MINOR=`cat $WORKDIR/scripts/minor`
+REVISION=`cat $WORKDIR/scripts/revision`
+RELEASE=`cat $WORKDIR/scripts/release`
+
 dualrecovery_menu_opt() {
 	clear
 	echo ""
 	echo ""
 	echo " Xperia DualRecovery Device Menu"
 	echo ""
-	echo "          1 / Xperia Z"
-	echo "          2 / Xperia Z1"
-	echo "          3 / Xperia ZU"
-	echo "          4 / Xperia ZL"
-	echo "          5 / Xperia TabZ"
-	echo "          6 / Xperia Z1 Compact"
-	echo "          7 / Xperia ZR"
+        echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
+        echo "          Current type: ${RELEASE}"
+	echo ""
+	echo "          1 / Xperia Z		(x)"
+	echo "          2 / Xperia Z1		(x)"
+	echo "          3 / Xperia ZU		(x)"
+	echo "          4 / Xperia ZL		(x)"
+	echo "          5 / Xperia TabZ		(x)"
+	echo "          6 / Xperia Z1 Compact	(x)"
+	echo "          7 / Xperia ZR		(x)"
 	echo "          8 / Xperia J"
 	echo "          9 / Xperia P"
-	echo "          10/ Xperia T/TL/TX/V"
-	echo "          11/ Xperia SP"
+	echo "          10/ Xperia T/TL/TX/V	(x)"
+	echo "          11/ Xperia SP		(x)"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
 		echo ""
 	fi
-	echo "          Q/ Quit"
+	echo "          I / Increment Revision"
+	echo ""
+	echo "          V/ Version Menu"
+	echo ""
+	echo "          U / Upload Available Builds"
+	echo ""
+	echo "          A / Rebuild all (x) marked devices"
+	echo ""
+	echo "          Q / Quit"
 	echo ""
 	echo "    Enter option:"
 	echo ""
@@ -56,10 +72,89 @@ dualrecovery_menu_opt() {
 	        9) clear; buildp;;
 	        10) clear; buildt;;
 	        11) clear; buildsp;;
+		i|I) clear; incrrev;;
+		v|V) clear; version_menu_opt;;
+		u|U) clear; uploadallfiles;;
+		a|A) clear; buildallxed;;
         	b|B) clear; projects_menu_opt;;
         	q|Q) clear; exit;;
         	*) echo "$num is not a valid option"; sleep 3; clear; dualrecovery_menu_opt;
 	esac
+}
+
+loadsources() {
+	source scripts/recovery.sh
+	source scripts/kernel.sh
+	source scripts/version.sh
+	source scripts/upload.sh
+	source scripts/build.sh
+}
+
+buildallxed() {
+	echo "Rebuild all? (y/n)"
+	read answer
+	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		loadsources
+		echo "Include kernel versions? (y/n)"
+		read answer
+
+		buildxz auto
+		doall
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			doallkernel
+		fi
+
+		buildz1 auto
+		doall
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			doallkernel
+		fi
+
+		buildzu auto
+		doall
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			doallkernel
+		fi
+
+		buildzl auto
+		doall
+
+		buildtabz auto
+		doall
+
+		buildz1c auto
+		doall
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			doallkernel
+		fi
+
+		buildzr auto
+		doall
+
+		buildt auto
+		doall
+
+		buildsp auto
+		doall
+
+	fi
+	uploadallfiles
+}
+
+incrrev() {
+	echo "Increment revision? (y/n)"
+	read answer
+	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		incrrevision
+	fi
+}
+
+uploadallfiles() {
+	echo "Upload files now? (y/n)"
+	read answer
+	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		uploadfiles all
+	fi
 }
 
 buildxz() {
@@ -76,8 +171,10 @@ buildxz() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="yes"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildzr() {
@@ -93,8 +190,10 @@ buildzr() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildz1() {
@@ -112,8 +211,10 @@ buildz1() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="yes"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildzu() {
@@ -131,8 +232,10 @@ buildzu() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildzl() {
@@ -149,8 +252,10 @@ buildzl() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildtabz() {
@@ -167,8 +272,10 @@ buildtabz() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildz1c() {
@@ -185,8 +292,10 @@ buildz1c() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildj() {
@@ -202,8 +311,10 @@ buildj() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildp() {
@@ -219,8 +330,10 @@ buildp() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildt() {
@@ -237,8 +350,10 @@ buildt() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="yes"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 buildsp() {
@@ -255,8 +370,10 @@ buildsp() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="no"
-        source scripts/buildmenu.sh
-	dualrecovery_action_menu_opt
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
 }
 
 # Fire up the menu
