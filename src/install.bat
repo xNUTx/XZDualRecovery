@@ -115,7 +115,7 @@ if "!menu_decision!" == "3" (
 	echo.
 	echo NOTE: this only works on certain ROM/Kernel versions!
 	echo.
-	echo If it fails, please check the development thread (Post #2) on XDA for more details.
+	echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
 	echo.
 	echo REMEMBER THIS:
 	echo.

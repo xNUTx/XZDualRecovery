@@ -35,7 +35,7 @@ dualrecovery_menu_opt() {
 	echo "          2 / Xperia Z1		(x)"
 	echo "          3 / Xperia ZU		(x)"
 	echo "          4 / Xperia ZL		(x)"
-	echo "          5 / Xperia TabZ		(x)"
+	echo "          5 / Xperia TabZ	(x)"
 	echo "          6 / Xperia Z1 Compact	(x)"
 	echo "          7 / Xperia ZR		(x)"
 	echo "          8 / Xperia J"
@@ -138,18 +138,22 @@ buildallxed() {
 		doall
 
 	fi
-	uploadallfiles
+	uploadallfiles auto
 }
 
 incrrev() {
 	echo "Increment revision? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+		loadsources
 		incrrevision
 	fi
 }
 
 uploadallfiles() {
+	if [ "$*" != "auto" ]; then
+		loadsources
+	fi
 	echo "Upload files now? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
