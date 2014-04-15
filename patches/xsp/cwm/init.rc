@@ -60,7 +60,8 @@ on init
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
     # Starting the XZDR fix script before anything else gets started      
-    start xzdualrecovery
+    # start xzdualrecovery
+    exec /sbin/xzdualrecovery.sh
 
 on boot
 

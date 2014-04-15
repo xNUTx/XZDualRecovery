@@ -61,21 +61,6 @@ FLASHLED() {
 	FLASHLED
 }
 
-for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
-	BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i \"name\" | awk -F':\t' '{print $2}')
-	if [ "$BINARY" != "" ]; then
-		echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
-		kill -9 $LOCKINGPID
-	fi
-done
-
-REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
-if [ $REMAINING -gt 0 ]; then
-	FLASHLED
-fi
-
-echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
-
 echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
 SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
@@ -101,14 +86,31 @@ fi
 
 /sbin/busybox sleep 2
 
-/sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
+/sbin/busybox killall -9 time_daemon 2>&1 >> /tmp/xzdr.log
 
-/sbin/busybox sleep 2
+/sbin/busybox umount -f /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox umount -f /data 2>&1 >> /tmp/xzdr.log
 
-/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
+/sbin/busybox sleep 3
 
 echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
+
+echo "Anti-Filesystem-Lock starting." >> /tmp/xzdr.log
+
+for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+	BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i \"name\" | awk -F':\t' '{print $2}')
+	if [ "$BINARY" != "" ]; then
+		echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
+		kill -9 $LOCKINGPID
+	fi
+done
+
+REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
+if [ $REMAINING -gt 0 ]; then
+	FLASHLED
+fi
+
+echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
 
 # Returning values to their original settings
 export LD_LIBRARY_PATH="$_LDLIBPATH"
