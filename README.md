@@ -16,6 +16,7 @@ Currently supported are:
 * Sony Xperia Z1
 * Sony Xperia Z1 Compact
 * Sony Xperia T/V/TX/TL
+* Sony Xperia SP
 
 The main device menu is split up in to 3 major parts, 'Build' and 'Recovery'.
 
