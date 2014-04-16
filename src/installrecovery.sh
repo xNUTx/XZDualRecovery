@@ -30,10 +30,11 @@ gpioKeysSearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+                        return 0
                 fi
 
         done
+	return 1
 }
 
 # Find the power key node, to listen on the right input event
@@ -45,7 +46,7 @@ pwrkeySearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+                        return 0
                 fi
 
         done
@@ -56,10 +57,11 @@ pwrkeySearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+                        return 0
                 fi
 
         done
+	return 1
 }
 
 
@@ -232,11 +234,27 @@ DRSETPROP dr.release.type $(DRGETPROP release)
 
 echo ""
 echo "============================================="
-echo "DEVICE WILL NOW REBOOT!"
+echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
 echo "============================================="
 echo ""
 
 /system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
 if [ "$?" != "0" ]; then
+
+	echo ""
+	echo "============================================="
+	echo "If you want the installer to clean up after itself, reboot to system after entering recovery for the first time!"
+	echo "============================================="
+	echo ""
+
 	reboot
+
+else
+
+	echo ""
+	echo "============================================="
+	echo "Your installation has already cleaned up after itself if you see the install.bat/install.sh exit."
+	echo "============================================="
+	echo ""
+
 fi
