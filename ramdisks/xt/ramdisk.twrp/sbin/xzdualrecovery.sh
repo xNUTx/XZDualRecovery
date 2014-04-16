@@ -61,28 +61,17 @@ FLASHLED() {
 	FLASHLED
 }
 
-for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
-	BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i \"name\" | awk -F':\t' '{print $2}')
-	if [ "$BINARY" != "" ]; then
-		echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
-		kill -9 $LOCKINGPID
-	fi
-done
-
-REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
-if [ $REMAINING -gt 0 ]; then
-	FLASHLED
-fi
-
-echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
-
 echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
-SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
+if [ "$(cat /proc/mounts | grep '/system' | wc -l)" = "0" ]; then
+	SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+	/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
+fi
 
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
+if [ "$(cat /proc/mounts | grep '/data' | wc -l)" = "0" ]; then
+	USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
+	/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
+fi
 
 # Initialize system clock.
 if [ "$(getprop persist.sys.timezone)" != "" ]; then
@@ -103,12 +92,29 @@ fi
 
 /sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
 
-/sbin/busybox sleep 2
-
-/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
-
 echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
+
+echo "Anti-Filesystem-Lock starting." >> /tmp/xzdr.log
+
+for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+	BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i "name" | awk -F':\t' '{print $2}')
+	if [ "$BINARY" != "" ]; then
+		echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xzdr.log
+		kill -9 $LOCKINGPID
+	fi
+done
+
+REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
+if [ $REMAINING -gt 0 ]; then
+	FLASHLED
+fi
+
+/sbin/busybox umount -f /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox umount -f /data 2>&1 >> /tmp/xzdr.log
+
+/sbin/busybox sleep 3
+
+echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
 
 # Returning values to their original settings
 export LD_LIBRARY_PATH="$_LDLIBPATH"

@@ -60,8 +60,7 @@ on init
     write /sys/fs/selinux/enforce 0
 
     # Starting the XZDR fix script before anything else gets started      
-    # start xzdualrecovery
-    exec /sbin/xzdualrecovery.sh
+    start xzdualrecovery
 
 on boot
 
