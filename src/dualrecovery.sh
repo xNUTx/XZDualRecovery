@@ -257,11 +257,12 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 			fi
 		done
 
-		for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
-			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i \"name\" | awk -F':\t' '{print $2}')
+		# Preemptive strike against locking applications
+		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | grep "/bin\|/system\|/data\|/cache" | awk '{print $1}'`; do
+			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i "name" | awk -F':\t' '{print $2}')
 			if [ "$BINARY" != "" ]; then
-				ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
-				EXECL kill -9 $LOCKINGPID
+				ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!"
+				EXECL killall $BINARY
 			fi
 		done
 

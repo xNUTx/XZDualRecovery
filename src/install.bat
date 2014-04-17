@@ -115,7 +115,7 @@ if "!menu_decision!" == "3" (
 	echo.
 	echo NOTE: this only works on certain ROM/Kernel versions!
 	echo.
-	echo If it fails, please check the development thread on XDA for more details.
+	echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
 	echo.
 	echo REMEMBER THIS:
 	echo.
@@ -128,13 +128,8 @@ if "!menu_decision!" == "3" (
 	adb shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
 )
 
-echo Waiting for your device to reconnect.
-echo After entering CWM for the first time, reboot to system to complete this installer if you want it to clean up after itself.
-
 adb wait-for-device
-
 adb shell "rm -r /data/local/tmp/recovery"
-
 adb kill-server
 
 echo.

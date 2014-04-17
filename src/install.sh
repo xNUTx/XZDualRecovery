@@ -19,10 +19,10 @@ rootappmenu() {
 	clear
 	echo "=============================================="
 	echo "=                                            ="
-	echo "=              XZDualRecovery                ="
-	echo "=           Maintained by [NUT]              ="
+	echo "=               XZDualRecovery               ="
+	echo "=            Maintained by [NUT]             ="
 	echo "=                                            ="
-	echo "=  For Xperia Z, ZL, Z1, Z Ultra & Tablet Z  ="
+	echo "=      For many Sony Xperia devices!         ="
 	echo "=                                            ="
 	echo "=============================================="
 	echo ""
@@ -38,8 +38,8 @@ rootappmenu() {
 	echo ""
 	read num
 	case $num in
-	        1) clear; echo "Ajusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
-	        2) clear; echo "Ajusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
+	        1) clear; echo "Adjusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
+	        2) clear; echo "Adjusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
 	        3) clear; echo "Will attempt to get root to install!"; SUPERAPP="getroot"; runinstall;;
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
@@ -106,7 +106,7 @@ runinstall() {
 		echo ""
 		echo "NOTE: this only works on certain ROM/Kernel versions!"
 		echo ""
-		echo "If it fails, please check the development thread on XDA for more details."
+		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
 		echo "============================================="
 
 		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
@@ -123,8 +123,6 @@ runinstall() {
 		echo "============================================="
 	fi
 
-	echo "Waiting for your device to reconnect."
-	echo "After entering CWM for the first time, reboot to system to complete this installer if you want it to clean up after itself."
 	./${ADBBINARY} wait-for-device
 	./${ADBBINARY} shell "rm -rf /data/local/tmp/recovery"
 	./${ADBBINARY} kill-server

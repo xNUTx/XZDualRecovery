@@ -24,7 +24,7 @@ DRGETPROP() {
 
 ROMVER=$(DRGETPROP ro.build.id)
 
-if [ "$ROMVER" = "14.2.A.0.290" -o "$ROMVER" = "14.2.A.1.136" -o "$ROMVER" = "14.2.A.1.114" -o "$ROMVER" = "14.3.A.0.681" -o "14.3.A.0.757" ]; then
+if [ "$ROMVER" = "14.2.A.0.290" -o "$ROMVER" = "14.2.A.1.136" -o "$ROMVER" = "14.2.A.1.114" -o "$ROMVER" = "14.3.A.0.681" -o "$ROMVER" = "14.3.A.0.757" ]; then
 
 	cp /tmp/disableric /system/xbin/
 	chmod 755 /system/xbin/disableric

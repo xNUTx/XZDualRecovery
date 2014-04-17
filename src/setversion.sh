@@ -20,10 +20,11 @@ gpioKeysSearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+                        return 0
                 fi
 
         done
+	return 1
 }
 
 # Find the power key node, to listen on the right input event
@@ -35,7 +36,7 @@ pwrkeySearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+			return 0
                 fi
 
         done
@@ -46,10 +47,11 @@ pwrkeySearch() {
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         echo "/dev/${INPUTDEV}"
-                        break
+			return 0
                 fi
 
         done
+	return 1
 }
 
 DRGETPROP() {

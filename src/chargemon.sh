@@ -165,10 +165,11 @@ gpioKeysSearch() {
 		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
 			TECHOL "Found and will be using /dev/${INPUTDEV}!"
 			echo "/dev/${INPUTDEV}"
-			break
+			return 0
 		fi
 
 	done
+	return 1
 }
 
 # Find the power key node, to listen on the right input event
@@ -182,7 +183,7 @@ pwrkeySearch() {
 		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
 			TECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
 			echo "/dev/${INPUTDEV}"
-			break
+			return 0
 		fi
 
 	done
@@ -194,10 +195,11 @@ pwrkeySearch() {
 		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
 			TECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
 			echo "/dev/${INPUTDEV}"
-			break
+			return 0
 		fi
 
 	done
+	return 1
 }
 
 NOGOODBUSYBOX="true"
@@ -232,6 +234,7 @@ if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
 	$SECUREDIR/busybox cp $SECUREDIR/busybox /system/xbin/
 	chmod 755 /system/xbin/busybox
 	BUSYBOX="/system/xbin/busybox"
+	rm /system/etc/.xzdrbusybox
 	${BUSYBOX} mount -o remount,ro /system
 
 fi

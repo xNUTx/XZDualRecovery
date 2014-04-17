@@ -16,14 +16,10 @@ copysource() {
 }
 
 doall() {
-	echo "Increment revision? (y/n)"
-	read answer
-	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		incrrevision
-	fi
 	cleanuptmp
 	cleanupout lockeddualrecovery
 	copysource
+	recoverypatcher auto
 	maketwrp $PACKRAMDISK auto
 	makecwm $PACKRAMDISK auto
 	makephilz $PACKRAMDISK auto
@@ -32,24 +28,15 @@ doall() {
 	fi
 	packflashable
 	packinstaller
-	echo "Upload files now? (y/n)"
-	read answer
-	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		uploadfiles lockeddualrecovery
-	fi
 }
 
 doallkernel() {
-	echo "Increment revision? (y/n)"
-	read answer
-	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		incrrevision
-	fi
 	cleanuptmp
 	cleanupout XZDRKernel
 	copysource
 	selectkernel
 	unpackkernel auto
+	recoverypatcher auto
 	maketwrp $PACKKERNELRAMDISK auto
 	makecwm $PACKKERNELRAMDISK auto
 	makephilz $PACKKERNELRAMDISK auto
@@ -57,12 +44,6 @@ doallkernel() {
 	packramdisk auto
 	packkernel auto
 	packflashablekernel
-	sideloadkernel auto
-	echo "Upload files now? (y/n)"
-	read answer
-	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-		uploadfiles XZDRKernel
-	fi
 }
 
 packflashablekernel() {
