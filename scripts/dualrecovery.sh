@@ -385,7 +385,7 @@ buildsp() {
 	fi
 }
 
-buildsp() {
+builds() {
         cd $WORKDIR
 	LABEL="XS"
 	DRPATH="xs"
