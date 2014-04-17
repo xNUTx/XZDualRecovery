@@ -4,3 +4,6 @@ import /init.original.rc
 
 on early-fs
     exec /sbin/xzdr.sh
+
+on boot
+    setprop dr.xzdr.install true
