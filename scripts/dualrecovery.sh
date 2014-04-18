@@ -42,6 +42,7 @@ dualrecovery_menu_opt() {
 	echo "          9 / Xperia P"
 	echo "          10/ Xperia T/TL/TX/V	(x)"
 	echo "          11/ Xperia SP		(x)"
+	echo "          12/ Xperia S		(x)"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -72,6 +73,7 @@ dualrecovery_menu_opt() {
 	        9) clear; buildp;;
 	        10) clear; buildt;;
 	        11) clear; buildsp;;
+	        12) clear; builds;;
 		i|I) clear; incrrev;;
 		v|V) clear; version_menu_opt;;
 		u|U) clear; uploadallfiles;;
@@ -137,6 +139,9 @@ buildallxed() {
 		buildsp auto
 		doall
 
+		builds auto
+		doall
+		
 	fi
 	uploadallfiles auto
 }
@@ -366,6 +371,26 @@ buildsp() {
 	DRPATH="xsp"
 	CODENAME="huashan"
 	REPO="cm11.0"
+	BUILDPHILZ="yes"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+builds() {
+        cd $WORKDIR
+	LABEL="XS"
+	DRPATH="xs"
+	CODENAME="nozomi"
+	REPO="jellybean"
 	BUILDPHILZ="yes"
 	BASE="0x80200000"
 	RAMDISKOFFSET="0x02000000"
