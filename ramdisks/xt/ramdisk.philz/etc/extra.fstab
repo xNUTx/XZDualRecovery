@@ -1,3 +1,0 @@
-#/dev/block/platform/msm_sdcc.1/by-name/SDCard           /sdcard         ext4    defaults
-#/dev/block/mmcblk1p1                                    /external_sd    vfat    defaults
-
