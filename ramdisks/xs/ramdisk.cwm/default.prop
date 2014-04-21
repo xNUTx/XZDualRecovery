@@ -40,6 +40,8 @@ ro.build.fingerprint=SEMC/LT26i_1257-5499/LT26i:4.0.4/6.1.A.2.50/zfd_zw:user/rel
 ro.build.characteristics=nosdcard
 ro.cm.device=nozomi
 # end build properties
+# Make keys in CWM repeatable
+ro.cwm.enable_key_repeat=true
 #
 # from device/sony/nozomi/system.prop
 #
