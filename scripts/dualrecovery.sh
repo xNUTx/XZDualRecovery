@@ -390,7 +390,7 @@ builds() {
 	LABEL="XS"
 	DRPATH="xs"
 	CODENAME="nozomi"
-	REPO="jellybean"
+	REPO="cm11.0"
 	BUILDPHILZ="yes"
 	BASE="0x80200000"
 	RAMDISKOFFSET="0x02000000"

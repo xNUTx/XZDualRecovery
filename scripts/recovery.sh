@@ -245,7 +245,10 @@ compiletwrp() {
 		repo sync
 	fi
 	source build/envsetup.sh
-	breakfast ${CODENAME}
+	if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
+	curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+	else
+ 	breakfast ${CODENAME}
 	export USE_CCACHE=1
 	time make -j5 recoveryimage
 	if [ "$1" = "auto" ]; then
@@ -265,6 +268,9 @@ compilephilz() {
 		repo sync
 	fi
 	source build/envsetup.sh
+	if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
+	curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+	else
 	breakfast ${CODENAME}
 	export USE_CCACHE=1
 	time make -j5 recoveryimage
@@ -285,6 +291,9 @@ compilecwm() {
 		repo sync
 	fi
 	source build/envsetup.sh
+	if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
+	curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+	else
 	breakfast ${CODENAME}
 	export USE_CCACHE=1
 	time make -j5 recoveryimage
