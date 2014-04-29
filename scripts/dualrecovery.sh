@@ -141,7 +141,6 @@ buildallxed() {
 
 		builds auto
 		doall
-		
 	fi
 	uploadallfiles auto
 }
