@@ -10,20 +10,24 @@ export PATH="/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
 
 #https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
 #The busybox in all of the recoveries has not yet been patched to take this in account.
-/sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-num/ -iname "p12")
+/sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 
 # Making darn sure sysfs has been mounted, otherwise the LED control will fail.
 if [ "$(/sbin/busybox cat /proc/mounts | /sbin/busybox grep 'sysfs' | /sbin/busybox grep '/sys' | /sbin/busybox wc -l)" = "0" ]; then
 	/sbin/busybox mount -t sysfs sysfs /sys
 fi
 
+REDLED=$(/sbin/busybox ls -1 /sys/class/leds | /sbin/busybox grep "red\|LED1_R")
+GREENLED=$(/sbin/busybox ls -1 /sys/class/leds | /sbin/busybox grep "green\|LED1_G")
+BLUELED=$(/sbin/busybox ls -1 /sys/class/leds | /sbin/busybox grep "blue\|LED1_B")
+
 SETLED() {
-        BRIGHTNESS_LED_RED="/sys/class/leds/red/brightness"
-        CURRENT_LED_RED="/sys/class/leds/red/led_current"
-        BRIGHTNESS_LED_GREEN="/sys/class/leds/green/brightness"
-        CURRENT_LED_GREEN="/sys/class/leds/green/led_current"
-        BRIGHTNESS_LED_BLUE="/sys/class/leds/blue/brightness"
-        CURRENT_LED_BLUE="/sys/class/leds/blue/led_current"
+        BRIGHTNESS_LED_RED="/sys/class/leds/$REDLED/brightness"
+        CURRENT_LED_RED="/sys/class/leds/$REDLED/led_current"
+        BRIGHTNESS_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
+        CURRENT_LED_GREEN="/sys/class/leds/$GREENLED/led_current"
+        BRIGHTNESS_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
+        CURRENT_LED_BLUE="/sys/class/leds/$BLUELED/led_current"
 
         if [ "$1" = "on" ]; then
 
@@ -62,17 +66,36 @@ FLASHLED() {
 	FLASHLED
 }
 
+for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+	BINARY=$(ps | grep " $LOCKINGPID " | grep -v "grep" | awk '{print $5}')
+        echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
+	kill -9 $LOCKINGPID
+done
+
+REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
+if [ $REMAINING -gt 0 ]; then
+	FLASHLED
+fi
+
+echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
+
 echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
-if [ "$(/sbin/busybox cat /proc/mounts | /sbin/busybox grep '/system' | /sbin/busybox wc -l)" = "0" ]; then
-	SYSTEM=$(/sbin/busybox find /dev/block/platform/msm_sdcc.1/by-num/ -iname "p12")
-	/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
-fi
+#SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+#USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
 
-if [ "$(/sbin/busybox cat /proc/mounts | /sbin/busybox grep '/data' | /sbin/busybox wc -l)" = "0" ]; then
-	USERDATA=$(/sbin/busybox find /dev/block/platform/msm_sdcc.1/by-num/ -iname "p14")
-	/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
-fi
+#/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
+#/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
+
+/sbin/busybox mount /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox mount /data 2>&1 >> /tmp/xzdr.log
+
+#cp /system/bin/time_daemon /sbin/
+#/sbin/busybox find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
+#/sbin/busybox find /system -name "libqmi_client_qmux.so" -exec cp {} /sbin/ \;
+#/sbin/busybox find /system -name "libqmi_common_so.so" -exec cp {} /sbin/ \;
+#/sbin/busybox find /system -name "libqmi_encdec.so" -exec cp {} /sbin/ \;
+#/sbin/busybox find /system -name "libdiag.so" -exec cp {} /sbin/ \;
 
 # Initialize system clock.
 if [ "$(getprop persist.sys.timezone)" != "" ]; then
@@ -87,39 +110,18 @@ else
 
 fi
 
-#if [ "$1" = "time" ]; then
-
-	/sbin/busybox cp /system/bin/time_daemon /sbin/
-#	/system/bin/time_daemon &
-	/sbin/time_daemon &
-
-#	/sbin/busybox sleep 2
-
-#fi
-
-echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
-
-echo "Anti-Filesystem-Lock starting." >> /tmp/xzdr.log
-
-for LOCKINGPID in `/sbin/busybox lsof | /sbin/busybox awk '{print $1" "$2}' | /sbin/busybox grep "/bin\|/system\|/data\|/cache" | /sbin/busybox awk '{print $1}'`; do
-	BINARY=$(/sbin/busybox cat /proc/${LOCKINGPID}/status | /sbin/busybox grep -i "name" | /sbin/busybox awk -F':\t' '{print $2}')
-	if [ "$BINARY" != "" ]; then
-		echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xzdr.log
-		/sbin/busybox killall ${BINARY}
-	fi
-done
+/system/bin/time_daemon &
 
 /sbin/busybox sleep 2
 
-REMAINING=$(/sbin/busybox lsof | /sbin/busybox awk '{print $1" "$2}' | /sbin/busybox grep "/bin\|/system\|/data\|/cache" | wc -l)
-if [ $REMAINING -gt 0 ]; then
-	FLASHLED
-fi
+/sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
 
-/sbin/busybox umount /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox umount /data 2>&1 >> /tmp/xzdr.log
+/sbin/busybox sleep 2
 
-echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
+/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
+/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
+
+echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
 
 # Returning values to their original settings
 export LD_LIBRARY_PATH="$_LDLIBPATH"
