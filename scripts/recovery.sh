@@ -243,7 +243,7 @@ compiletwrp() {
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
-			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/XZDualRecovery/android_xzdr/cm-11.0/sony_nozomi.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
 		else
 			repo sync
 		fi
@@ -267,7 +267,7 @@ compilephilz() {
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
-			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/XZDualRecovery/android_xzdr/cm-11.0/sony_nozomi.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
 		else
 			repo sync
 		fi
@@ -291,7 +291,7 @@ compilecwm() {
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		if [ "$CODENAME" = "aoba" -o "$CODENAME" = "hikari" -o "$CODENAME" = "nozomi" ]; then
-			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/olivieer/cm-nozomi/cm-11.0/sony_fuji.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
+			curl --create-dirs -L -o .repo/local_manifests/local_manifest.xml -O -L https://raw.githubusercontent.com/XZDualRecovery/android_xzdr/cm-11.0/sony_nozomi.xml;repo sync;source build/envsetup.sh;lunch ${CODENAME}
 		else
 			repo sync
 		fi
