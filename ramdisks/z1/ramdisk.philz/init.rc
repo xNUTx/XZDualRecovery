@@ -12,7 +12,6 @@ on init
 
     symlink /system/etc /etc
 
-    mkdir /tmp
     mkdir /boot
     mkdir /recovery
     mkdir /sdcard
@@ -24,10 +23,7 @@ on init
     mkdir /system
     mkdir /data
     mkdir /cache
-    exec /sbin/busybox mount -t tmpfs tmpfs /tmp
-    exec /sbin/busybox mount -t sysfs sysfs /sys
-    exec /sbin/busybox mount -t proc proc /proc
-    exec /sbin/busybox mount -t devtmpfs devtmpfs /dev
+    mount tmpfs tmpfs /tmp
 
     chown root shell /tmp
     chmod 0775 /tmp
@@ -53,26 +49,24 @@ on init
     mount tmpfs tmpfs /mnt/fuse mode=0775,gid=1000
 
     write /sys/class/android_usb/android0/enable 0
-    write /sys/class/android_usb/android0/idVendor 0FCE
-    write /sys/class/android_usb/android0/idProduct 619E
+    write /sys/class/android_usb/android0/idVendor 18D1
+    write /sys/class/android_usb/android0/idProduct D001
     write /sys/class/android_usb/android0/functions adb
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
-    # Sony kernel, so lets set SELinux to permissive
-    write /sys/fs/selinux/enforce 0
 
-    # Starting the XZDR fix script before anything else gets started
-    start xzdualrecovery
-
-on early-boot
+on boot
 
     ifup lo
     hostname localhost
     domainname localdomain
 
     class_start default
+
+on property:sys.powerctl=*
+    powerctl ${sys.powerctl}
 
 service ueventd /sbin/ueventd
     critical
@@ -89,11 +83,6 @@ service adbd /sbin/adbd recovery
     disabled
     socket adbd stream 660 system system
 
-# This kills all filesystem locking applications still in memory and will attempt to fix the time.
-service xzdualrecovery /sbin/xzdualrecovery.sh
-    oneshot
-    disabled
-
 service vold /sbin/minivold
     socket vold stream 0660 root mount
     ioprio be 2
@@ -106,10 +95,12 @@ on property:service.adb.root=1
 
 on property:sys.storage.ums_enabled=1
     write /sys/class/android_usb/android0/enable 0
-    write /sys/class/android_usb/android0/functions adb,mass_storage
+    write /sys/class/android_usb/android0/idProduct D003
+    write /sys/class/android_usb/android0/functions mass_storage,adb
     write /sys/class/android_usb/android0/enable 1
 
 on property:sys.storage.ums_enabled=0
     write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/idProduct D001
     write /sys/class/android_usb/android0/functions adb
     write /sys/class/android_usb/android0/enable ${service.adb.root}
