@@ -1,4 +1,4 @@
-XZDualRecovery
+RecoveryKitchen
 ==============
 
 Dual Recovery for Xperia devices
