@@ -1,0 +1,18 @@
+# Android fstab file.
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
+
+#<src>                                      <mnt_point>       <type>    <mnt_flags and options>                                                                  <fs_mgr_flags>
+/dev/block/mmcblk0p6                        /modemfs          ext4      noatime,nosuid,nodev,nomblk_io_submit,errors=panic                                       wait,check
+/dev/block/mmcblk0p10                       /system           ext4      errors=panic                                                                             wait
+/dev/block/mmcblk0p11                       /data             ext4      nosuid,nodev,noatime,noauto_da_alloc,journal_async_commit,nomblk_io_submit,errors=panic  wait,check
+/dev/block/mmcblk0p12                       /cache            ext4      noatime,nosuid,nodev,nomblk_io_submit,errors=panic                                       wait,check
+
+/dev/block/mmcblk0p9                        /boot             emmc      defaults                                                                                 defaults
+/dev/block/mmcblk0p9                        /recovery         emmc      defaults                                                                                 defaults
+
+# Internal SD Card
+/devices/sdi4/mmc_host/mmc1/mmc1             auto             vfat      nosuid,nodev                                                                             voldmanaged=sdcard0:14,nonremovable,noemulatedsd
+
+# USB Disk
+/devices/platform/musb-ux500.0/musb-hdrc    /storage/usbdisk  auto      defaults                                                                                 wait,voldmanaged=usbdisk:auto

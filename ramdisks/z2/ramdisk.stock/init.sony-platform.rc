@@ -1,0 +1,186 @@
+#
+# init.sony-platform.rc
+#
+
+on init
+    # create directory for scd
+    mkdir /dev/socket/scd 0755 system system
+
+     # Enable ramdumps from subsystems to dump
+    write /sys/bus/msm_subsys/devices/subsys0/restart_level "RELATED"
+    write /sys/bus/msm_subsys/devices/subsys1/restart_level "RELATED"
+    write /sys/bus/msm_subsys/devices/subsys2/restart_level "RELATED"
+    write /sys/bus/msm_subsys/devices/subsys3/restart_level "RELATED"
+    
+
+    # Enable panic on out of memory
+    write /proc/sys/vm/panic_on_oom 2
+
+    # Create a tmpfs for dynamic network mounting
+    mkdir /storage/removable/remote  0700 root system
+    mount tmpfs tmpfs /storage/removable/remote mode=0755,uid=0,gid=0
+
+on fs
+    # SONY: Start the TrimArea Daemon. It must be started before fota-ua
+    class_start trimarea
+    exec /sbin/wait4tad_static
+
+    # SONY: Fota must be started directly after partitions are mounted and
+    # before anyone starts using the system partition (must be possible to unmount /system)
+    exec /sbin/fota-ua c
+
+    # SONY: Start early TA-users
+    exec /sbin/checkabortedflash
+    exec /system/bin/mr
+    exec /system/bin/wipedata
+    exec /system/bin/taimport
+
+on post-fs
+    exec /system/bin/chargemon.stock
+    write /sys/class/power_supply/battery/enable_stop_charging_at_low_battery 1
+
+on post-fs-data
+    # SONY: Camera
+    mkdir /data/camera 0770 media camera
+    chown media camera /sys/devices/sony_camera_0/info
+    chmod 0770 /sys/devices/sony_camera_0/info
+    chown media camera /sys/devices/sony_camera_1/info
+    chmod 0770 /sys/devices/sony_camera_1/info
+
+on early-boot
+    start ta_qmi_service
+    start sct_service
+
+on boot
+# VMware BEGIN
+# VMware MVP feature list
+    setprop ro.mvp.features srvc,mvpdaff,grbks,vpncrt,vpn,mvpdsec,wtp
+# VMware END
+
+    
+    
+
+    # Do not power down SIM in flight mode (required for Wi-Fi EAP-SIM)
+    setprop persist.radio.apm_sim_not_pwdn 1
+
+    # Change reset behavior to warm reset
+    
+
+    # Enable Sony RIC
+    # mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
+    # write /sys/kernel/security/sony_ric/enable 1
+
+
+
+
+
+on property:service.acccalib.start=service_setting
+    exec /system/bin/acc_cal_data_manager service_setting
+
+on property:service.calib.start=service_setting
+    exec /system/bin/cal_data_manager service_setting
+
+on property:service.proxcalib.start=service_setting
+    exec /system/bin/prox_cal_data_manager service_setting
+
+on property:service.proxcalib.start=service_setting_default
+    exec /system/bin/prox_cal_data_manager service_setting_default
+
+on property:gsm.nitz.time=*
+    exec /system/bin/scdnotifier nitz
+
+on property:init.svc.bootanim=stopped
+    start set-governor
+
+# SONY: TrimArea Daemon
+# Last 2 args: start block(blk size 128k), number of blocks(partitionsize(kb)/128(kb))
+service tad_static /sbin/tad_static /dev/block/mmcblk0 1,16
+    user root
+    group root
+    socket tad stream 0660 system trimarea
+    class trimarea
+
+service updatemiscta /system/bin/updatemiscta
+    class main
+    user root
+    oneshot
+
+# Trim Area QMI service
+service ta_qmi_service /system/bin/ta_qmi_service
+    user root
+    disabled
+
+# Secure Config Transfer service
+service sct_service /system/bin/sct_service
+    user root
+    disabled
+
+service set-governor /system/bin/sh /system/etc/set_governor.sh
+    user root
+    disabled
+    oneshot
+
+
+
+service illumination /system/bin/illumination_service
+    socket illumination stream 0660 root system
+    class main
+    user root
+
+service scd /system/bin/scd
+    class main
+    user system
+    group system
+
+
+
+# Regulatory domain handling
+service iw_command /system/bin/iw
+   disabled
+   oneshot
+
+# DxHDCP key provisioning
+on property:dev.bootcomplete=1
+   start dxhdcpd
+
+service dxhdcpd /system/bin/dxhdcpd
+   user system
+   group system
+   oneshot
+   disabled
+
+service remote_vold /system/bin/remote_vold
+    class core
+    socket vold_remote stream 0660 root media_rw
+    socket vold_fconn stream 0660 root media_rw
+
+service ssr_dump /system/bin/ssrapp
+   class main
+   user root
+
+
+
+# VMware BEGIN
+# VMware MVP Hypervisor daemon
+# DO NOT REMOVE THIS COMMENT MVP_FEATURE_srvc
+# DO NOT REMOVE THIS COMMENT MVP_FEATURE_mvpdaff
+service mvpd /system/bin/mvpd -F -a 14
+    class main
+    user root
+    disabled
+# VMware END
+
+service dhcpcd_eth0 /system/bin/dhcpcd -B -d -t 30
+    class late_start
+    disabled
+    oneshot
+
+# Start RIC
+service ric /sbin/ric
+    user root
+    group root
+    oneshot
+    class main
+    disabled
+
+import init.sony.rc

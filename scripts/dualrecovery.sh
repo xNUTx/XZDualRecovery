@@ -43,6 +43,7 @@ dualrecovery_menu_opt() {
 	echo "          10/ Xperia T/TL/TX/V	(x)"
 	echo "          11/ Xperia SP		(x)"
 	echo "          12/ Xperia S		(x)"
+	echo "          13/ Xperia Z2		(x)"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -74,6 +75,7 @@ dualrecovery_menu_opt() {
 	        10) clear; buildt;;
 	        11) clear; buildsp;;
 	        12) clear; builds;;
+	        13) clear; buildz2;;
 		i|I) clear; incrrev;;
 		v|V) clear; version_menu_opt;;
 		u|U) clear; uploadallfiles;;
@@ -85,11 +87,11 @@ dualrecovery_menu_opt() {
 }
 
 loadsources() {
-	source scripts/recovery.sh
-	source scripts/kernel.sh
-	source scripts/version.sh
-	source scripts/upload.sh
-	source scripts/build.sh
+	source $WORKDIR/scripts/recovery.sh
+	source $WORKDIR/scripts/kernel.sh
+	source $WORKDIR/scripts/version.sh
+	source $WORKDIR/scripts/upload.sh
+	source $WORKDIR/scripts/build.sh
 }
 
 buildallxed() {
@@ -140,6 +142,9 @@ buildallxed() {
 		doall
 
 		builds auto
+		doall
+
+		buildz2 auto
 		doall
 	fi
 	uploadallfiles auto
@@ -246,26 +251,6 @@ buildzu() {
 	fi
 }
 
-buildzl() {
-        cd $WORKDIR
-	LABEL="ZL"
-	DRPATH="zl"
-	CODENAME="odin"
-	REPO="cm11.0"
-	BUILDPHILZ="yes"
-	BASE="0x80200000"
-	RAMDISKOFFSET="0x02000000"
-	TAGS="no"
-	PAGESIZE="2048"
-	KERNEL="Kernel"
-	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
-	if [ "$*" != "auto" ]; then
-		source scripts/buildmenu.sh
-		dualrecovery_action_menu_opt
-	fi
-}
-
 buildtabz() {
         cd $WORKDIR
 	LABEL="TabZ"
@@ -311,7 +296,7 @@ buildj() {
 	LABEL="XJ"
 	DRPATH="xj"
 	CODENAME="jlo"
-	REPO="jellybean"
+	REPO="cm11.0"
 	BASE="0x80200000"
 	RAMDISKOFFSET="0x02000000"
 	TAGS="no"
@@ -330,7 +315,7 @@ buildp() {
 	LABEL="XP"
 	DRPATH="xp"
 	CODENAME="nypon"
-	REPO="jellybean"
+	REPO="cm11.0"
 	BASE="0x80200000"
 	RAMDISKOFFSET="0x02000000"
 	TAGS="no"
@@ -394,6 +379,27 @@ builds() {
 	BASE="0x80200000"
 	RAMDISKOFFSET="0x02000000"
 	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+buildz2() {
+        cd $WORKDIR
+	LABEL="Z2"
+	DRPATH="z2"
+	CODENAME="sirius"
+	REPO="cm11.0"
+	BUILDPHILZ="yes"
+	BASE="0x00000000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"

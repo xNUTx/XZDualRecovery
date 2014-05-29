@@ -1,0 +1,89 @@
+#!/sbin/sh
+
+
+cat /sys/devices/platform/ab8500-i2c.0/ab8500-usb.0/boot_time_device > /sys/devices/platform/ab8500-i2c.0/ab8500-usb.0/boot_time_device
+
+echo 0 >/sys/class/android_usb/android0/enable
+echo 0FCE >/sys/class/android_usb/android0/idVendor
+echo 617E >/sys/class/android_usb/android0/idProduct
+echo "mass_storage,adb" >/sys/class/android_usb/android0/functions
+echo 1 >/sys/class/android_usb/android0/enable
+
+# triget button-backlight
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/button-backlight/brightness
+
+#trigger white, red, orange, yellow, green, blue, purple LED :)
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '50' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '255' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+usleep 300000
+
+# trigger vibration
+echo '200' > /sys/class/timed_output/vibrator/enable
+
+# disable button-backlight
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/button-backlight/brightness
+
+# disable LEDs
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/red/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/green/brightness
+echo '0' > /sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/blue/brightness
+
+cat /dev/input/event2 > /dev/keycheck &
+sleep 3
+
+kill -9 $!
+
+if [ -s /dev/keycheck -o -e /cache/recovery/boot ]
+then
+
+  rm -r /cache/recovery/boot
+
+  stop ta_rmt_service
+  stop rmt_storage
+  stop tad
+  stop cspsa
+
+  mount -o remount,rw rootfs /
+  umount -l /system
+  umount -l /data
+  umount -l /cache
+  umount -l /storage
+  rm -r *.rc
+  rm -r /etc
+  rm -r /tmp
+  mkdir /etc
+  mkdir /tmp
+
+  cd / && gunzip < /sbin/recovery_ramdisk.gz | cpio -i -d
+  chroot / /init
+
+fi
+
+# continue booting
+# allways remount system ro
+  mount -o remount,ro /system

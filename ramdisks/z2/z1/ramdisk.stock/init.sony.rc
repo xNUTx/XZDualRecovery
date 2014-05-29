@@ -1,0 +1,152 @@
+import init.sony.usb.rc
+
+on init
+    mkdir /tmp
+    mount tmpfs tmpfs /tmp nosuid mode=0755,uid=0,gid=0
+    chmod 0664 /proc/rdtag
+    chown root system /proc/rdtag
+
+on fs
+    
+    mkdir /lta-label 0555 system system
+    wait /dev/block/platform/msm_sdcc.1/by-name/LTALabel
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/LTALabel /lta-label nosuid nodev noatime noexec ro barrier=0
+    chown system system /lta-label
+    chmod 0555 /lta-label
+
+on post-fs
+    # Change to socket location on libkeyctrl/suntory for /data encryption
+    mkdir /dev/socket/suntory 0755 system system
+
+on post-fs-data
+    mkdir /data/credmgr 0700 system system
+    mkdir /data/tombstones 0755 system system
+    mkdir /data/tombstones/vendor 0755 system system
+    mkdir /data/crashsms 0711 system system
+    mkdir /data/crashsms/crashes 0755 system system
+    mkdir /data/app-skin 0771 system system
+    mkdir /data/smime 0770 root smime_keystore
+    mkdir /data/pc 0700 radio radio
+    mkdir /data/mediaserver 0740 media media
+    
+    # Remove lost+found in user and userdebug
+    exec /system/bin/rm -r /data/lost+found
+    
+    mkdir /data/lost+found 0770 root root
+    exec /system/bin/rm -r /cache/lost+found
+    
+    mkdir /cache/lost+found 0770 root root
+    exec /system/bin/rm -r /mnt/idd/lost+found
+    
+    mkdir /mnt/idd/lost+found 0770 root root
+
+on early-boot
+    exec /system/bin/sh /system/etc/pre_hw_config.sh
+
+on boot
+    exec /system/bin/taimport property
+
+    # Configurate TCP/IP kernel settings
+    exec /system/bin/sh /system/etc/init.netconfig.sh
+
+    # Install exfat module to support exfat file system
+    insmod /system/lib/modules/texfat.ko
+
+    # Disable C_A_D
+    exec system/bin/ctrlaltdel soft
+
+    # Configure coredumps
+    
+    
+
+
+    
+
+
+on property:dev.bootcomplete=1
+    start fota-snoop
+    start fota-trigger
+
+# Fast Dormancy
+on property:ro.semc.enable.fast_dormancy=false
+    stop fast-dormancy
+
+# klogger and klogrouter service switch
+on property:persist.sys.kernel.log=logcat
+    stop klogger
+    start klogrouter
+
+on property:persist.sys.kernel.log=file
+    stop klogrouter
+    start klogger
+
+on property:persist.sys.kernel.log=disable
+    stop klogger
+    stop klogrouter
+
+
+
+
+
+# klogger service
+service klogger /system/bin/kernel_log_redirector file
+    oneshot
+    disabled
+
+# klogrouter service
+service klogrouter /system/bin/kernel_log_redirector logcat
+    oneshot
+    disabled
+
+service fast-dormancy /system/bin/fast-dormancy
+    user root
+    group root inet net_raw net_admin
+    class main
+
+# Start suntrold
+service suntrold /system/bin/suntrold
+    user system
+    group system
+    oneshot
+    class main
+
+# Start Credential manager daemon
+service credmgrd /system/bin/credmgrd
+    user system
+    group system
+    socket credmgr stream 0660 system system
+    class main
+
+#Start crashmonitor native service
+
+
+# Native helper for SuperStamina
+service xssm /system/bin/xssm
+    class main
+    socket xssm stream 0660 root system
+    socket prmd stream 0666 root system
+    socket xssm_wakelock_socket stream 0660 root system
+
+# Sony: FOTA snooping
+service fota-snoop /system/bin/fota-snoop
+    group cache
+    oneshot
+    disabled
+
+# Sony: FOTA trigger
+service fota-trigger /system/bin/fota-trigger
+    group cache
+    disabled
+
+# Start system_monitor
+service system_monitor /system/bin/system_monitor
+    socket sysmon stream 0660 root system
+    class core
+    user root
+    disabled
+
+on property:ro.somc.thermal=system_monitor
+    start system_monitor
+
+
+

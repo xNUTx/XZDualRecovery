@@ -1,0 +1,116 @@
+#Lights
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/lcd-backlight als_enable 0600 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/* delay_on 0660 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/* delay_off 0660 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/* brightness 0660 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0036/leds/* trigger 0600 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-002c/leds/* brightness 0660 system system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0040/leds/* brightness 0660 system system
+
+# NMF CM devices
+/dev/cm_channel           0660   media      system
+/dev/cm_control           0660   media      system
+
+# XTI trace device
+/dev/stm                  0660   media      system
+
+# modem driver - CS-Call
+/dev/modemaudio           0660   audio      audio
+/dev/db8500-modem-trace   0600   system     system
+/dev/dbx500_mloader_fw    0600   system     system
+
+#modem storage pipe
+/dev/rpc                  0600   radio      radio
+
+# camera and flash devices
+/dev/mmio_camera          0666   media      system
+/dev/camera_flash         0666   media      system
+
+# Sensor i2c
+/dev/i2c-2                0660   media      system
+
+# PWR QOS devices
+/dev/ape_opp              0660   system     graphics
+/dev/ddr_opp              0660   system     graphics
+
+# hwmem driver
+/dev/hwmem                0666   media      system
+
+# Mali 3D IP
+/dev/mali                 0666   system     graphics
+
+# B2R2 device
+/dev/b2r2_blt             0666   system     graphics
+
+# overlay device
+/dev/disp0                0666   system     graphics
+
+# compdev device
+/dev/comp0                0666   system     graphics
+/dev/comp1                0666   system     graphics
+
+# clonedev device
+/dev/clone0               0666   system     graphics
+
+# AT USB device - used by ATC
+/dev/ttyGS0               0060   root       radio
+
+# audio shm
+/dev/shm                  0660   audio      audio
+
+# Trusted Eexecution Engine
+/dev/tee                  0660   root       system
+
+#NFC device
+/dev/pn544                0600   nfc        nfc
+
+#MTP
+/dev/mtp                  0666   system     system
+
+#ALS
+/sys/bus/i2c/devices/2-0040/als_on 0666 system system
+
+# bluetooth
+/sys/devices/platform/cg2900.0/cg2900-uart.0/bluetooth/hci0/rfkill* state 0666 root bluetooth
+/dev/uinput               0660   system     bluetooth
+/dev/ttyAMA0              0660   bluetooth  bluetooth
+/dev/ttyAMA1              0660   bluetooth  bluetooth
+/dev/ttyAMA2              0660   bluetooth  bluetooth
+
+/sys/devices/platform/musb-ux500.0/musb-hdrc/usb* uevent 0660 root usb
+/dev/input/event10                                 0666 system system
+/sys/bus/i2c/devices/2-0037/als                    0666 system system
+/sys/bus/i2c/devices/2-0036/als_enable             0666 system system
+/sys/bus/i2c/devices/2-0053/status                 0666 system system
+/sys/bus/i2c/devices/2-0053/torch_enable           0666 system system
+/dev/rfkill                                        0660 wifi   wifi
+/sys/devices/av8100_hdmi* disponoff                0660 root system
+/sys/devices/av8100_hdmi* hdmisdtvswitch           0660 root system
+/dev/hdmi                                          0660 root system
+
+# STE CG2900
+/dev/cg2900_bt_audio      0660   system     system
+/dev/cg2900_fm_audio      0660   system     system
+/dev/cg2900_hci_logger    0660   system     system
+/dev/cg2900_bt_cmd        0660   system     system
+/dev/cg2900_bt_evt        0660   system     system
+/dev/cg2900_bt_acl        0660   system     system
+/dev/cg2900_fm_radio      0660   system     system
+/dev/cg2900_core          0660   system     system
+/dev/cg2900_core_test     0660   system     system
+/dev/cg2900_audio         0660   system     system
+/dev/cg2900_debug         0660   system     system
+/dev/cg2900_ste_tools     0660   system     system
+/dev/cg2900_hci_raw       0660   system     system
+/dev/cg2900_nfc           0777   nfc        nfc
+/dev/cg2900_gnss          0660   gps        gps
+/dev/radio0               0660   system     system
+
+# LM356x flash LED
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/flash_current               0666   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/flash_duration              0666   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/flash_enable                0666   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/flash_synchronization       0666   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/status                      0444   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/torch_current               0666   system     system
+/sys/devices/platform/nmk-i2c.2/i2c-2/2-0053/torch_enable                0666   system     system
