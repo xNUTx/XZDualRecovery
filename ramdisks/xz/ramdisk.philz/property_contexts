@@ -55,3 +55,9 @@ crypto.                 u:object_r:vold_prop:s0
 ctl.dumpstate           u:object_r:ctl_dumpstate_prop:s0
 ctl.ril-daemon          u:object_r:ctl_rildaemon_prop:s0
 ctl.                    u:object_r:ctl_default_prop:s0
+#line 1 "device/sony/fusion3-common/sepolicy/property_contexts"
+##########################
+# property service keys
+#
+#
+net.rmnet_usb0          u:object_r:radio_prop:s0
