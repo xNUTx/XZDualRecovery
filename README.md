@@ -11,12 +11,15 @@ Currently supported are:
 
 * Sony Xperia Z
 * Sony Xperia ZL
+* Sony Xperia ZR
 * Sony Xperia Tablet Z
 * Sony Xperia Z Ultra
 * Sony Xperia Z1
 * Sony Xperia Z1 Compact
 * Sony Xperia T/V/TX/TL
 * Sony Xperia SP
+* Sony Xperia Z2
+* Sony Xperia Tablet Z2
 
 The main device menu is split up in to 3 major parts, 'Build' and 'Recovery'.
 
