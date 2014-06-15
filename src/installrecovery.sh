@@ -119,6 +119,12 @@ echo "#"
 echo "#####"
 echo ""
 
+# Thanks to cubeundcube for this method!
+if [ -f "/data/local/tmp/recovery/ric_disabler" ]; then
+	echo "Disabling sony_ric kernel based protection."
+	/data/local/tmp/recovery/ric_disabler
+fi
+
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
 # Thanks to Androxyde for this method!
 RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
@@ -231,6 +237,13 @@ fi
 
 DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
+
+# if this switch is tripped, we signal for completion
+if [ "$1" = "vold" ]; then
+
+	${BUSYBOX} touch /data/local/tmp/xzdrinstalled
+
+fi
 
 echo ""
 echo "============================================="

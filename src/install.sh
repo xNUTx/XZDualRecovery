@@ -30,7 +30,7 @@ rootappmenu() {
 	echo ""
 	echo "          1/ Installation on device rooted with SuperSU"
 	echo "          2/ Installation on device rooted with SuperUser"
-	echo "          3/ Attempt installation on unrooted device"
+	echo "          3/ Attempt installation on an unrooted device"
 	echo ""
 	echo "          Q/ Exit"
 	echo ""
@@ -40,10 +40,40 @@ rootappmenu() {
 	case $num in
 	        1) clear; echo "Adjusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
 	        2) clear; echo "Adjusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
-	        3) clear; echo "Will attempt to get root to install!"; SUPERAPP="getroot"; runinstall;;
+	        3) clear; SUPERAPP="getroot"; unrootedrootmenu;;
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
 	esac
+}
+
+unrootedrootmenu() {
+
+	echo "=============================================="
+	echo "=                                            ="
+	echo "=               XZDualRecovery               ="
+	echo "=            Maintained by [NUT]             ="
+	echo "=                                            ="
+	echo "=      For many Sony Xperia devices!         ="
+	echo "=                                            ="
+	echo "=============================================="
+	echo ""
+	echo "          Choose the root method to use:"
+	echo ""
+	echo "          1/ Use the vold exploit developed by Sacha and GranPC"
+	echo "          2/ Use RootkitXperia by cubeundcube"
+	echo ""
+	echo "          B/ Back to main menu"
+	echo ""
+	echo "    Enter option:"
+	echo ""
+	read num
+	case $num in
+	        1) clear; echo "Will attempt the vold method by Sacha and GranPC!"; SUPERAPP="vold"; runinstall;;
+	        2) clear; echo "Will attempt the getroot method by Cubeundcube!"; SUPERAPP="getroot"; runinstall;;
+	        b|B) clear; rootappmenu;;
+	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
+	esac
+
 }
 
 runinstall() {
@@ -100,7 +130,56 @@ runinstall() {
 		./${ADBBINARY} shell "/system/xbin/su -c /data/local/tmp/recovery/install.sh"
 	fi
 
+	if [ "$SUPERAPP" = "vold" ]; then
+
+		echo "============================================="
+		echo "Attempting to get root access for installation using the vold exploit now."
+		echo ""
+		echo "NOTE: this only works on certain ROM/Kernel versions!"
+		echo ""
+		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
+		echo "============================================="
+
+		if [[ -n $(./${ADBBINARY} shell 'pm list packages -f' | grep com.peniscorp.bobsgamecontrols) ]]; then
+  		echo "Exploit app already installed. Continuing."
+		else
+  		echo "Installing exploit app."
+  		./${ADBBINARY} install sacha-granpc/exploit/exploit.apk
+		fi
+
+		# Now let us copy the scripts
+		echo "Copying files.."
+		./${ADBBINARY} push sacha-granpc/scripts/ /data/local/tmp/recovery/
+		./${ADBBINARY} shell chmod 777 /data/local/tmp/recovery/
+		./${ADBBINARY} shell /data/local/tmp/recovery/vdcCreate
+		./${ADBBINARY} shell /data/local/tmp/recovery/startService
+
+		echo "Test VDC #1:"
+		./${ADBBINARY} shell 'if [ -s /data/app-lib/ServiceMenu/libservicemenu.so ]; then echo "Success"; else echo "Failure" && exit; fi'
+
+		echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
+		echo "For example: Service Info -> Configuration."
+
+		# Will only continue if SELinux is disabled
+		while [[ `./${ADBBINARY} shell getenforce` != "Permissive" ]]; do sleep 2; done
+		echo "Congratulations, SELinux is dead. Continuing.."
+		./${ADBBINARY} shell 'vdc asec mount ../../data/local/tmp/recovery/vlib none 2000'
+		./${ADBBINARY} shell /data/local/tmp/recovery/startService
+
+		echo "Test VDC #2: "
+		./${ADBBINARY} shell 'if [ -s /data/local/tmp/recovery/vlib/liblogwrap.so ]; then echo "Success"; else echo "Failure" && exit; fi'
+
+		echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
+		echo "For example: Service Info -> Configuration."
+		
+		while [[ `adb shell 'ls /data/local/tmp/xzdrinstalled'` != "/data/local/tmp/xzdrinstalled" ]]; do sleep 2; done
+		./${ADBBINARY} shell "rm /data/local/tmp/xzdrinstalled"
+		echo "Congratulations, it worked! Your device will now reboot!"
+		
+	fi
+
 	if [ "$SUPERAPP" = "getroot" ]; then
+
 		echo "============================================="
 		echo "Attempting to get root access for installation using rootkitXperia now."
 		echo ""
@@ -112,6 +191,10 @@ runinstall() {
 		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
 		./${ADBBINARY} shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
 
+	fi
+
+	if [ "$SUPERAPP" = "getroot" -o "$SUPERAPP" = "vold" ]; then
+
 		echo "============================================="
 		echo ""
 		echo "REMEMBER THIS:"
@@ -121,6 +204,7 @@ runinstall() {
 		echo "You can use one of the recoveries to root your device."
 		echo ""
 		echo "============================================="
+
 	fi
 
 	./${ADBBINARY} wait-for-device

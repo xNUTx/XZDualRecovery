@@ -40,7 +40,12 @@ echo [ !menu_currentIndex!. Installation on ROM rooted with SuperUser ]
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
 
-echo [ !menu_currentIndex!. Installation on unrooted ROM ]
+echo [ !menu_currentIndex!. Installation on unrooted ROM using the vold exploit by Sacha and GranPC ]
+
+set /a menu_currentIndex+=1 >nul
+set menu_choices=!menu_choices!!menu_currentIndex!
+
+echo [ !menu_currentIndex!. Installation on unrooted ROM using rootkitXperia by cubeundcube ]
 
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
@@ -53,7 +58,7 @@ set menu_decision=%errorlevel%
 set menu_currentIndex=
 set menu_choices=
 
-if "!menu_decision!" == "4" (
+if "!menu_decision!" == "5" (
 	goto abort
 )
 
@@ -105,11 +110,72 @@ if "!menu_decision!" == "1" (
 	pause
 )
 
-if NOT "!menu_decision!" == "3" (
+if "!menu_decision!" == "1" (
+	adb shell "su -c /data/local/tmp/recovery/install.sh"
+)
+
+if "!menu_decision!" == "2" (
 	adb shell "su -c /data/local/tmp/recovery/install.sh"
 )
 
 if "!menu_decision!" == "3" (
+	echo =============================================
+	echo Attempting to get root access for installation using the vold exploit now.
+	echo.
+	echo NOTE: this only works on certain ROM/Kernel versions!
+	echo.
+	echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
+	echo.
+	echo REMEMBER THIS:
+	echo.
+	echo XZDualRecovery does NOT install any superuser app!!
+	echo.
+	echo You can use one of the recoveries to root your device.
+	echo =============================================
+
+	adb install sacha-granpc/exploit/exploit.apk
+
+	# Now let us copy the scripts
+	echo "Copying files.."
+	adb push sacha-granpc/scripts/ /data/local/tmp/recovery/
+	adb shell chmod 777 /data/local/tmp/recovery/
+	adb shell /data/local/tmp/recovery/vdcCreate
+	adb shell /data/local/tmp/recovery/startService
+
+	echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
+	echo "For example: Service Info -> Configuration."
+
+	# Will only continue if SELinux is disabled.
+	:checkselinux
+		adb shell "if [ ^`getenforce^` = "Permissive" ]; then touch /data/local/tmp/selinux; fi"
+		adb pull /data/local/tmp/selinux
+		if NOT exist {selinux} (
+			ping 1.0.0.0 -n 1 -w 2000 >NUL
+			GOTO checkselinux
+		)
+	
+	echo "Congratulations, SELinux is dead. Continuing.."
+	adb shell 'vdc asec mount ../../data/local/tmp/vlib none 2000'
+	adb shell /data/local/tmp/recovery/startService
+
+	echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
+	echo "For example: Service Info -> Configuration."
+
+	# Will only continue if installation has finished
+	:checkinstall
+		adb pull /data/local/tmp/xzdrinstalled
+		if NOT exist {xzdrinstalled} (
+			ping 1.0.0.0 -n 1 -w 2000 >NUL
+			GOTO checkinstall
+		)
+
+	adb uninstall com.peniscorp.bobsgamecontrols
+
+	echo "Congratulations, it worked! Your device should now reboot."
+	
+)
+
+if "!menu_decision!" == "4" (
 	echo =============================================
 	echo Attempting to get root access for installation using rootkitXperia now.
 	echo.
@@ -129,7 +195,9 @@ if "!menu_decision!" == "3" (
 )
 
 adb wait-for-device
-adb shell "rm -r /data/local/tmp/recovery"
+adb shell "rm -r /data/local/tmp/selinux"
+adb shell "rm -r /data/local/tmp/xzdrinstalled"
+adb shell "rm -rf /data/local/tmp/recovery"
 adb kill-server
 
 echo.
