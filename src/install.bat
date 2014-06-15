@@ -78,8 +78,8 @@ echo Step2 : Sending the recovery files.
 echo =============================================
 adb shell "mkdir /data/local/tmp/recovery"
 adb push dr.prop /data/local/tmp/recovery/dr.prop
-if "!menu_decision!" == "3" (
-	adb push getroot /data/local/tmp/recovery/getroot
+if "!menu_decision!" == "4" (
+	adb push cubeundcube/getroot /data/local/tmp/recovery/getroot
 )
 adb push chargemon.sh /data/local/tmp/recovery/chargemon
 adb push mr.sh /data/local/tmp/recovery/mr

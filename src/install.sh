@@ -95,7 +95,7 @@ runinstall() {
 	./${ADBBINARY} shell "mkdir /data/local/tmp/recovery"
 	./${ADBBINARY} push dr.prop /data/local/tmp/recovery/dr.prop
 	if [ "$SUPERAPP" = "getroot" ]; then
-		./${ADBBINARY} push getroot /data/local/tmp/recovery/getroot
+		./${ADBBINARY} push cubeundcube/getroot /data/local/tmp/recovery/getroot
 	fi
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
 	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
