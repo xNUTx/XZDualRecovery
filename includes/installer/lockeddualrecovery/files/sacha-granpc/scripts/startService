@@ -1,2 +1,0 @@
-am start -a android.intent.action.MAIN -n com.sonyericsson.android.servicemenu/.ServiceMainMenu
-

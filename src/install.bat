@@ -40,12 +40,7 @@ echo [ !menu_currentIndex!. Installation on ROM rooted with SuperUser ]
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
 
-echo [ !menu_currentIndex!. Installation on unrooted ROM using the vold exploit by Sacha and GranPC ]
-
-set /a menu_currentIndex+=1 >nul
-set menu_choices=!menu_choices!!menu_currentIndex!
-
-echo [ !menu_currentIndex!. Installation on unrooted ROM using rootkitXperia by cubeundcube ]
+echo [ !menu_currentIndex!. Installation on unrooted ROM using TowelRoot ]
 
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
@@ -58,7 +53,7 @@ set menu_decision=%errorlevel%
 set menu_currentIndex=
 set menu_choices=
 
-if "!menu_decision!" == "5" (
+if "!menu_decision!" == "4" (
 	goto abort
 )
 
@@ -78,9 +73,6 @@ echo Step2 : Sending the recovery files.
 echo =============================================
 adb shell "mkdir /data/local/tmp/recovery"
 adb push dr.prop /data/local/tmp/recovery/dr.prop
-if "!menu_decision!" == "4" (
-	adb push cubeundcube/getroot /data/local/tmp/recovery/getroot
-)
 adb push chargemon.sh /data/local/tmp/recovery/chargemon
 adb push mr.sh /data/local/tmp/recovery/mr
 adb push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
@@ -120,7 +112,7 @@ if "!menu_decision!" == "2" (
 
 if "!menu_decision!" == "3" (
 	echo =============================================
-	echo Attempting to get root access for installation using the vold exploit now.
+	echo Attempting to get root access for installation using TowelRoot now.
 	echo.
 	echo NOTE: this only works on certain ROM/Kernel versions!
 	echo.
@@ -133,70 +125,115 @@ if "!menu_decision!" == "3" (
 	echo You can use one of the recoveries to root your device.
 	echo =============================================
 
-	adb install sacha-granpc/exploit/exploit.apk
-
-	# Now let us copy the scripts
-	echo "Copying files.."
-	adb push sacha-granpc/scripts/ /data/local/tmp/recovery/
-	adb shell chmod 777 /data/local/tmp/recovery/
-	adb shell /data/local/tmp/recovery/vdcCreate
-	adb shell /data/local/tmp/recovery/startService
-
-	echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
-	echo "For example: Service Info -> Configuration."
-
-	# Will only continue if SELinux is disabled.
-	:checkselinux
-		adb shell "if [ ^`getenforce^` = "Permissive" ]; then touch /data/local/tmp/selinux; fi"
-		adb pull /data/local/tmp/selinux
-		if NOT exist {selinux} (
-			ping 1.0.0.0 -n 1 -w 2000 >NUL
-			GOTO checkselinux
-		)
-	
-	echo "Congratulations, SELinux is dead. Continuing.."
-	adb shell 'vdc asec mount ../../data/local/tmp/vlib none 2000'
-	adb shell /data/local/tmp/recovery/startService
-
-	echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
-	echo "For example: Service Info -> Configuration."
-
-	# Will only continue if installation has finished
-	:checkinstall
-		adb pull /data/local/tmp/xzdrinstalled
-		if NOT exist {xzdrinstalled} (
-			ping 1.0.0.0 -n 1 -w 2000 >NUL
-			GOTO checkinstall
-		)
-
-	adb uninstall com.peniscorp.bobsgamecontrols
-
-	echo "Congratulations, it worked! Your device should now reboot."
-	
-)
-
-if "!menu_decision!" == "4" (
+	if exist easyroottool\tr_signed.apk goto SkipPatch
+	echo.
+	if not exist easyroottool\tr.apk (
+		echo =============================================
+		echo Downloading tr.apk, please allow curl.exe
+		echo access through your firewall if downloading
+		echo fails.
+		echo =============================================
+		easyroottool\curl.exe http://towelroot.com/tr.apk -o easyroottool\tr.apk
+	)
 	echo =============================================
-	echo Attempting to get root access for installation using rootkitXperia now.
+	echo Patching tr.apk and creating tr_signed.apk
+	echo =============================================
+	easyroottool\bspatch.exe easyroottool\tr.apk easyroottool\tr_signed.apk easyroottool\tr.apk.patch
+	if not exist easyroottool\tr_signed.apk (
+		echo Error patching tr.apk. Aborting...
+		pause
+		exit
+	)
+	set tr_md5=
+	for /f "delims=" %%i in ('easyroottool\md5.exe easyroottool\tr_signed.apk') do ( set tr_md5=%%i )
+	if "%tr_md5%" == "D83363748CB1DCED97CC630419F8D587  easyroottool\tr_signed.apk " (
+		echo OK!
+	) else (
+		echo Error patching tr.apk. MD5 does not match. Aborting...
+		echo Current MD5 is "%tr_md5%"
+		echo.
+		del easyroottool\tr_signed.apk
+		pause
+		exit
+	)
 	echo.
-	echo NOTE: this only works on certain ROM/Kernel versions!
+
+
+	:SkipPatch
+
 	echo.
-	echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
+	echo =============================================
+	echo Getting ro.build.product
+	echo =============================================
+	set product_name=
+	for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i )
+	echo Device model is %product_name%
+
 	echo.
-	echo REMEMBER THIS:
-	echo.
-	echo XZDualRecovery does NOT install any superuser app!!
-	echo.
-	echo You can use one of the recoveries to root your device.
+	echo =============================================
+	echo Sending files
 	echo =============================================
 
-	adb shell "chmod 755 /data/local/tmp/recovery/getroot"
-	adb shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
+	set zxzFile="zxz.sh"
+	if "%product_name%" == "D6502 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "D6503 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "D6506 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "D6543 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "SGP511 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "SGP512 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%product_name%" == "SGP521 " (
+		set zxzFile="zxz_z2.sh"
+	)
+	if "%zxzFile%" == "zxz_z2.sh" (
+		echo Using Z2 files...
+	)
+
+	adb push easyroottool\%zxzFile% /data/local/tmp/recovery/zxz.sh
+	adb push easyroottool\writekmem /data/local/tmp/recovery/
+	adb push easyroottool\findricaddr /data/local/tmp/recovery/
+	adb shell "chmod 777 /data/local/tmp/recovery/zxz.sh"
+	adb shell "chmod 777 /data/local/tmp/recovery/writekmem"
+	adb shell "chmod 777 /data/local/tmp/recovery/findricaddr"
+
+	echo.
+	echo =============================================
+	echo Loading modified towelroot (by geohot)
+	echo =============================================
+
+	adb uninstall com.geohot.towelroot >nul 2>&1
+	adb install easyroottool\tr_signed.apk
+
+	adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
+	echo =============================================
+	echo Check your phone and click "make it ra1n"
+	echo.
+	echo Press any key when the phone is rebooting
+	echo.
+	pause
+	echo Waiting for device to reboot
+	echo.
+	ping 1.1.1.1 -n 1 -w 8000 > nul
+	adb wait-for-device
+	adb uninstall com.geohot.towelroot
+	adb shell "su -c /data/local/tmp/recovery/install.sh"
+	ping 1.1.1.1 -n 1 -w 1000 > nul
+	echo =============================================
+
 )
 
 adb wait-for-device
-adb shell "rm -r /data/local/tmp/selinux"
-adb shell "rm -r /data/local/tmp/xzdrinstalled"
 adb shell "rm -rf /data/local/tmp/recovery"
 adb kill-server
 

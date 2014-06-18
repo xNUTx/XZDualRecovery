@@ -119,18 +119,21 @@ echo "#"
 echo "#####"
 echo ""
 
-# Thanks to cubeundcube for this method!
-if [ -f "/data/local/tmp/recovery/ric_disabler" ]; then
-	echo "Disabling sony_ric kernel based protection."
-	/data/local/tmp/recovery/ric_disabler
+echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
+if [ -e "/data/local/tmp/recovery/wp_mod.ko" ]; then
+        insmod /data/local/tmp/recovery/wp_mod.ko
+fi
+if [ -e "/data/local/tmp/recovery/writekmem" ]; then
+        /data/local/tmp/recovery/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/recovery/ricaddr` 0
+fi
+if []; then
+	# Thanks to Androxyde for this method!
+	RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
+	if [ "$RICPATH" != "" ]; then
+		${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+	fi
 fi
 
-echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
-# Thanks to Androxyde for this method!
-RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
-if [ "$RICPATH" != "" ]; then
-	${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
-fi
 sleep 2
 ${BUSYBOX} mount -o remount,rw /
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
@@ -149,18 +152,18 @@ if [ -f "/data/local/tmp/recovery/ramdisk.stock.cpio.lzma" ]; then
 	${BUSYBOX} chmod 644 /system/bin/ramdisk.stock.cpio.lzma
 fi
 
-if [ ! -f /system/bin/mr.stock ]
-then
+if [ ! -f "/system/bin/mr.stock" -a -f "/system/bin/mr" ]; then
 	echo "Rename stock mr"
 	${BUSYBOX} mv /system/bin/mr /system/bin/mr.stock
 fi
 
-echo "Copy mr wrapper script to system."
-${BUSYBOX} cp /data/local/tmp/recovery/mr /system/bin/
-${BUSYBOX} chmod 755 /system/bin/mr
+if [ -f "/system/bin/mr.stock" -a ! -f "/system/bin/mr" ]; then
+	echo "Copy mr wrapper script to system."
+	${BUSYBOX} cp /data/local/tmp/recovery/mr /system/bin/
+	${BUSYBOX} chmod 755 /system/bin/mr
+fi
 
-if [ ! -f /system/bin/chargemon.stock ]
-then
+if [ ! -f "/system/bin/chargemon.stock" ]; then
 	echo "Rename stock chargemon"
 	${BUSYBOX} mv /system/bin/chargemon /system/bin/chargemon.stock
 fi
@@ -242,6 +245,8 @@ DRSETPROP dr.release.type $(DRGETPROP release)
 if [ "$1" = "vold" ]; then
 
 	${BUSYBOX} touch /data/local/tmp/xzdrinstalled
+	${BUSYBOX} chmod 666 /data/local/tmp/xzdrinstalled
+	sleep 4
 
 fi
 
@@ -251,7 +256,7 @@ echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
 echo "============================================="
 echo ""
 
-/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
+#/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
 if [ "$?" != "0" ]; then
 
 	echo ""
@@ -260,7 +265,7 @@ if [ "$?" != "0" ]; then
 	echo "============================================="
 	echo ""
 
-	reboot
+#	reboot
 
 else
 

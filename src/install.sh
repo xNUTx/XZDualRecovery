@@ -40,40 +40,10 @@ rootappmenu() {
 	case $num in
 	        1) clear; echo "Adjusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
 	        2) clear; echo "Adjusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
-	        3) clear; SUPERAPP="getroot"; unrootedrootmenu;;
+	        3) clear; echo "Using TowelRoot to attempt an installation."; SUPERAPP="unrooted"; runinstall;;
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
 	esac
-}
-
-unrootedrootmenu() {
-
-	echo "=============================================="
-	echo "=                                            ="
-	echo "=               XZDualRecovery               ="
-	echo "=            Maintained by [NUT]             ="
-	echo "=                                            ="
-	echo "=      For many Sony Xperia devices!         ="
-	echo "=                                            ="
-	echo "=============================================="
-	echo ""
-	echo "          Choose the root method to use:"
-	echo ""
-	echo "          1/ Use the vold exploit developed by Sacha and GranPC"
-	echo "          2/ Use RootkitXperia by cubeundcube"
-	echo ""
-	echo "          B/ Back to main menu"
-	echo ""
-	echo "    Enter option:"
-	echo ""
-	read num
-	case $num in
-	        1) clear; echo "Will attempt the vold method by Sacha and GranPC!"; SUPERAPP="vold"; runinstall;;
-	        2) clear; echo "Will attempt the getroot method by Cubeundcube!"; SUPERAPP="getroot"; runinstall;;
-	        b|B) clear; rootappmenu;;
-	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
-	esac
-
 }
 
 runinstall() {
@@ -94,9 +64,6 @@ runinstall() {
 	echo ""
 	./${ADBBINARY} shell "mkdir /data/local/tmp/recovery"
 	./${ADBBINARY} push dr.prop /data/local/tmp/recovery/dr.prop
-	if [ "$SUPERAPP" = "getroot" ]; then
-		./${ADBBINARY} push cubeundcube/getroot /data/local/tmp/recovery/getroot
-	fi
 	./${ADBBINARY} push chargemon.sh /data/local/tmp/recovery/chargemon
 	./${ADBBINARY} push mr.sh /data/local/tmp/recovery/mr
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
@@ -130,70 +97,94 @@ runinstall() {
 		./${ADBBINARY} shell "/system/xbin/su -c /data/local/tmp/recovery/install.sh"
 	fi
 
-	if [ "$SUPERAPP" = "vold" ]; then
+	if [ "$SUPERAPP" = "unrooted" ]; then
 
 		echo "============================================="
-		echo "Attempting to get root access for installation using the vold exploit now."
+		echo "Attempting to get root access for installation using TowelRoot now."
 		echo ""
 		echo "NOTE: this only works on certain ROM/Kernel versions!"
 		echo ""
 		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
 		echo "============================================="
 
-		if [[ -n $(./${ADBBINARY} shell 'pm list packages -f' | grep com.peniscorp.bobsgamecontrols) ]]; then
-  		echo "Exploit app already installed. Continuing."
-		else
-  		echo "Installing exploit app."
-  		./${ADBBINARY} install sacha-granpc/exploit/exploit.apk
+		if [ ! -f "easyroottool/tr_signed.apk" ]; then
+			echo "Will download towelroot and patch it if needed."
+			if [ ! -f "easyroottool/tr.apk" ]; then
+				curl http://towelroot.com/tr.apk -o easyroottool/tr.apk
+			fi
+			echo "============================================="
+			echo "Patching tr.apk and creating tr_signed.apk"
+			echo "============================================="
+			./easyroottool/bspatch easyroottool/tr.apk easyroottool/tr_signed.apk easyroottool/tr.apk.patch
+			if [ ! -f "easyroottool/tr_signed.apk" ]; then
+				echo "Error patching tr.apk. Aborting..."
+				echo "Press any key to go back to the menu."
+				return 127
+			fi
+			tr_md5=`md5sum easyroottool/tr_signed.apk`
+			if [ "$tr_md5" != "d83363748cb1dced97cc630419f8d587  easyroottool/tr_signed.apk" ]; then
+				echo "Error patching tr.apk. MD5 does not match. Aborting..."
+				echo "Current MD5 is: $tr_md5"
+				echo "Press any key to go back to the menu."
+				rm easyroottool/tr_signed.apk
+				return 127
+			fi
+		fi
+		echo ""
+
+		if [ "$OS" = "Linux" ]; then
+			echo "It looks like you are running Linux"
+			echo "Please make sure ia32-libs is installed if you get any errors"
+			echo ""
 		fi
 
-		# Now let us copy the scripts
-		echo "Copying files.."
-		./${ADBBINARY} push sacha-granpc/scripts/ /data/local/tmp/recovery/
-		./${ADBBINARY} shell chmod 777 /data/local/tmp/recovery/
-		./${ADBBINARY} shell /data/local/tmp/recovery/vdcCreate
-		./${ADBBINARY} shell /data/local/tmp/recovery/startService
-
-		echo "Test VDC #1:"
-		./${ADBBINARY} shell 'if [ -s /data/app-lib/ServiceMenu/libservicemenu.so ]; then echo "Success"; else echo "Failure" && exit; fi'
-
-		echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
-		echo "For example: Service Info -> Configuration."
-
-		# Will only continue if SELinux is disabled
-		while [[ `./${ADBBINARY} shell getenforce` != "Permissive" ]]; do sleep 2; done
-		echo "Congratulations, SELinux is dead. Continuing.."
-		./${ADBBINARY} shell 'vdc asec mount ../../data/local/tmp/recovery/vlib none 2000'
-		./${ADBBINARY} shell /data/local/tmp/recovery/startService
-
-		echo "Test VDC #2: "
-		./${ADBBINARY} shell 'if [ -s /data/local/tmp/recovery/vlib/liblogwrap.so ]; then echo "Success"; else echo "Failure" && exit; fi'
-
-		echo -e "\n\n --- Attention ---\nPlease 'crash' the Service Menu app that pops up."
-		echo "For example: Service Info -> Configuration."
-		
-		while [[ `adb shell 'ls /data/local/tmp/xzdrinstalled'` != "/data/local/tmp/xzdrinstalled" ]]; do sleep 2; done
-		./${ADBBINARY} shell "rm /data/local/tmp/xzdrinstalled"
-		echo "Congratulations, it worked! Your device will now reboot!"
-		
-	fi
-
-	if [ "$SUPERAPP" = "getroot" ]; then
-
+		echo ""
 		echo "============================================="
-		echo "Attempting to get root access for installation using rootkitXperia now."
+		echo "Getting ro.build.product"
+		echo "============================================="
+		product_name=`./${ADBBINARY} shell "getprop ro.build.product"`
+		echo "Device model is $product_name"
+
 		echo ""
-		echo "NOTE: this only works on certain ROM/Kernel versions!"
-		echo ""
-		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
+		echo "============================================="
+		echo "Sending files"
 		echo "============================================="
 
-		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
-		./${ADBBINARY} shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh"
+		zxzFile="zxz.sh"
 
-	fi
+		if [ "$product_name" = "D6502 " ] || [ "$product_name" = "D6503 " ] || [ "$product_name" = "D6506 " ] || [ "$product_name" = "D6543 " ] || [ "$product_name" = "SGP511 " ] || [ "$product_name" = "SGP512 " ] || [ "$product_name" = "SGP521 " ]; then
+			zxzFile="zxz_z2.sh"
+			echo "Using Z2 files..."
+		fi
 
-	if [ "$SUPERAPP" = "getroot" -o "$SUPERAPP" = "vold" ]; then
+		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/recovery/zxz.sh
+		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/recovery/
+		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/recovery/
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/zxz.sh"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/writekmem"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/findricaddr"
+
+		echo ""
+		echo "============================================="
+		echo "Loading modified towelroot (by geohot)"
+		echo "============================================="
+
+		./${ADBBINARY} uninstall com.geohot.towelroot &> /dev/null
+		./${ADBBINARY} install tr_signed.apk
+
+		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
+		echo "============================================="
+		echo "Check your phone and click \"make it ra1n\""
+		echo ""
+		echo "Press any key when the phone is rebooting"
+		read tmpvar
+		echo "Waiting for device to reboot"
+		echo ""
+		sleep 8
+		./${ADBBINARY} wait-for-device
+		./${ADBBINARY} uninstall com.geohot.towelroot
+		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"
+		echo "============================================="
 
 		echo "============================================="
 		echo ""

@@ -13,8 +13,8 @@ cleanupout() {
 copysource() {
 	# Copy base packages to tmp
 	cp -r $WORKDIR/includes/* $WORKDIR/tmp/
-	unzip $WORKDIR/tmp/lockeddualrecovery/files/sacha-granpc/scripts/vlib.asec.zip vlib.asec -d $WORKDIR/tmp/lockeddualrecovery/files/sacha-granpc/scripts/
-	rm $WORKDIR/tmp/lockeddualrecovery/files/sacha-granpc/scripts/vlib.asec.zip
+	unzip $WORKDIR/tmp/installer/lockeddualrecovery/files/sacha-granpc/scripts/vlib.asec.zip vlib.asec -d $WORKDIR/tmp/installer/lockeddualrecovery/files/sacha-granpc/scripts/
+	rm $WORKDIR/tmp/installer/lockeddualrecovery/files/sacha-granpc/scripts/vlib.asec.zip
 }
 
 doall() {
