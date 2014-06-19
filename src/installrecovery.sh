@@ -126,7 +126,7 @@ fi
 if [ -e "/data/local/tmp/recovery/writekmem" ]; then
         /data/local/tmp/recovery/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/recovery/ricaddr` 0
 fi
-if []; then
+if [ ! -e "/data/local/tmp/recovery/wp_mod.ko" -a ! -e "/data/local/tmp/recovery/writekmem"]; then
 	# Thanks to Androxyde for this method!
 	RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
 	if [ "$RICPATH" != "" ]; then

@@ -206,7 +206,7 @@ if "!menu_decision!" == "3" (
 
 	echo.
 	echo =============================================
-	echo Loading modified towelroot (by geohot)
+	echo Loading modified towelroot ^(by geohot^)
 	echo =============================================
 
 	adb uninstall com.geohot.towelroot >nul 2>&1
