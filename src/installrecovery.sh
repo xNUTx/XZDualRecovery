@@ -256,7 +256,7 @@ echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
 echo "============================================="
 echo ""
 
-#/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
+/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
 if [ "$?" != "0" ]; then
 
 	echo ""
@@ -265,7 +265,7 @@ if [ "$?" != "0" ]; then
 	echo "============================================="
 	echo ""
 
-#	reboot
+	reboot
 
 else
 
