@@ -141,8 +141,7 @@ if "!menu_decision!" == "3" (
 	easyroottool\bspatch.exe easyroottool\tr.apk easyroottool\tr_signed.apk easyroottool\tr.apk.patch
 	if not exist easyroottool\tr_signed.apk (
 		echo Error patching tr.apk. Aborting...
-		pause
-		exit
+		goto abort
 	)
 	set tr_md5=
 	for /f "delims=" %%i in ('easyroottool\md5.exe easyroottool\tr_signed.apk') do ( set tr_md5=%%i )
@@ -153,11 +152,9 @@ if "!menu_decision!" == "3" (
 		echo Current MD5 is "%tr_md5%"
 		echo.
 		del easyroottool\tr_signed.apk
-		pause
-		exit
+		goto abort
 	)
 	echo.
-
 
 	:SkipPatch
 
