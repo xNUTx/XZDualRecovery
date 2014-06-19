@@ -120,13 +120,15 @@ echo "#####"
 echo ""
 
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
-if [ -e "/data/local/tmp/recovery/wp_mod.ko" ]; then
-        insmod /data/local/tmp/recovery/wp_mod.ko
+# Thanks to MohammadAG for this method
+if [ -e "/data/local/tmp/wp_mod.ko" ]; then
+        insmod /data/local/tmp/wp_mod.ko
 fi
-if [ -e "/data/local/tmp/recovery/writekmem" ]; then
-        /data/local/tmp/recovery/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/recovery/ricaddr` 0
+# Thanks to cubeandcube for this method
+if [ -e "/data/local/tmp/writekmem" -a -e "/data/local/tmp/ricaddr" ]; then
+        /data/local/tmp/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/ricaddr` 0
 fi
-if [ ! -e "/data/local/tmp/recovery/wp_mod.ko" -a ! -e "/data/local/tmp/recovery/writekmem"]; then
+if [ ! -e "/data/local/tmp/wp_mod.ko" -a ! -e "/data/local/tmp/writekmem" -a ! -e "/data/local/tmp/ricaddr" ]; then
 	# Thanks to Androxyde for this method!
 	RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
 	if [ "$RICPATH" != "" ]; then
@@ -241,15 +243,6 @@ fi
 DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
 
-# if this switch is tripped, we signal for completion
-if [ "$1" = "vold" ]; then
-
-	${BUSYBOX} touch /data/local/tmp/xzdrinstalled
-	${BUSYBOX} chmod 666 /data/local/tmp/xzdrinstalled
-	sleep 4
-
-fi
-
 echo ""
 echo "============================================="
 echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
@@ -261,7 +254,8 @@ if [ "$?" != "0" ]; then
 
 	echo ""
 	echo "============================================="
-	echo "If you want the installer to clean up after itself, reboot to system after entering recovery for the first time!"
+	echo "If you want the installer to clean up after itself,"
+	echo "reboot to system after entering recovery for the first time!"
 	echo "============================================="
 	echo ""
 
@@ -271,7 +265,8 @@ else
 
 	echo ""
 	echo "============================================="
-	echo "Your installation has already cleaned up after itself if you see the install.bat/install.sh exit."
+	echo "Your installation has already cleaned up after"
+	echo "itself if you see the install.bat/install.sh exit."
 	echo "============================================="
 	echo ""
 

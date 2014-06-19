@@ -35,7 +35,7 @@ dualrecovery_menu_opt() {
 	echo "          2 / Xperia Z1		(x)"
 	echo "          3 / Xperia ZU		(x)"
 	echo "          4 / Xperia ZL		(x)"
-	echo "          5 / Xperia TabZ	(x)"
+	echo "          5 / Xperia Tablet Z	(x)"
 	echo "          6 / Xperia Z1 Compact	(x)"
 	echo "          7 / Xperia ZR		(x)"
 	echo "          8 / Xperia J"
@@ -148,6 +148,9 @@ buildallxed() {
 
 		buildz2 auto
 		doall
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			doallkernel
+		fi
 
 		buildtabz2 auto
 		doall
@@ -189,6 +192,25 @@ buildxz() {
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
 	PACKKERNELRAMDISK="yes"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+buildzl() {
+        cd $WORKDIR
+	LABEL="ZL"
+	DRPATH="zl"
+	CODENAME="odin"
+	REPO="cm11.0"
+	BASE="0x80200000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="no"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="no"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt

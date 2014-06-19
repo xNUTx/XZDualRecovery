@@ -158,12 +158,14 @@ runinstall() {
 			echo "Using Z2 files..."
 		fi
 
-		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/recovery/zxz.sh
-		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/recovery/
-		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/recovery/
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/zxz.sh"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/writekmem"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/recovery/findricaddr"
+		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
+		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
+		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
+		./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
 
 		echo ""
 		echo "============================================="
@@ -177,11 +179,8 @@ runinstall() {
 		echo "============================================="
 		echo "Check your phone and click \"make it ra1n\""
 		echo ""
-		echo "Press any key when the phone is rebooting"
+		echo "ATTENTION: Press any key when the phone is DONE rebooting"
 		read tmpvar
-		echo "Waiting for device to reboot"
-		echo ""
-		sleep 8
 		./${ADBBINARY} wait-for-device
 		./${ADBBINARY} uninstall com.geohot.towelroot
 		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"
@@ -200,7 +199,7 @@ runinstall() {
 	fi
 
 	./${ADBBINARY} wait-for-device
-	./${ADBBINARY} shell "rm -rf /data/local/tmp/recovery"
+	./${ADBBINARY} shell "rm -rf /data/local/tmp/*"
 	./${ADBBINARY} kill-server
 	echo ""
 	echo "============================================="

@@ -48,7 +48,7 @@
 /dev/kgsl-2d0             0666   root       root
 /dev/kgsl-2d1             0666   root       root
 /dev/kgsl-3d0             0666   system     system
-/dev/msm_rotator          0664   system     system
+/dev/msm_rotator          0660   system     system
 
 /dev/smd2                 0660   bluetooth  bluetooth
 /dev/smd3                 0660   bluetooth  bluetooth
@@ -86,9 +86,8 @@
 
 /dev/pn544                0600   nfc        nfc
 
-/dev/rfkill               0660   wifi       wifi
-
-/dev/radio0               0644   system     system
+/dev/radio0               0640   system     system
+/dev/gss                  0660   gps        gps
 
 /dev/rtc0                 0600   system     system
 /dev/mpu                  0600   system     system

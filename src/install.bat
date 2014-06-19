@@ -100,138 +100,23 @@ if "!menu_decision!" == "1" (
 	echo Press any key to continue AFTER granting root access.
 	adb shell "/system/xbin/su -c /data/local/tmp/recovery/busybox ls -la /data/local/tmp/recovery/busybox"
 	pause
-)
-
-if "!menu_decision!" == "1" (
 	adb shell "su -c /data/local/tmp/recovery/install.sh"
+	goto cleanup
 )
 
 if "!menu_decision!" == "2" (
 	adb shell "su -c /data/local/tmp/recovery/install.sh"
+	goto cleanup
 )
 
 if "!menu_decision!" == "3" (
-	echo =============================================
-	echo Attempting to get root access for installation using TowelRoot now.
-	echo.
-	echo NOTE: this only works on certain ROM/Kernel versions!
-	echo.
-	echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
-	echo.
-	echo REMEMBER THIS:
-	echo.
-	echo XZDualRecovery does NOT install any superuser app!!
-	echo.
-	echo You can use one of the recoveries to root your device.
-	echo =============================================
-
-	if exist easyroottool\tr_signed.apk goto SkipPatch
-	echo.
-	if not exist easyroottool\tr.apk (
-		echo =============================================
-		echo Downloading tr.apk, please allow curl.exe
-		echo access through your firewall if downloading
-		echo fails.
-		echo =============================================
-		easyroottool\curl.exe http://towelroot.com/tr.apk -o easyroottool\tr.apk
-	)
-	echo =============================================
-	echo Patching tr.apk and creating tr_signed.apk
-	echo =============================================
-	easyroottool\bspatch.exe easyroottool\tr.apk easyroottool\tr_signed.apk easyroottool\tr.apk.patch
-	if not exist easyroottool\tr_signed.apk (
-		echo Error patching tr.apk. Aborting...
-		goto abort
-	)
-	set tr_md5=
-	for /f "delims=" %%i in ('easyroottool\md5.exe easyroottool\tr_signed.apk') do ( set tr_md5=%%i )
-	if "%tr_md5%" == "D83363748CB1DCED97CC630419F8D587  easyroottool\tr_signed.apk " (
-		echo OK!
-	) else (
-		echo Error patching tr.apk. MD5 does not match. Aborting...
-		echo Current MD5 is "%tr_md5%"
-		echo.
-		del easyroottool\tr_signed.apk
-		goto abort
-	)
-	echo.
-
-	:SkipPatch
-
-	echo.
-	echo =============================================
-	echo Getting ro.build.product
-	echo =============================================
-	set product_name=
-	for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i )
-	echo Device model is %product_name%
-
-	echo.
-	echo =============================================
-	echo Sending files
-	echo =============================================
-
-	set zxzFile="zxz.sh"
-	if "%product_name%" == "D6502 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "D6503 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "D6506 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "D6543 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "SGP511 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "SGP512 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%product_name%" == "SGP521 " (
-		set zxzFile="zxz_z2.sh"
-	)
-	if "%zxzFile%" == "zxz_z2.sh" (
-		echo Using Z2 files...
-	)
-
-	adb push easyroottool\%zxzFile% /data/local/tmp/recovery/zxz.sh
-	adb push easyroottool\writekmem /data/local/tmp/recovery/
-	adb push easyroottool\findricaddr /data/local/tmp/recovery/
-	adb shell "chmod 777 /data/local/tmp/recovery/zxz.sh"
-	adb shell "chmod 777 /data/local/tmp/recovery/writekmem"
-	adb shell "chmod 777 /data/local/tmp/recovery/findricaddr"
-
-	echo.
-	echo =============================================
-	echo Loading modified towelroot ^(by geohot^)
-	echo =============================================
-
-	adb uninstall com.geohot.towelroot >nul 2>&1
-	adb install easyroottool\tr_signed.apk
-
-	adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
-	echo =============================================
-	echo Check your phone and click "make it ra1n"
-	echo.
-	echo Press any key when the phone is rebooting
-	echo.
-	pause
-	echo Waiting for device to reboot
-	echo.
-	ping 1.1.1.1 -n 1 -w 8000 > nul
-	adb wait-for-device
-	adb uninstall com.geohot.towelroot
-	adb shell "su -c /data/local/tmp/recovery/install.sh"
-	ping 1.1.1.1 -n 1 -w 1000 > nul
-	echo =============================================
-
+	goto easyRootTool
 )
 
+:cleanup
+
 adb wait-for-device
-adb shell "rm -rf /data/local/tmp/recovery"
+adb shell "rm -rf /data/local/tmp/*"
 adb kill-server
 
 echo.
@@ -252,5 +137,143 @@ echo.
 
 pause
 goto end
+
+:easyRootTool
+
+echo =============================================
+echo Attempting to get root access for installation using TowelRoot now.
+echo.
+echo NOTE: this only works on certain ROM/Kernel versions!
+echo.
+echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
+echo.
+echo REMEMBER THIS:
+echo.
+echo XZDualRecovery does NOT install any superuser app!!
+echo.
+echo You can use one of the recoveries to root your device.
+echo =============================================
+
+if exist easyroottool\tr_signed.apk goto SkipPatch
+if exist easyroottool\tr.apk goto DoPatch
+
+echo.
+if not exist easyroottool\tr.apk (
+	echo =============================================
+	echo Downloading tr.apk, please allow curl.exe
+	echo access through your firewall if downloading
+	echo fails.
+	echo =============================================
+	easyroottool\curl.exe http://towelroot.com/tr.apk -o easyroottool\tr.apk
+)
+
+if exist easyroottool\tr.apk goto DoPatch
+
+echo =============================================
+echo Error downloading tr.apk with curl
+echo Please place tr.apk inside the folder /files/easyroottool
+echo and press any key to continue
+echo You can download tr.apk from http://towelroot.com/
+echo =============================================
+pause
+echo.
+if not exist easyroottool\tr.apk (
+	echo Error: easyroottool\tr.apk not found. Aborting...
+	goto abort
+)
+
+:DoPatch
+
+echo =============================================
+echo Patching tr.apk and creating tr_signed.apk
+echo =============================================
+easyroottool\bspatch.exe easyroottool\tr.apk easyroottool\tr_signed.apk easyroottool\tr.apk.patch
+if not exist easyroottool\tr_signed.apk (
+	echo Error patching tr.apk. Aborting...
+	goto abort
+)
+set tr_md5=
+for /f "delims=" %%i in ('easyroottool\md5.exe easyroottool\tr_signed.apk') do ( set tr_md5=%%i )
+if "%tr_md5%" == "D83363748CB1DCED97CC630419F8D587  easyroottool\tr_signed.apk " (
+	echo OK!
+) else (
+	echo Error patching tr.apk. MD5 does not match. Aborting...
+	echo Current MD5 is "%tr_md5%"
+	echo.
+	del easyroottool\tr_signed.apk
+	goto abort
+)
+echo.
+
+:SkipPatch
+
+echo.
+echo =============================================
+echo Getting ro.build.product
+echo =============================================
+
+set product_name=
+for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i )
+echo Device model is %product_name%
+
+echo.
+echo =============================================
+echo Sending files
+echo =============================================
+
+set zxzFile=zxz.sh
+if "%product_name%" == "D6502 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "D6503 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "D6506 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "D6543 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "SGP511 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "SGP512 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%product_name%" == "SGP521 " (
+	set zxzFile=zxz_z2.sh
+)
+if "%zxzFile%" == "zxz_z2.sh" (
+	echo Using Z2 files...
+)
+
+adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
+adb push easyroottool\writekmem /data/local/tmp/
+adb push easyroottool\findricaddr /data/local/tmp/
+adb shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
+adb shell "chmod 777 /data/local/tmp/busybox"
+adb shell "chmod 777 /data/local/tmp/zxz.sh"
+adb shell "chmod 777 /data/local/tmp/writekmem"
+adb shell "chmod 777 /data/local/tmp/findricaddr"
+
+echo.
+echo =============================================
+echo Loading modified towelroot ^(by geohot^)
+echo =============================================
+
+adb uninstall com.geohot.towelroot
+adb install easyroottool\tr_signed.apk
+
+adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
+echo =============================================
+echo Check your phone and click "make it ra1n"
+echo.
+echo ATTENTION: Press any key when the phone is DONE rebooting
+echo.
+pause
+adb wait-for-device
+adb uninstall com.geohot.towelroot
+adb shell "su -c /data/local/tmp/recovery/install.sh"
+goto cleanup
 
 :end
