@@ -1,0 +1,16 @@
+# Android fstab file.
+#<src>                                                  <mnt_point>         <type>    <mnt_flags and options>                               <fs_mgr_flags>
+# The filesystem that contains the filesystem checker binary (typically /system) cannot
+# specify MF_CHECK, and must come before any filesystems that do specify MF_CHECK
+
+/dev/block/platform/msm_sdcc.1/by-name/boot      /boot     emmc  defaults                                       recoveryonly
+/dev/block/platform/msm_sdcc.1/by-name/system    /system   ext4  ro,barrier=1                                   wait
+/dev/block/platform/msm_sdcc.1/by-name/cache     /cache    ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,noauto_da_alloc,errors=panic  wait,check
+/dev/block/platform/msm_sdcc.1/by-name/userdata  /data     ext4  noatime,nosuid,nodev,barrier=1,data=ordered,nomblk_io_submit,noauto_da_alloc,errors=panic  wait,check,encryptable=footer,length=-16384
+/dev/block/platform/msm_sdcc.1/by-name/apps_log  /mnt/idd  ext4  noatime,nosuid,nodev,noexec,barrier=0,discard  wait
+
+/dev/block/platform/msm_sdcc.1/by-name/modemst1  /boot/modem_fs1   emmc  n/a       n/a
+/dev/block/platform/msm_sdcc.1/by-name/modemst2  /boot/modem_fs2   emmc  n/a       n/a
+
+/devices/msm_sdcc.2/mmc_host                     /storage/sdcard1  auto  defaults  voldmanaged=sdcard1:auto
+/devices/platform/xhci-hcd                       /storage/usbdisk  auto  defaults  voldmanaged=usbdisk:auto

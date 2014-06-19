@@ -115,6 +115,7 @@ runinstall() {
 			echo "============================================="
 			echo "Patching tr.apk and creating tr_signed.apk"
 			echo "============================================="
+			chmod 755 ./easyroottool/bspatch
 			./easyroottool/bspatch easyroottool/tr.apk easyroottool/tr_signed.apk easyroottool/tr.apk.patch
 			if [ ! -f "easyroottool/tr_signed.apk" ]; then
 				echo "Error patching tr.apk. Aborting..."
@@ -169,8 +170,8 @@ runinstall() {
 		echo "Loading modified towelroot (by geohot)"
 		echo "============================================="
 
-		./${ADBBINARY} uninstall com.geohot.towelroot &> /dev/null
-		./${ADBBINARY} install tr_signed.apk
+		./${ADBBINARY} uninstall com.geohot.towelroot
+		./${ADBBINARY} install easyroottool/tr_signed.apk
 
 		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
 		echo "============================================="
