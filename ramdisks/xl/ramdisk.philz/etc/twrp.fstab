@@ -1,0 +1,8 @@
+# mountpoint      fstype            device                                              [options]               
+
+/boot            emmc              /dev/block/platform/msm_sdcc.1/by-name/boot
+/system          ext4              /dev/block/mmcblk0p28	                           flags=display="system";wipeingui
+/cache           ext4              /dev/block/mmcblk0p30
+/data            ext4              /dev/block/mmcblk0p31 length=-16384
+/sdcard          vfat              /dev/block/platform/msm_sdcc.1/by-name/sdcard	   flags=display="Internal Storage";storage;wipeingui;removable
+/external_sd     auto              /dev/block/mmcblk1p1 /dev/block/mmcblk1             flags=display="External SD"
