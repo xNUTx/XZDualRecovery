@@ -9,4 +9,4 @@
 /dev/block/platform/msm_sdcc.1/by-name/Userdata     /data             ext4        noatime,nosuid,nodev,barrier=1,data=ordered,noauto_da_alloc  wait,check,encryptable=footer,length=-16384
 /devices/platform/msm_sdcc.1/mmc_host/mmc0          auto              ext4        defaults                                                     voldmanaged=sdcard0:15,nonremovable,noemulatedsd
 /devices/platform/msm_sdcc.3/mmc_host/mmc1          auto              auto        defaults                                                     voldmanaged=sdcard1:auto
-/devices/platform/msm_otg/msm_hsusb_host            auto              auto        defaults                                                     voldmanaged=usbdisk:auto
+/devices/platform/msm_hsusb_host                    auto              auto        defaults                                                     voldmanaged=usbdisk:auto
