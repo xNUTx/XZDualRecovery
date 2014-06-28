@@ -107,44 +107,14 @@ runinstall() {
 		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
 		echo "============================================="
 
-		if [ ! -f "easyroottool/tr_signed.apk" ]; then
-			echo "Will download towelroot and patch it if needed."
-			if [ ! -f "easyroottool/tr.apk" ]; then
-				curl http://towelroot.com/tr.apk -o easyroottool/tr.apk
-			fi
-			echo "============================================="
-			echo "Patching tr.apk and creating tr_signed.apk"
-			echo "============================================="
-			chmod 755 ./easyroottool/bspatch
-			./easyroottool/bspatch easyroottool/tr.apk easyroottool/tr_signed.apk easyroottool/tr.apk.patch
-			if [ ! -f "easyroottool/tr_signed.apk" ]; then
-				echo "Error patching tr.apk. Aborting..."
-				echo "Press any key to go back to the menu."
-				return 127
-			fi
-			tr_md5=`md5sum easyroottool/tr_signed.apk`
-			if [ "$tr_md5" != "d83363748cb1dced97cc630419f8d587  easyroottool/tr_signed.apk" ]; then
-				echo "Error patching tr.apk. MD5 does not match. Aborting..."
-				echo "Current MD5 is: $tr_md5"
-				echo "Press any key to go back to the menu."
-				rm easyroottool/tr_signed.apk
-				return 127
-			fi
-		fi
-		echo ""
-
-		if [ "$OS" = "Linux" ]; then
-			echo "It looks like you are running Linux"
-			echo "Please make sure ia32-libs is installed if you get any errors"
-			echo ""
-		fi
-
 		echo ""
 		echo "============================================="
 		echo "Getting ro.build.product"
 		echo "============================================="
 		product_name=`./${ADBBINARY} shell "getprop ro.build.product"`
 		echo "Device model is $product_name"
+		firmware=`./${ADBBINARY} shell "getprop ro.build.id"`
+		echo "Firmware is $firmware"
 
 		echo ""
 		echo "============================================="
@@ -153,9 +123,11 @@ runinstall() {
 
 		zxzFile="zxz.sh"
 
-		if [ "$product_name" = "D6502 " ] || [ "$product_name" = "D6503 " ] || [ "$product_name" = "D6506 " ] || [ "$product_name" = "D6543 " ] || [ "$product_name" = "SGP511 " ] || [ "$product_name" = "SGP512 " ] || [ "$product_name" = "SGP521 " ]; then
-			zxzFile="zxz_z2.sh"
-			echo "Using Z2 files..."
+		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem"`
+
+		if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
+			zxzFile="zxz_kmem.sh"
+			echo "/dev/kmem exists. Using files of cubeundcube..."
 		fi
 
 		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
@@ -167,6 +139,14 @@ runinstall() {
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
 
+		if [ "$zxzFile" = "zxz.sh" ]; then
+			echo ""
+			echo "Copying kernel module..."
+			./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+			./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
+		fi
+
 		echo ""
 		echo "============================================="
 		echo "Loading modified towelroot (by geohot)"
@@ -177,10 +157,23 @@ runinstall() {
 
 		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
 		echo "============================================="
-		echo "Check your phone and click \"make it ra1n\""
 		echo ""
-		echo "ATTENTION: Press any key when the phone is DONE rebooting"
-		read tmpvar
+		echo "Check your device and click \"make it ra1n\""
+		echo "Waiting for towelroot to exploit..."
+		
+		rootCheck=false
+		while ! $rootCheck; do
+			echo -n "."
+			sleep 2
+			./${ADBBINARY} wait-for-device
+			isRooted=`./${ADBBINARY} shell "su -c ls -l"`
+			rootCheck=true
+			if [ "$isRooted" = "/system/bin/sh: su: not found" ] || [ "$isRooted" = "" ]; then
+				rootCheck=false
+			fi
+		done
+
+		echo ""
 		./${ADBBINARY} wait-for-device
 		./${ADBBINARY} uninstall com.geohot.towelroot
 		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"

@@ -154,67 +154,16 @@ echo.
 echo You can use one of the recoveries to root your device.
 echo =============================================
 
-if exist easyroottool\tr_signed.apk goto SkipPatch
-if exist easyroottool\tr.apk goto DoPatch
-
-echo.
-if not exist easyroottool\tr.apk (
-	echo =============================================
-	echo Downloading tr.apk, please allow curl.exe
-	echo access through your firewall if downloading
-	echo fails.
-	echo =============================================
-	easyroottool\curl.exe http://towelroot.com/tr.apk -o easyroottool\tr.apk
-)
-
-if exist easyroottool\tr.apk goto DoPatch
-
-echo =============================================
-echo Error downloading tr.apk with curl
-echo Please place tr.apk inside the folder /files/easyroottool
-echo and press any key to continue
-echo You can download tr.apk from http://towelroot.com/
-echo =============================================
-pause
-echo.
-if not exist easyroottool\tr.apk (
-	echo Error: easyroottool\tr.apk not found. Aborting...
-	goto abort
-)
-
-:DoPatch
-
-echo =============================================
-echo Patching tr.apk and creating tr_signed.apk
-echo =============================================
-easyroottool\bspatch.exe easyroottool\tr.apk easyroottool\tr_signed.apk easyroottool\tr.apk.patch
-if not exist easyroottool\tr_signed.apk (
-	echo Error patching tr.apk. Aborting...
-	goto abort
-)
-set tr_md5=
-for /f "delims=" %%i in ('easyroottool\md5.exe easyroottool\tr_signed.apk') do ( set tr_md5=%%i )
-if "%tr_md5%" == "D83363748CB1DCED97CC630419F8D587  easyroottool\tr_signed.apk " (
-	echo OK!
-) else (
-	echo Error patching tr.apk. MD5 does not match. Aborting...
-	echo Current MD5 is "%tr_md5%"
-	echo.
-	del easyroottool\tr_signed.apk
-	goto abort
-)
-echo.
-
-:SkipPatch
-
 echo.
 echo =============================================
 echo Getting ro.build.product
 echo =============================================
 
 set product_name=
-for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i )
+for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i)
 echo Device model is %product_name%
+for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
+echo Firmware is %firmware%
 
 echo.
 echo =============================================
@@ -222,29 +171,11 @@ echo Sending files
 echo =============================================
 
 set zxzFile=zxz.sh
-if "%product_name%" == "D6502 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "D6503 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "D6506 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "D6543 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "SGP511 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "SGP512 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%product_name%" == "SGP521 " (
-	set zxzFile=zxz_z2.sh
-)
-if "%zxzFile%" == "zxz_z2.sh" (
-	echo Using Z2 files...
+
+for /f "delims=" %%i in ('adb shell "ls /dev/kmem"') do ( set kmem_exist=%%i )
+if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
+  set zxzFile="zxz_kmem.sh"
+  echo /dev/kmem exists. Using files of cubeundcube...
 )
 
 adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
@@ -256,6 +187,14 @@ adb shell "chmod 777 /data/local/tmp/zxz.sh"
 adb shell "chmod 777 /data/local/tmp/writekmem"
 adb shell "chmod 777 /data/local/tmp/findricaddr"
 
+if "%zxzFile%" == ""zxz.sh"" (
+  echo.
+  echo Copying kernel module...
+  adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/kernelmodule_patch.sh
+  adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+  adb shell "/data/local/tmp/kernelmodule_patch.sh"
+)
+
 echo.
 echo =============================================
 echo Loading modified towelroot ^(by geohot^)
@@ -266,12 +205,19 @@ adb install easyroottool\tr_signed.apk
 
 adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
 echo =============================================
+echo.
 echo Check your phone and click "make it ra1n"
 echo.
-echo ATTENTION: Press any key when the phone is DONE rebooting
-echo.
-pause
+echo Waiting for towelroot to exploit...
+:RootCheck
+echo|set /p=.
+ping 1.1.1.1 -n 1 -w 2000 > nul
 adb wait-for-device
+set isRooted=""
+for /f "delims=" %%i in ('adb shell "su -c ls -l"') do (set isRooted=%%i)
+if "%isRooted%" == "/system/bin/sh: su: not found" goto RootCheck
+if "%isRooted%" == """" goto RootCheck
+echo.
 adb uninstall com.geohot.towelroot
 adb shell "su -c /data/local/tmp/recovery/install.sh"
 goto cleanup
