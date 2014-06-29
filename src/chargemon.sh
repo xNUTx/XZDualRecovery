@@ -438,8 +438,8 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 		DRSETPROP dr.recovery.boot twrp
 		rm -f ${DRPATH}/default
 	else
-		TECHOL "dr.recovery.boot will be set to PhilZ (default)"
-		DRSETPROP dr.recovery.boot philz
+		TECHOL "dr.recovery.boot will be set to TWRP (default)"
+		DRSETPROP dr.recovery.boot twrp
 	fi
 	TECHOL "dr.initd.active will be set to false (default)"
 	DRSETPROP dr.initd.active false

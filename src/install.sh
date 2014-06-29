@@ -123,7 +123,7 @@ runinstall() {
 
 		zxzFile="zxz.sh"
 
-		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem"`
+		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
 
 		if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
 			zxzFile="zxz_kmem.sh"
@@ -160,15 +160,15 @@ runinstall() {
 		echo ""
 		echo "Check your device and click \"make it ra1n\""
 		echo "Waiting for towelroot to exploit..."
-		
+
 		rootCheck=false
-		while ! $rootCheck; do
-			echo -n "."
+		while ! $rootCheck ; do
+			echo ".\c"
 			sleep 2
 			./${ADBBINARY} wait-for-device
-			isRooted=`./${ADBBINARY} shell "su -c ls -l"`
+			isRooted=`./${ADBBINARY} shell "su -c ls -l" | tr -d '\r\n'`
 			rootCheck=true
-			if [ "$isRooted" = "/system/bin/sh: su: not found" ] || [ "$isRooted" = "" ]; then
+			if [ "$isRooted" = "/system/bin/sh: su: not found" -o "$isRooted" = "" ]; then
 				rootCheck=false
 			fi
 		done
