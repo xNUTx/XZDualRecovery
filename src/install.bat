@@ -197,7 +197,7 @@ if "%zxzFile%" == ""zxz.sh"" (
 
 echo.
 echo =============================================
-echo Loading modified towelroot ^(by geohot^)
+echo Loading geohot's towelroot ^(modified by zxz0O0^)
 echo =============================================
 
 adb uninstall com.geohot.towelroot
@@ -220,6 +220,7 @@ if "%isRooted%" == """" goto RootCheck
 echo.
 adb uninstall com.geohot.towelroot
 adb shell "su -c /data/local/tmp/recovery/install.sh"
+adb shell "su -c rm /system/etc/install-recovery.sh /system/xbin/*su"
 goto cleanup
 
 :end

@@ -149,7 +149,7 @@ runinstall() {
 
 		echo ""
 		echo "============================================="
-		echo "Loading modified towelroot (by geohot)"
+		echo "Loading geohot\'s towelroot (modified by zxz0O0)"
 		echo "============================================="
 
 		./${ADBBINARY} uninstall com.geohot.towelroot
@@ -177,6 +177,7 @@ runinstall() {
 		./${ADBBINARY} wait-for-device
 		./${ADBBINARY} uninstall com.geohot.towelroot
 		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"
+		./${ADBBINARY} shell "su -c rm /system/etc/install-recovery.sh /system/xbin/*su"
 		echo "============================================="
 
 		echo "============================================="
