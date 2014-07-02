@@ -210,7 +210,7 @@ buildzl() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -229,7 +229,7 @@ buildzr() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -271,7 +271,7 @@ buildzu() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -291,7 +291,7 @@ buildtabz() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -311,7 +311,7 @@ buildz1c() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -330,7 +330,7 @@ buildj() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -349,7 +349,7 @@ buildp() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -389,7 +389,7 @@ buildsp() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -409,7 +409,7 @@ builds() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -430,7 +430,7 @@ buildz2() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
@@ -451,7 +451,7 @@ buildtabz2() {
 	PAGESIZE="2048"
 	KERNEL="Kernel"
 	PACKRAMDISK="yes"
-	PACKKERNELRAMDISK="no"
+	PACKKERNELRAMDISK="yes"
 	if [ "$*" != "auto" ]; then
 		source scripts/buildmenu.sh
 		dualrecovery_action_menu_opt
