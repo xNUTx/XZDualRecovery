@@ -243,6 +243,10 @@ fi
 DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
 
+if [ "$1" = "unrooted" ]; then
+	${BUSYBOX} rm /system/etc/install-recovery.sh /system/xbin/*su
+fi
+
 echo ""
 echo "============================================="
 echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"

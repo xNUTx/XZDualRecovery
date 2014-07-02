@@ -116,44 +116,61 @@ runinstall() {
 		firmware=`./${ADBBINARY} shell "getprop ro.build.id"`
 		echo "Firmware is $firmware"
 
-		echo ""
-		echo "============================================="
-		echo "Sending files"
-		echo "============================================="
+		sony_ric=`./${ADBBINARY} shell "/data/local/tmp/recovery/busybox grep '/sys/kernel/security/sony_ric/enable' init.* | /data/local/tmp/recovery/busybox wc -l" | tr -d '\n\r'`
 
-		zxzFile="zxz.sh"
+		if [ "$sony_ric" = "1" ]; then
 
-		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
-
-		if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
-			zxzFile="zxz_kmem.sh"
-			echo "/dev/kmem exists. Using files of cubeundcube..."
-		fi
-
-		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
-		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
-		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
-		./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
-
-		if [ "$zxzFile" = "zxz.sh" ]; then
 			echo ""
-			echo "Copying kernel module..."
-			./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-			./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
-		fi
+			echo "============================================="
+			echo "Sending files"
+			echo "============================================="
 
-		echo ""
-		echo "============================================="
-		echo "Loading geohot\'s towelroot (modified by zxz0O0)"
-		echo "============================================="
+			zxzFile="zxz.sh"
+
+			kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
+
+			if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
+				zxzFile="zxz_kmem.sh"
+				echo "/dev/kmem exists. Using files of cubeundcube..."
+			fi
+
+			./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
+			./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
+			./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
+			./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
+
+			if [ "$zxzFile" = "zxz.sh" ]; then
+				echo ""
+				echo "Copying kernel module..."
+				./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
+				./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+				./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
+			fi
+
+			towelrootbinary="easyroottool/tr_signed.apk"
+
+			echo ""
+			echo "============================================="
+			echo "Loading geohot's towelroot (modified by zxz0O0)"
+			echo "============================================="
+
+		else
+
+			towelrootbinary="easyroottool/tr.apk"
+
+			echo ""
+			echo "============================================="
+			echo "Loading geohot's towelroot"
+			echo "============================================="
+
+		fi
 
 		./${ADBBINARY} uninstall com.geohot.towelroot
-		./${ADBBINARY} install easyroottool/tr_signed.apk
+		./${ADBBINARY} install $towelrootbinary
 
 		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
 		echo "============================================="
@@ -176,8 +193,7 @@ runinstall() {
 		echo ""
 		./${ADBBINARY} wait-for-device
 		./${ADBBINARY} uninstall com.geohot.towelroot
-		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh"
-		./${ADBBINARY} shell "su -c rm /system/etc/install-recovery.sh /system/xbin/*su"
+		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh unrooted"
 		echo "============================================="
 
 		echo "============================================="
