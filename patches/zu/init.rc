@@ -1,3 +1,0 @@
-    write /sys/class/android_usb/android0/idVendor 0FCE
-    write /sys/class/android_usb/android0/idProduct 619E
-    write /sys/class/android_usb/android0/functions mass_storage,adb

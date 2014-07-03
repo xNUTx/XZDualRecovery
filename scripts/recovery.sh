@@ -14,16 +14,25 @@ recoverypatcher() {
 }
 
 patchtwrp() {
+	if [ ! -e "$WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/init.original.rc" ]; then
+		mv $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/init.rc $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/init.original.rc
+	fi
 	cp -vfr $WORKDIR/patches/all/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	cp -vfr $WORKDIR/patches/${DRPATH}/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 }
 
 patchcwm() {
+	if [ ! -e "$WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/init.original.rc" ]; then
+		mv $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/init.rc $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/init.original.rc
+	fi
 	cp -vfr $WORKDIR/patches/all/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	cp -vfr $WORKDIR/patches/${DRPATH}/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 }
 
 patchphilz() {
+	if [ ! -e "$WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/init.original.rc" ]; then
+		mv $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/init.rc $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/init.original.rc
+	fi
 	cp -vfr $WORKDIR/patches/all/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 	cp -vfr $WORKDIR/patches/${DRPATH}/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 }

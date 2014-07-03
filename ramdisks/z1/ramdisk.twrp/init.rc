@@ -5,7 +5,7 @@ on early-init
     start healthd
 
 on init
-    export PATH /sbin
+    export PATH /sbin:/system/bin
     export LD_LIBRARY_PATH .:/sbin
     export ANDROID_ROOT /system
     export ANDROID_DATA /data
@@ -39,7 +39,7 @@ on init
     # Starting the XZDR fix script before anything else gets started
     start xzdualrecovery
 
-on early-boot
+on boot
 
     ifup lo
     hostname localhost
@@ -49,6 +49,16 @@ on early-boot
 
 on property:sys.powerctl=*
    powerctl ${sys.powerctl}
+
+on property:sys.storage.ums_enabled=1
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/functions adb,mass_storage
+    write /sys/class/android_usb/android0/enable 1
+
+on property:sys.storage.ums_enabled=0
+    write /sys/class/android_usb/android0/enable 0
+    write /sys/class/android_usb/android0/functions adb
+    write /sys/class/android_usb/android0/enable ${service.adb.root}
 
 service ueventd /sbin/ueventd
     critical
