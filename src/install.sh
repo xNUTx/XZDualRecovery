@@ -209,7 +209,7 @@ runinstall() {
 	fi
 
 	./${ADBBINARY} wait-for-device
-	./${ADBBINARY} shell "rm -rf /data/local/tmp/*"
+	./${ADBBINARY} shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
 	./${ADBBINARY} kill-server
 	echo ""
 	echo "============================================="

@@ -116,7 +116,7 @@ if "!menu_decision!" == "3" (
 :cleanup
 
 adb wait-for-device
-adb shell "rm -rf /data/local/tmp/*"
+adb shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
 adb kill-server
 
 echo.
