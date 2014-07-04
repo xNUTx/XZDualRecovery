@@ -79,50 +79,6 @@ fi
 
 echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
 
-echo "Correcting system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
-
-#SYSTEM=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-#USERDATA=$(find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata")
-
-#/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $SYSTEM /system 2>&1 >> /tmp/xzdr.log
-#/sbin/busybox mount -t ext4 -o rw,barrier=1,discard $USERDATA /data 2>&1 >> /tmp/xzdr.log
-
-/sbin/busybox mount /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox mount /data 2>&1 >> /tmp/xzdr.log
-
-#cp /system/bin/time_daemon /sbin/
-#/sbin/busybox find /system -name "libqmi_cci.so" -exec cp {} /sbin/ \;
-#/sbin/busybox find /system -name "libqmi_client_qmux.so" -exec cp {} /sbin/ \;
-#/sbin/busybox find /system -name "libqmi_common_so.so" -exec cp {} /sbin/ \;
-#/sbin/busybox find /system -name "libqmi_encdec.so" -exec cp {} /sbin/ \;
-#/sbin/busybox find /system -name "libdiag.so" -exec cp {} /sbin/ \;
-
-# Initialize system clock.
-if [ "$(getprop persist.sys.timezone)" != "" ]; then
-
-	export TZ=$(getprop persist.sys.timezone)
-	echo "Set $(getprop persist.sys.timezone) timezone..." >> /tmp/xzdr.log
-
-else
-
-	export TZ="GMT"
-	echo "Set GMT timezone..." >> /tmp/xzdr.log
-
-fi
-
-/system/bin/time_daemon &
-
-/sbin/busybox sleep 2
-
-/sbin/busybox pkill -f /system/bin/time_daemon 2>&1 >> /tmp/xzdr.log
-
-/sbin/busybox sleep 2
-
-/sbin/busybox umount -l /system 2>&1 >> /tmp/xzdr.log
-/sbin/busybox umount -l /data 2>&1 >> /tmp/xzdr.log
-
-echo "Corrected system time: $(/sbin/busybox date)" >> /tmp/xzdr.log
-
 # Returning values to their original settings
 export LD_LIBRARY_PATH="$_LDLIBPATH"
 export PATH="$_PATH"

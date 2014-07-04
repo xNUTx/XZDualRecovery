@@ -2,7 +2,7 @@
 
 #patch kernel module vermagic by zxz0O0
 
-dd bs=85 skip=1 if=/data/local/tmp/zxz.sh of=/data/local/tmp/wp_mod.ko
+dd bs=397 skip=1 if=/data/local/tmp/zxz.sh of=/data/local/tmp/wp_mod.ko
 if [ ! -f /data/local/tmp/wp_mod.ko ]; then
 	echo "Error patching kernel module. File not found."
 	exit 1
