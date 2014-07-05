@@ -12,5 +12,5 @@
 /dev/block/platform/msm_sdcc.1/by-name/modemst1  /boot/modem_fs1   emmc  n/a       n/a
 /dev/block/platform/msm_sdcc.1/by-name/modemst2  /boot/modem_fs2   emmc  n/a       n/a
 
-/devices/msm_sdcc.2/mmc_host                     /storage/sdcard1  auto  defaults  voldmanaged=sdcard1:auto
-/devices/platform/xhci-hcd                       /storage/usbdisk  auto  defaults  voldmanaged=usbdisk:auto
+/devices/msm_sdcc.2/mmc_host                     auto              auto  defaults  voldmanaged=sdcard1:auto
+/devices/platform/xhci-hcd                       audo              auto  defaults  voldmanaged=usbdisk:auto

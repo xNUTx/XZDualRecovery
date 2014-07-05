@@ -121,7 +121,7 @@ echo ""
 
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
 # Thanks to MohammadAG for this method
-if [ -e "/data/local/tmp/wp_mod.ko" ]; then
+if [ -e "/data/local/tmp/wp_mod.ko" -a ! -e "/sbin/ricc" ]; then
         insmod /data/local/tmp/wp_mod.ko
 fi
 # Thanks to cubeandcube for this method

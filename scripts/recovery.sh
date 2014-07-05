@@ -39,6 +39,9 @@ patchphilz() {
 
 # TWRP
 copytwrp() {
+	if [ "$1" = "auto" -a ! -e "$WORKDIR/src/cyanogen/$REPO/twrp/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio" ]; then
+		return 0
+	fi
 	echo "Refresing TWRP source"
 	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp" ]; then
 		rm -rf $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/*
@@ -93,6 +96,9 @@ maketwrp() {
 
 # CWM
 copycwm() {
+	if [ "$1" = "auto" -a ! -e "$WORKDIR/src/cyanogen/$REPO/cwm/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio" ]; then
+		return 0
+	fi
 	echo "Refresing CWM source"
 	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm" ]; then
 		rm -rf $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/*
@@ -147,51 +153,33 @@ makecwm() {
 
 # PhilZ Touch Recovery CWM
 copyphilz() {
-	if [ "$BUILDPHILZ" = "yes" ]; then
-		echo "Refresing PhilZ source"
-		if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.philz" ]; then
-			rm -rf $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/*
-		else
-		mkdir $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-		fi
-		if [ "$1" != "auto" ]; then
-			echo "Want to sync and build the latest PhilZ version from GitHub? (y/n)"
-			read answer
-			if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-				compilephilz
-			fi
-		fi
-		cp -fr $WORKDIR/src/cyanogen/$REPO/philz/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-		cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-		echo "unpacking source package"
-		cpio -i -u < ramdisk-recovery.cpio
-		rm -f ramdisk-recovery.cpio
-		cd $WORKDIR
-		if [ "$1" = "auto" ]; then
-			sleep 2
-		else
-			echo "Press enter to return to the recovery menu!"
-		        read
-		fi
+	if [ "$1" = "auto" -a ! -e "$WORKDIR/src/cyanogen/$REPO/philz/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio" ]; then
+		return 0
+	fi
+	echo "Refresing PhilZ source"
+	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.philz" ]; then
+		rm -rf $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/*
 	else
-		echo "Refreshing PhilZ source"
-		if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.philz" ]; then
-			rm -rf $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/*
-		else
-			mkdir $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+		mkdir $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	fi
+	if [ "$1" != "auto" ]; then
+		echo "Want to sync and build the latest PhilZ version from GitHub? (y/n)"
+		read answer
+		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+			compilephilz
 		fi
-		cp -fr $WORKDIR/src/${DRPATH}/ramdisk-philz.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-		cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
-		echo "unpacking source package"
-		cpio -i -u < ramdisk-philz.cpio
-		rm -f ramdisk-philz.cpio
-		cd $WORKDIR
-		if [ "$1" = "auto" ]; then
-			sleep 2
-		else
-			echo "Press enter to return to the recovery menu!"
-		        read
-		fi
+	fi
+	cp -fr $WORKDIR/src/cyanogen/$REPO/philz/android/system/out/target/product/${CODENAME}/ramdisk-recovery.cpio $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	cd $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	echo "unpacking source package"
+	cpio -i -u < ramdisk-recovery.cpio
+	rm -f ramdisk-recovery.cpio
+	cd $WORKDIR
+	if [ "$1" = "auto" ]; then
+		sleep 2
+	else
+		echo "Press enter to return to the recovery menu!"
+	        read
 	fi
 }
 

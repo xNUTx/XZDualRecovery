@@ -116,61 +116,44 @@ runinstall() {
 		firmware=`./${ADBBINARY} shell "getprop ro.build.id"`
 		echo "Firmware is $firmware"
 
-		sony_ric=`./${ADBBINARY} shell "/data/local/tmp/recovery/busybox grep '/sys/kernel/security/sony_ric/enable' init.* | /data/local/tmp/recovery/busybox wc -l" | tr -d '\n\r'`
+		echo ""
+		echo "============================================="
+		echo "Sending files"
+		echo "============================================="
 
-		if [ "$sony_ric" = "1" ]; then
+		zxzFile="zxz.sh"
 
-			echo ""
-			echo "============================================="
-			echo "Sending files"
-			echo "============================================="
+		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
 
-			zxzFile="zxz.sh"
-
-			kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
-
-			if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
-				zxzFile="zxz_kmem.sh"
-				echo "/dev/kmem exists. Using files of cubeundcube..."
-			fi
-
-			./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
-			./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
-			./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
-			./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
-
-			if [ "$zxzFile" = "zxz.sh" ]; then
-				echo ""
-				echo "Copying kernel module..."
-				./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
-				./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-				./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
-			fi
-
-			towelrootbinary="easyroottool/tr_signed.apk"
-
-			echo ""
-			echo "============================================="
-			echo "Loading geohot's towelroot (modified by zxz0O0)"
-			echo "============================================="
-
-		else
-
-			towelrootbinary="easyroottool/tr.apk"
-
-			echo ""
-			echo "============================================="
-			echo "Loading geohot's towelroot"
-			echo "============================================="
-
+		if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
+			zxzFile="zxz_kmem.sh"
+			echo "/dev/kmem exists. Using files of cubeundcube..."
 		fi
 
+		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
+		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
+		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
+		./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
+
+		if [ "$zxzFile" = "zxz.sh" ]; then
+			echo ""
+			echo "Copying kernel module..."
+			./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
+			./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+			./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
+		fi
+
+		echo ""
+		echo "============================================="
+		echo "Loading geohot's towelroot (modified by zxz0O0)"
+		echo "============================================="
+
 		./${ADBBINARY} uninstall com.geohot.towelroot
-		./${ADBBINARY} install $towelrootbinary
+		./${ADBBINARY} install easyroottool/tr_signed.apk
 
 		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
 		echo "============================================="

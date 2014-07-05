@@ -165,62 +165,43 @@ echo Device model is %product_name%
 for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
 echo Firmware is %firmware%
 
-for /f "delims=" %%i in ('adb shell "/data/local/tmp/recovery/busybox grep '/sys/kernel/security/sony_ric/enable' init.* | /data/local/tmp/recovery/busybox wc -l") do ( set sony_ric=%%i )
+echo.
+echo =============================================
+echo Sending files
+echo =============================================
 
-if %sony_ric% = 1 (
+set zxzFile=zxz.sh
 
-	echo.
-	echo =============================================
-	echo Sending files
-	echo =============================================
-
-	set zxzFile=zxz.sh
-
-	for /f "delims=" %%i in ('adb shell "ls /dev/kmem"') do ( set kmem_exist=%%i )
-	if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
-	  set zxzFile="zxz_kmem.sh"
-	  echo /dev/kmem exists. Using files of cubeundcube...
-	)
-
-	adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
-	adb push easyroottool\writekmem /data/local/tmp/
-	adb push easyroottool\findricaddr /data/local/tmp/
-	adb shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
-	adb shell "chmod 777 /data/local/tmp/busybox"
-	adb shell "chmod 777 /data/local/tmp/zxz.sh"
-	adb shell "chmod 777 /data/local/tmp/writekmem"
-	adb shell "chmod 777 /data/local/tmp/findricaddr"
-
-	if "%zxzFile%" == ""zxz.sh"" (
-	  echo.
-	  echo Copying kernel module...
-	  adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/kernelmodule_patch.sh
-	  adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-	  adb shell "/data/local/tmp/kernelmodule_patch.sh"
-	)
-
-	set towelrootbinary=easyroottool/tr_signed.apk
-
-	echo.
-	echo =============================================
-	echo Loading geohot's towelroot ^(modified by zxz0O0^)
-	echo =============================================
-
+for /f "delims=" %%i in ('adb shell "ls /dev/kmem"') do ( set kmem_exist=%%i )
+if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
+  set zxzFile="zxz_kmem.sh"
+  echo /dev/kmem exists. Using files of cubeundcube...
 )
 
-if %sony_ric% = 0 (
+adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
+adb push easyroottool\writekmem /data/local/tmp/
+adb push easyroottool\findricaddr /data/local/tmp/
+adb shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
+adb shell "chmod 777 /data/local/tmp/busybox"
+adb shell "chmod 777 /data/local/tmp/zxz.sh"
+adb shell "chmod 777 /data/local/tmp/writekmem"
+adb shell "chmod 777 /data/local/tmp/findricaddr"
 
-	set towelrootbinary=easyroottool/tr.apk
-
-	echo.
-	echo =============================================
-	echo Loading geohot's towelroot
-	echo =============================================
-
+if "%zxzFile%" == ""zxz.sh"" (
+  echo.
+  echo Copying kernel module...
+  adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/kernelmodule_patch.sh
+  adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+  adb shell "/data/local/tmp/kernelmodule_patch.sh"
 )
+
+echo.
+echo =============================================
+echo Loading geohot's towelroot ^(modified by zxz0O0^)
+echo =============================================
 
 adb uninstall com.geohot.towelroot
-adb install %towelrootbinary%
+adb install easyroottool/tr_signed.apk
 
 adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
 echo =============================================

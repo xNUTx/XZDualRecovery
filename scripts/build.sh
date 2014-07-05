@@ -19,6 +19,9 @@ doall() {
 	cleanuptmp
 	cleanupout lockeddualrecovery
 	copysource
+	copytwrp auto
+	copycwm auto
+	copyphilz auto
 	recoverypatcher auto
 	maketwrp $PACKRAMDISK auto
 	makecwm $PACKRAMDISK auto
@@ -36,6 +39,9 @@ doallkernel() {
 	copysource
 	selectkernel
 	unpackkernel auto
+	copytwrp auto
+	copycwm auto
+	copyphilz auto
 	recoverypatcher auto
 	maketwrp $PACKKERNELRAMDISK auto
 	makecwm $PACKKERNELRAMDISK auto
