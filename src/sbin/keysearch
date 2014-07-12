@@ -1,0 +1,62 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+if [ "$1" = "gpio" ]; then
+	# Find the gpio-keys node, to listen on the right input event
+	writelog "Trying to find the gpio-keys event node."
+	for INPUTUEVENT in `find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			writelog "Found and will be using /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			exit 0
+		fi
+
+	done
+	exit 1
+fi
+
+if [ "$1" = "pwr" ]; then 
+	# Find the power key node, to listen on the right input event
+	writelog "Trying to find the power key event node."
+	# pm8xxx (xperia Z and similar)
+	for INPUTUEVENT in `find /sys/devices \( -path "*pm8xxx*" -path "*pwrkey*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			writelog "Found and will be monitoring /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			exit 0
+		fi
+
+	done
+	# qpnp_pon (xperia Z1 and similar)
+	for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+
+		INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+
+		if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
+			writelog "Found and will be monitoring /dev/${INPUTDEV}!"
+			echo "/dev/${INPUTDEV}"
+			exit 0
+		fi
+
+	done
+	exit 1
+fi

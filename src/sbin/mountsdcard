@@ -1,0 +1,107 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+# Nodes setup
+BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
+BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
+
+# Checking if we can mount an external storage
+# The external storage is prefered, cache will now only be used if its absent.
+
+# Create device node if it doesn't exist
+if [ ! -b ${BOOTREC_EXTERNAL_SDCARD} ]; then
+	execlog mknod -m 660 ${BOOTREC_EXTERNAL_SDCARD_NODE}
+fi
+
+# Create mountpoint if it doesn't exist
+if [ ! -d /storage/sdcard1 ]; then
+	execlog mount -o remount,rw rootfs /
+	execlog mkdir -p /storage/sdcard1
+	execlog mount -o remount,ro rootfs /
+fi
+
+#86|87) execlog mount -t ntfs ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1; return $?;;
+MOUNTSDCARD(){
+	case $* in
+		06|6|0B|b|0C|c|0E|e) execlog mount -t vfat ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1; return $?;;
+		07|7) execlog insmod /system/lib/modules/nls_utf8.ko;
+		      execlog insmod /system/lib/modules/texfat.ko;
+		      execlog mount -t texfat ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
+		      return $?;;
+		83) PTYPE=$(blkid ${BOOTREC_EXTERNAL_SDCARD} | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
+		    execlog mount -t $PTYPE ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
+		    return $?;;
+		 *) return 1;;
+	esac
+	writelog "### MOUNTSDCARD did not run with a parameter!";
+	return 1;
+}
+
+# Testing if bootflag is set, that changes the location of the fs type code.
+BOOT=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $2}'`
+if [ "${BOOT}" = "*" ]; then
+	FSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $6}'`
+	TXTFSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{for(i=7;i<=NF;++i) printf("%s ", $i)}'`
+	writelog "### SDCard1 FS found: ${TXTFSTYPE} with code '${FSTYPE}', bootflag was set.";
+else
+	FSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $5}'`
+	TXTFSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{for(i=6;i<=NF;++i) printf("%s ", $i)}'`
+	writelog "### SDCard1 FS found: ${TXTFSTYPE} with code '${FSTYPE}'.";
+fi
+
+MOUNTSDCARD ${FSTYPE}
+if [ "$?" -eq "0" ]; then
+
+	# We can! Lets do it, this will keep recovery working even if cache is somehow destroyed.
+	writelog "### Mounted SDCard1!"
+	
+	# Cleanup old chargemon directories
+	if [ -d "/cache/$XZDRFolder" ]; then
+		execlog rm -rf /cache/chargemon
+		execlog rm -rf /cache/$XZDRFolder
+	fi
+
+	export XZDRPATH="/storage/sdcard1/$XZDRFolder"
+	
+	if [ ! -d "$XZDRPATH" ]; then
+		writelog "Creating the $XZDRFolder directory on SDCard1."
+		execlog mkdir $XZDRPATH
+	fi
+
+else
+
+	writelog "### Not mounting SDCard1!";
+	export XZDRPATH="/cache/$XZDRFolder"
+
+	if [ ! -d "$XZDRPATH" ]; then
+		writelog "Creating the $XZDRFolder directory in /cache."
+		execlog mkdir $XZDRPATH
+	fi
+
+fi
+
+# Logfile rotation
+writelog "Logfile rotation..."
+if [ -f $XZDRPATH/XZDRLogfile ];then
+	execlog mv $XZDRPATH/XZDRLogfile $XZDRPATH/XZDRLogfile.old
+fi
+execlog touch $XZDRPATH/XZDRLogfile
+execlog chmod 660 $XZDRPATH/XZDRLogfile
+
+export XZDRLOGFILE="$XZDRPATH/XZDualRecovery.log"
+mv /tmp/XZDualRecovery.log $XZDRPATH/XZDualRecovery.log
+
+exit 0

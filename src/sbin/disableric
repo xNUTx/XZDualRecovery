@@ -1,0 +1,78 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+writelog "Disableric starting!"
+
+# Taking care of the kernel protection
+if [ "$(grep '/sys/kernel/security/sony_ric/enable' init.* | wc -l)" = "1" ]; then
+	execlog mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+	execlog mkdir -p /sys/kernel/security/sony_ric
+	execlog chmod 755 /sys/kernel/security/sony_ric
+	echo "0" > /sys/kernel/security/sony_ric/enable
+fi
+
+# Thanks to MohammadAG for this method
+if [ -e "/system/.xzdr/lib/wp_mod.ko" ]; then
+        insmod /system/.xzdr/lib/wp_mod.ko
+fi
+
+# Thanks to cubeundcube for this method
+if [ -e "/system/.xzdr/bin/writekmem" -a -e "/system/.xzdr/etc/ricaddr" ]; then
+        writekmem `cat /system/.xzdr/etc/ricaddr` 0
+fi
+
+# Assuming ric exists on the ramdisk
+RICPATH="/sbin/ric" 
+
+# and then checking if it exists in the ROM...
+if [ -e "/system/bin/ric" ]; then 
+
+	RICPATH="/system/bin/ric"
+
+fi
+
+# Just to make sure the rootfs has been remounted writable. It should already though...
+execlog mount -o remount,rw /
+execlog mount -o remount,rw /system
+
+# Replace the ric binary...
+execlog rm -rf $RICPATH
+
+execlog touch $RICPATH
+echo "#!/system/bin/sh" >> $RICPATH
+echo 'PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"' >> $RICPATH
+echo "while :" >> $RICPATH
+echo "do" >> $RICPATH
+echo 'if [ -f "/sys/kernel/security/sony_ric/enable" ]; then' >> $RICPATH
+echo "echo 0 > /sys/kernel/security/sony_ric/enable" >> $RICPATH
+echo "fi" >> $RICPATH
+echo 'if [ "$(busybox blockdev --getro $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system))" = "1" ]; then' >> $RICPATH
+echo "busybox blockdev --setrw $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system)" >> $RICPATH
+echo "fi" >> $RICPATH
+echo "sleep 60" >> $RICPATH
+echo "done" >> $RICPATH
+
+execlog chmod 755 $RICPATH
+
+execlog touch /tmp/killedric
+
+writelog "Disableric done, exitting!"
+
+execlog mount -o remount,ro /system
+execlog mount -o remount,ro /
+
+exit 0
+

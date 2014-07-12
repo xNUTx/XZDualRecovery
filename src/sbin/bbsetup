@@ -1,0 +1,35 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+writelog "Install busybox to /sbin..."
+busybox cp /system/.xzdr/bin/busybox /sbin/
+
+if [ ! -f "/system/.xzdr/.bbsetup" ]; then
+
+	writelog "Creating symlinks in /system/.xzdr/sbin to all functions of busybox."
+	# Create a symlink for each of the supported commands
+	for sym in `busybox --list`; do
+		writelog "Linking busybox to /system/.xzdr/sbin/$sym"
+		busybox ln -sf /system/.xzdr/bin/busybox /system/.xzdr/sbin/$sym
+	done
+
+	busybox touch /system/.xzdr/.bbsetup
+
+else
+
+	writelog "Skipping creation of busybox symlinks."
+
+fi

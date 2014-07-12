@@ -1,0 +1,60 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+if [ ! -d "/system/etc/init.d" ]; then
+	writelog "No init.d directory found, creating it now!"
+	writelog "To enable init.d support, set dr.enable.initd to true in XZDR.prop!"
+	mkdir /system/etc/init.d
+fi
+
+# Initial setup of the XZDR.prop file, only once or whenever the file was removed
+if [ ! -f "$XZDRPATH/XZDR.prop" ]; then
+	writelog "Creating XZDR.prop file."
+	touch $XZDRPATH/XZDR.prop
+	if [ -f "$XZDRPATH/default" -a "`cat $XZDRPATH/default`" = "twrp" ]; then
+		writelog "dr.recovery.boot will be set to TWRP"
+		drsetprop dr.recovery.boot twrp
+		rm -f $XZDRPATH/default
+	else
+		writelog "dr.recovery.boot will be set to TWRP (default)"
+		drsetprop dr.recovery.boot twrp
+	fi
+	writelog "dr.initd.active will be set to false (default)"
+	drsetprop dr.initd.active false
+	writelog "dr.ramdisk.boot will be set to false (default)"
+	drsetprop dr.ramdisk.boot false
+	if [ -f "/system/bin/ramdisk.stock.cpio.lzma" ]; then
+		writelog "dr.ramdisk.path will /system/bin/ramdisk.stock.cpio.lzma"
+		drsetprop dr.ramdisk.path /system/bin/ramdisk.stock.cpio.lzma
+	else
+		writelog "dr.ramdisk.path will be empty (default)"
+		drsetprop dr.ramdisk.path
+	fi
+	drsetprop dr.gpiokeys.node $(gpioKeysSearch)
+	drsetprop dr.pwrkey.node $(pwrkeySearch)
+fi
+
+# Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
+if [ "$(drgetprop dr.pwrkey.node)" = "" -o "$(drgetprop dr.pwrkey.node)" = "false" ]; then
+	drsetprop dr.pwrkey.node $(pwrkeySearch)
+fi
+if [ "$(drgetprop dr.gpiokeys.node)" = "" -o "$(drgetprop dr.gpiokeys.node)" = "false" ]; then
+	drsetprop dr.gpiokeys.node $(gpioKeysSearch)
+fi
+
+cp /system/.xzdr/sbin/init.sh /sbin/
+
+exit 0

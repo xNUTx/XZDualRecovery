@@ -1,9 +1,0 @@
-# These declarations must match the mount statements under 'on fs' in
-# the init.rc files (as found in /system/core/ and /device/sony)
-# and the declarations in
-# device/sony/fusion3/fsconfig*.xml
-
-/data             ext4 /dev/block/platform/msm_sdcc.1/by-name/userdata
-/cache            ext4 /dev/block/platform/msm_sdcc.1/by-name/cache
-/boot/modem_fs1   raw /dev/block/platform/msm_sdcc.1/by-name/m9kefs1
-/boot/modem_fs2   raw /dev/block/platform/msm_sdcc.1/by-name/m9kefs2

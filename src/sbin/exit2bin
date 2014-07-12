@@ -1,0 +1,32 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+# Turn on a red led, as a visual warning to the user
+setled on 255 0 0
+
+sleep 2
+
+# Turn off LED
+setled off
+
+# Ending log
+DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
+echo "STOPPING Recovery at ${DATETIME}" >> $XZDRLOGFILE
+
+umount -l /storage/sdcard1
+
+exec /system/bin/$1.stock
+exit 0

@@ -1,16 +1,35 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-if exist "%PROGRAMFILES(X86)%" (
-	set CHOICE=choice64.exe
-	set CHOICE_TEXT_PARAM=/m
+REM #####################
+REM ## CHOICE CHECK
+REM #####################
+choice /T 0 /D Y /C Y /M test > nul 2>&1
+if "!errorlevel!" == "1" (
+	set CHOICE=choice
+	set CHOICE_TEXT_PARAM=/M
 ) else (
-	if "%PROCESSOR_ARCHITECTURE%" == "x86" (
-		set CHOICE=choice32.exe
+	choice /T 0 /D Y /C Y test > nul 2>&1
+	if "!errorlevel!" == "1" (
+		set CHOICE=choice
 		set CHOICE_TEXT_PARAM=
 	) else (
-		set CHOICE=choice64.exe
-		set CHOICE_TEXT_PARAM=/m
+		tools\choice32.exe /TY,1 /CY > nul 2>&1
+		if "!errorlevel!" == "1" (
+			set CHOICE=tools\choice32.exe
+		) else (
+			tools\choice32_alt.exe /T 0 /D Y /C Y /M test > nul 2>&1
+			if "!errorlevel!" == "1" (
+				set CHOICE=tools\choice32_alt.exe
+				set CHOICE_TEXT_PARAM=/M
+			) else (
+				tools\choice64.exe /T 0 /D Y /C Y /M test > nul 2>&1
+				if "!errorlevel!" == "1" (
+					set CHOICE=tools\choice64.exe
+					set CHOICE_TEXT_PARAM=/M
+				)
+			)
+		)
 	)
 )
 
@@ -174,7 +193,7 @@ set zxzFile=zxz.sh
 
 for /f "delims=" %%i in ('adb shell "ls /dev/kmem"') do ( set kmem_exist=%%i )
 if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
-  set zxzFile="zxz_kmem.sh"
+  set zxzFile=zxz_kmem.sh
   echo /dev/kmem exists. Using files of cubeundcube...
 )
 
@@ -187,7 +206,7 @@ adb shell "chmod 777 /data/local/tmp/zxz.sh"
 adb shell "chmod 777 /data/local/tmp/writekmem"
 adb shell "chmod 777 /data/local/tmp/findricaddr"
 
-if "%zxzFile%" == ""zxz.sh"" (
+if "%zxzFile%" == "zxz.sh" (
   echo.
   echo Copying kernel module...
   adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/kernelmodule_patch.sh

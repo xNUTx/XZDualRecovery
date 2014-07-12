@@ -1,0 +1,30 @@
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+# We want to set this only if the XZDR.prop file exists...
+if [ ! -f "$XZDRPATH/XZDR.prop" ]; then
+	echo "" > $XZDRPATH/XZDR.prop
+fi
+
+PROP=$(drgetprop $1)
+
+if [ "$PROP" != "false" ]; then
+	sed -i 's|'$1'=[^ ]*|'$1'='$2'|' $XZDRPATH/XZDR.prop
+else
+	echo "$1=$2" >> $XZDRPATH/XZDR.prop
+fi
+
+exit 0

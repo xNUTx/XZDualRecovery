@@ -1,0 +1,45 @@
+#!/system/bin/sh
+#
+# Dual Recovery for many Sony Xperia devices!
+#
+# Author:
+#   [NUT]
+#!/system/.xzdr/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+# If it's empty, see if what was requested was a XZDR.prop value!
+VAR="$*"
+PROP=$(grep "$VAR" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }')
+
+if [ "$PROP" = "" ]; then
+
+	# If it still is empty, try to get it from the build.prop
+	PROP=$(grep "$VAR" /system/build.prop | awk -F'=' '{ print $NF }')
+
+fi
+
+if [ "$PROP" = "" ]; then
+
+	# If it still is empty, try to get it through getprop
+	PROP=$(/system/bin/getprop $VAR)
+
+fi
+
+if [ "$VAR" != "" -a "$PROP" != "" ]; then
+	echo $PROP
+else
+	echo "false"
+fi

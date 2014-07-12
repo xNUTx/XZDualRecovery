@@ -1,0 +1,60 @@
+#!/system/bin/sh
+#
+# Multi Recovery for many Sony Xperia devices!
+#
+# Authors:
+#   [NUT], AngelBob, Olivier and shoey63
+#
+# - Thanks go to DooMLoRD for the keycodes and a working example!
+# - My gratitude also goes out to Androxyde for his sometimes briliant
+#   ideas to simplify things while writing the scripts!
+#
+###########################################################################
+
+set +x
+PATH="/system/.xzdr/bin:/system/.xzdr/sbin:/sbin"
+
+LOGFILE="$2"
+
+REDLED=$(busybox ls -1 /sys/class/leds|busybox grep "red\|LED1_R")
+GREENLED=$(busybox ls -1 /sys/class/leds|busybox grep "green\|LED1_G")
+BLUELED=$(busybox ls -1 /sys/class/leds|busybox grep "blue\|LED1_B")
+
+BRIGHTNESS_LED_RED="/sys/class/leds/$REDLED/brightness"
+CURRENT_LED_RED="/sys/class/leds/$REDLED/led_current"
+BRIGHTNESS_LED_GREEN="/sys/class/leds/$GREENLED/brightness"
+CURRENT_LED_GREEN="/sys/class/leds/$GREENLED/led_current"
+BRIGHTNESS_LED_BLUE="/sys/class/leds/$BLUELED/brightness"
+CURRENT_LED_BLUE="/sys/class/leds/$BLUELED/led_current"
+
+if [ "$1" = "on" ]; then
+
+        TECHOL "Turn on LED R: $2 G: $3 B: $4"
+        echo "$2" > ${BRIGHTNESS_LED_RED}
+        echo "$3" > ${BRIGHTNESS_LED_GREEN}
+        echo "$4" > ${BRIGHTNESS_LED_BLUE}
+
+        if [ -f "$CURRENT_LED_RED" -a -f "$CURRENT_LED_GREEN" -a -f "$CURRENT_LED_BLUE" ]; then
+
+                echo "$2" > ${CURRENT_LED_RED}
+                echo "$3" > ${CURRENT_LED_GREEN}
+                echo "$4" > ${CURRENT_LED_BLUE}
+        fi
+
+else
+
+        TECHOL "Turn off LED"
+        echo "0" > ${BRIGHTNESS_LED_RED}
+        echo "0" > ${BRIGHTNESS_LED_GREEN}
+        echo "0" > ${BRIGHTNESS_LED_BLUE}
+
+        if [ -f "$CURRENT_LED_RED" -a -f "$CURRENT_LED_GREEN" -a -f "$CURRENT_LED_BLUE" ]; then
+
+                echo "0" > ${CURRENT_LED_RED}
+                echo "0" > ${CURRENT_LED_GREEN}
+                echo "0" > ${CURRENT_LED_BLUE}
+        fi
+
+fi
+
+exit 0
