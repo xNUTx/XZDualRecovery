@@ -16,6 +16,10 @@ copysource() {
 }
 
 doall() {
+	if [ "$1" = "single" ]; then
+		source scripts/recovery.sh
+		source scripts/build.sh
+	fi
 	cleanuptmp
 	cleanupout lockeddualrecovery
 	copysource

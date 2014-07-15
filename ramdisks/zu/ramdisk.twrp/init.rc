@@ -19,6 +19,8 @@ on init
     # Sony kernel, so lets set SELinux to permissive
     write /sys/fs/selinux/enforce 0
 
+on boot
+
     # Starting the XZDR fix script before anything else gets started
     start xzdualrecovery
 

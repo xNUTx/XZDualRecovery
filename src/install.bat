@@ -59,7 +59,12 @@ echo [ !menu_currentIndex!. Installation on ROM rooted with SuperUser ]
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
 
-echo [ !menu_currentIndex!. Installation on unrooted ROM using TowelRoot ]
+echo [ !menu_currentIndex!. Installation on unrooted ROM using the TowelRoot method ]
+
+set /a menu_currentIndex+=1 >nul
+set menu_choices=!menu_choices!!menu_currentIndex!
+
+echo [ !menu_currentIndex!. Install ADB drivers to windows ]
 
 set /a menu_currentIndex+=1 >nul
 set menu_choices=!menu_choices!!menu_currentIndex!
@@ -72,7 +77,7 @@ set menu_decision=%errorlevel%
 set menu_currentIndex=
 set menu_choices=
 
-if "!menu_decision!" == "4" (
+if "!menu_decision!" == "5" (
 	goto abort
 )
 
@@ -130,6 +135,10 @@ if "!menu_decision!" == "2" (
 
 if "!menu_decision!" == "3" (
 	goto easyRootTool
+)
+
+if "!menu_decision!" == "4" (
+	goto WinDriverSetup
 )
 
 :cleanup
@@ -198,11 +207,14 @@ if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
 )
 
 adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
+adb push easyroottool\towelzxperia /data/local/tmp/
+adb push easyroottool\libexploit.so /data/local/tmp/
 adb push easyroottool\writekmem /data/local/tmp/
 adb push easyroottool\findricaddr /data/local/tmp/
 adb shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
 adb shell "chmod 777 /data/local/tmp/busybox"
 adb shell "chmod 777 /data/local/tmp/zxz.sh"
+adb shell "chmod 777 /data/local/tmp/towelzxperia"
 adb shell "chmod 777 /data/local/tmp/writekmem"
 adb shell "chmod 777 /data/local/tmp/findricaddr"
 
@@ -216,29 +228,26 @@ if "%zxzFile%" == "zxz.sh" (
 
 echo.
 echo =============================================
-echo Loading geohot's towelroot ^(modified by zxz0O0^)
+echo Installing using zxz0O0's towelzxperia ^(using geohot's towelroot library^)
 echo =============================================
 
-adb uninstall com.geohot.towelroot
-adb install easyroottool/tr_signed.apk
-
-adb shell "am start -n com.geohot.towelroot/.TowelRoot" >nul 2>&1
-echo =============================================
-echo.
-echo Check your phone and click "make it ra1n"
-echo.
-echo Waiting for towelroot to exploit...
-:RootCheck
-echo|set /p=.
-ping 1.1.1.1 -n 1 -w 2000 > nul
-adb wait-for-device
-set isRooted=""
-for /f "delims=" %%i in ('adb shell "su -c ls -l"') do (set isRooted=%%i)
-if "%isRooted%" == "/system/bin/sh: su: not found" goto RootCheck
-if "%isRooted%" == """" goto RootCheck
-echo.
-adb uninstall com.geohot.towelroot
-adb shell "su -c /data/local/tmp/recovery/install.sh unrooted"
+adb shell "/data/local/tmp/towelzxperia /data/local/tmp/recovery/install.sh unrooted"
 goto cleanup
+
+:WinDriverSetup
+echo.
+echo =============================================
+echo Start installing adb driver. It's not signed,
+echo but it's safe to install!
+echo =============================================
+echo.
+RUNDLL32.EXE SETUPAPI.DLL,InstallHinfSection DefaultInstall 132 adbdrivers/android_winusb.inf
+echo.
+echo =============================================
+echo            Installation finished!
+echo =============================================
+echo.
+ping 1.1.1.1 -n 1 -w 2000 > nul
+goto menu
 
 :end

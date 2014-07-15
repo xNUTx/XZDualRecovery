@@ -143,7 +143,7 @@ buildlockedparts_menu_opt() {
                 6) clear; packinstaller; buildlockedparts_menu_opt;;
                 c|C) clear; cleanuptmp; cleanupout lockeddualrecovery; buildlockedparts_menu_opt;;
                 s|S) clear; copyxzsource; buildlockedparts_menu_opt;;
-                a|A) clear; doall; buildlockedparts_menu_opt;;
+                a|A) clear; doall single; buildlockedparts_menu_opt;;
                 b|B) clear; dualrecovery_action_menu_opt;;
                 q|Q) clear; exit;;
                 *) echo "$num is not a valid option"; sleep 3; clear; buildlockedparts_menu_opt;

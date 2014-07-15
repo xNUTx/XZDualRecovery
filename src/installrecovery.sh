@@ -4,7 +4,7 @@ set +x
 _PATH="$PATH"
 export PATH="/system/bin:/system/xbin:/sbin"
 
-BUSYBOX=""
+BUSYBOX="/data/local/tmp/recovery/busybox"
 
 LOGDIR="XZDualRecovery"
 SECUREDIR="/system/.XZDualRecovery"
@@ -12,14 +12,6 @@ DRPATH="/storage/sdcard1/${LOGDIR}"
 
 if [ ! -d "$DRPATH" ]; then
 	DRPATH="/cache/${LOGDIR}"
-fi
-
-if [ -x "/system/xbin/busybox" -a "`/system/xbin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-	BUSYBOX="/system/xbin/busybox"
-elif [ -x "/system/bin/busybox" -a "`/system/bin/busybox --list | /data/local/tmp/recovery/busybox grep pkill | /data/local/tmp/recovery/busybox wc -l`" = "1" ]; then
-	BUSYBOX="/system/bin/busybox"
-else
-	BUSYBOX="/data/local/tmp/recovery/busybox"
 fi
 
 # Find the gpio-keys node, to listen on the right input event
@@ -120,20 +112,21 @@ echo "#####"
 echo ""
 
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
+if [ "$1" = "unrooted" ]; then
+	/data/local/tmp/zxz.sh
+fi
+# Thanks to Androxyde for this method!
+RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
+if [ "$RICPATH" != "" ]; then
+	${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+fi
 # Thanks to MohammadAG for this method
-if [ -e "/data/local/tmp/wp_mod.ko" -a ! -e "/sbin/ricc" ]; then
+if [ -e "/data/local/tmp/wp_mod.ko" ]; then
         insmod /data/local/tmp/wp_mod.ko
 fi
 # Thanks to cubeandcube for this method
 if [ -e "/data/local/tmp/writekmem" -a -e "/data/local/tmp/ricaddr" ]; then
         /data/local/tmp/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/ricaddr` 0
-fi
-if [ ! -e "/data/local/tmp/wp_mod.ko" -a ! -e "/data/local/tmp/writekmem" -a ! -e "/data/local/tmp/ricaddr" ]; then
-	# Thanks to Androxyde for this method!
-	RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
-	if [ "$RICPATH" != "" ]; then
-		${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
-	fi
 fi
 
 sleep 2
@@ -242,10 +235,6 @@ fi
 
 DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
-
-if [ "$1" = "unrooted" ]; then
-	${BUSYBOX} rm /system/etc/install-recovery.sh /system/xbin/*su
-fi
 
 echo ""
 echo "============================================="

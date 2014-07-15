@@ -131,11 +131,14 @@ runinstall() {
 		fi
 
 		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
+		./${ADBBINARY} push easyroottool/towelzxperia /data/local/tmp/
+		./${ADBBINARY} push easyroottool/libexploit.so /data/local/tmp/
 		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
 		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
 		./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/towelzxperia"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
 
@@ -149,35 +152,10 @@ runinstall() {
 
 		echo ""
 		echo "============================================="
-		echo "Loading geohot's towelroot (modified by zxz0O0)"
+		echo "Installing using zxz0O0's towelzxperia (using geohot's towelroot library)"
 		echo "============================================="
 
-		./${ADBBINARY} uninstall com.geohot.towelroot
-		./${ADBBINARY} install easyroottool/tr_signed.apk
-
-		./${ADBBINARY} shell "am start -n com.geohot.towelroot/.TowelRoot" &> /dev/null
-		echo "============================================="
-		echo ""
-		echo "Check your device and click \"make it ra1n\""
-		echo "Waiting for towelroot to exploit..."
-
-		rootCheck=false
-		while ! $rootCheck ; do
-			echo ".\c"
-			sleep 2
-			./${ADBBINARY} wait-for-device
-			isRooted=`./${ADBBINARY} shell "su -c ls -l" | tr -d '\r\n'`
-			rootCheck=true
-			if [ "$isRooted" = "/system/bin/sh: su: not found" -o "$isRooted" = "" ]; then
-				rootCheck=false
-			fi
-		done
-
-		echo ""
-		./${ADBBINARY} wait-for-device
-		./${ADBBINARY} uninstall com.geohot.towelroot
-		./${ADBBINARY} shell "su -c /data/local/tmp/recovery/install.sh unrooted"
-		echo "============================================="
+		./${ADBBINARY} shell "/data/local/tmp/towelzxperia /data/local/tmp/recovery/install.sh unrooted"
 
 		echo "============================================="
 		echo ""

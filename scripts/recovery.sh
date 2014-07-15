@@ -19,6 +19,8 @@ patchtwrp() {
 	fi
 	cp -vfr $WORKDIR/patches/all/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
 	cp -vfr $WORKDIR/patches/${DRPATH}/twrp/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/init.rc
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.twrp/init.original.rc
 }
 
 patchcwm() {
@@ -27,6 +29,8 @@ patchcwm() {
 	fi
 	cp -vfr $WORKDIR/patches/all/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
 	cp -vfr $WORKDIR/patches/${DRPATH}/cwm/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/init.rc
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.cwm/init.original.rc
 }
 
 patchphilz() {
@@ -35,6 +39,8 @@ patchphilz() {
 	fi
 	cp -vfr $WORKDIR/patches/all/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
 	cp -vfr $WORKDIR/patches/${DRPATH}/philz/* $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/init.rc
+	chmod 750 $WORKDIR/ramdisks/${DRPATH}/ramdisk.philz/init.original.rc
 }
 
 # TWRP
