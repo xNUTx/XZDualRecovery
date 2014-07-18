@@ -122,6 +122,9 @@
 		<variable name="console_x" value="0" />
 		<variable name="console_width" value="1080" />
 		<variable name="console_foreground" value="#A0A0A0" />
+		<variable name="warning" value="#F8F8A0" />
+		<variable name="error" value="#FF4040" />
+		<variable name="highlight" value="#33B5E5" />
 		<variable name="console_background" value="#303030" />
 		<variable name="console_scroll" value="#303030" />
 		<variable name="console_action_height" value="705" />
@@ -262,6 +265,11 @@
 			<object type="action">
 				<touch key="power" />
 				<action function="overlay">lock</action>
+			</object>
+
+			<object type="action">
+				<touch key="power+voldown" />
+				<action function="screenshot" />
 			</object>
 		</template>
 
@@ -2053,6 +2061,18 @@
 				<text>%tw_operation% %tw_partition%</text>
 			</object>
 
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%row2_text_y%" placement="5" />
+				<text>%tw_file_progress%</text>
+			</object>
+
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%row3_text_y%" placement="5" />
+				<text>%tw_size_progress%</text>
+			</object>
+
 			<object type="template" name="action_page_console" />
 
 			<object type="template" name="progress_bar" />
@@ -2424,6 +2444,12 @@
 				<font resource="font" />
 				<placement x="%center_x%" y="%row1_text_y%" placement="5" />
 				<text>%tw_operation% %tw_partition%</text>
+			</object>
+
+			<object type="text" color="%text_color%">
+				<font resource="font" />
+				<placement x="%center_x%" y="%row2_text_y%" placement="5" />
+				<text>%tw_size_progress%</text>
 			</object>
 
 			<object type="template" name="action_page_console" />
@@ -3012,7 +3038,7 @@
 					<action function="set">tw_brightness=%tw_brightness_max%</action>
 					<action function="compute">tw_brightness*%tw_brightness_pct%</action>
 					<action function="compute">tw_brightness/100</action>
-					<action function="cmd">echo %tw_brightness% > &quot;%tw_brightness_file%&quot;</action>
+					<action function="setbrightness">%tw_brightness%</action>
 				</actions>
 			</object>
 
