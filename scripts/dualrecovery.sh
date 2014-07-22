@@ -45,7 +45,7 @@ dualrecovery_menu_opt() {
 	echo "          12/ Xperia S		(x)"
 	echo "          13/ Xperia Z2		(x)"
 	echo "          14/ Xperia Tablet Z2	(x)"
-	echo "          15/ Xperia T2 Ultra"
+	echo "          15/ Xperia T2 Ultra	(x)"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -155,6 +155,9 @@ buildallxed() {
 		fi
 
 		buildtabz2 auto
+		doall
+
+		buildt2u auto
 		doall
 	fi
 	uploadallfiles auto
