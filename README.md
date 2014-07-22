@@ -20,6 +20,7 @@ Currently supported are:
 * Sony Xperia SP
 * Sony Xperia Z2
 * Sony Xperia Tablet Z2
+* Sony Xperia T2 Ultra
 
 The main device menu is split up in to 3 major parts, 'Build' and 'Recovery'.
 

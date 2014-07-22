@@ -197,6 +197,12 @@ packkernel() {
 
 	eval $MKBOOTCMDS
 
+	if [ "$?" != "0" ]; then
+		echo "WARNING: Packing up the kernel failed!"
+                read
+		return 1
+	fi
+
 	if [ "$1" = "auto" ]; then
 		sleep 2
 	else

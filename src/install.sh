@@ -59,6 +59,14 @@ runinstall() {
 	echo "Succes"
 	echo ""
 	echo "============================================="
+	echo "Device and firmware information:"
+	echo "============================================="
+	product_name=`./${ADBBINARY} shell "getprop ro.build.product"`
+	echo "Device model is $product_name"
+	firmware=`./${ADBBINARY} shell "getprop ro.build.id"`
+	echo "Firmware is $firmware"
+	echo ""
+	echo "============================================="
 	echo "Step2 : Sending the recovery files."
 	echo "============================================="
 	echo ""
@@ -109,28 +117,10 @@ runinstall() {
 
 		echo ""
 		echo "============================================="
-		echo "Getting ro.build.product"
-		echo "============================================="
-		product_name=`./${ADBBINARY} shell "getprop ro.build.product"`
-		echo "Device model is $product_name"
-		firmware=`./${ADBBINARY} shell "getprop ro.build.id"`
-		echo "Firmware is $firmware"
-
-		echo ""
-		echo "============================================="
 		echo "Sending files"
 		echo "============================================="
 
-		zxzFile="zxz.sh"
-
-		kmem_exist=`./${ADBBINARY} shell "ls /dev/kmem" | tr -d '\n\r'`
-
-		if [ ! "$kmem_exist" = "/dev/kmem: No such file or directory" ]; then
-			zxzFile="zxz_kmem.sh"
-			echo "/dev/kmem exists. Using files of cubeundcube..."
-		fi
-
-		./${ADBBINARY} push easyroottool/$zxzFile /data/local/tmp/zxz.sh
+		./${ADBBINARY} push easyroottool/zxz.sh /data/local/tmp/zxz.sh
 		./${ADBBINARY} push easyroottool/towelzxperia /data/local/tmp/
 		./${ADBBINARY} push easyroottool/libexploit.so /data/local/tmp/
 		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
@@ -142,13 +132,13 @@ runinstall() {
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
 		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
 
-		if [ "$zxzFile" = "zxz.sh" ]; then
-			echo ""
-			echo "Copying kernel module..."
-			./${ADBBINARY} push "easyroottool/kernelmodule_patch.sh" /data/local/tmp
-			./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-			./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
-		fi
+		echo "Copying kernel module..."
+		./${ADBBINARY} push easyroottool/wp_mod.ko /data/local/tmp
+		./${ADBBINARY} push easyroottool/kernelmodule_patch.sh /data/local/tmp
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+		./${ADBBINARY} push easyroottool/modulecrcpatch /data/local/tmp
+		./${ADBBINARY} shell "chmod 777 /data/local/tmp/modulecrcpatch"
+		./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
 
 		echo ""
 		echo "============================================="

@@ -1,0 +1,27 @@
+/boot		emmc	/dev/block/platform/msm_sdcc.1/by-name/boot	flags=backup=1;canbewiped;display="Kernel Image"
+/ta		emmc	/dev/block/platform/msm_sdcc.1/by-name/TA	flags=backup=1;canbewiped;display="Trim Area"
+/system		ext4	/dev/block/platform/msm_sdcc.1/by-name/system	flags=backup=1;canbewiped;wipeingui;display="System"
+/cache		ext4	/dev/block/platform/msm_sdcc.1/by-name/cache	flags=backup=1;canbewiped;wipeingui;wipeduringfactoryreset;display="Cache"
+/data		ext4	/dev/block/platform/msm_sdcc.1/by-name/userdata	flags=backup=1;canbewiped;wipeingui;wipeduringfactoryreset;length=-16384
+
+/external_sd	auto	/dev/block/mmcblk1p1				flags=canbewiped;wipeingui;storage;removable;settingsstorage;display="External SDCard"
+/usb-otg	auto	/dev/block/sda1					flags=canbewiped;wipeingui;storage;removable;display="USB-OTG Storage"
+
+#removable -- indicates that the partition may not be present preventing mounting errors from being displayed during boot
+#storage -- indicates that the partition can be used as storage which makes the partition available as storage for backup, restore, zip installs, etc.
+#settingsstorage -- only one partition should be set as settings storage, this partition is used as the location for storing TWRP's settings file
+#canbewiped -- indicates that the partition can be wiped by the back-end system, but may not be listed in the GUI for wiping by the user
+#userrmrf -- overrides the normal format type of wiping and only allows the partition to be wiped using the rm -rf command
+#backup= -- must be succeeded by the equals sign, so backup=1 or backup=0, 1 indicates that the partition can be listed in the backup/restore list while 0 ensures that this partition will not show up in the backup list.
+#wipeingui -- makes the partition show up in the GUI to allow the user to select it for wiping in the advanced wipe menu
+#wipeduringfactoryreset -- the partition will be wiped during a factory reset
+#ignoreblkid -- blkid is used to determine what file system is in use by TWRP, this flag will cause TWRP to skip/ignore the results of blkid and use the file system specified in the fstab only
+#retainlayoutversion -- causes TWRP to retain the .layoutversion file in /data on devices like Sony Xperia S which sort of uses /data/media but still has a separate /sdcard partition
+#symlink= -- causes TWRP to run an additional mount command when mounting the partition, generally used with /data/media to create /sdcard
+#display= -- sets a display name for the partition for listing in the GUI
+#storagename= -- sets a storage name for the partition for listing in the GUI storage list
+#backupname= -- sets a backup name for the partition for listing in the GUI backup/restore list
+#length= -- usually used to reserve empty space at the end of the /data partition for storing the decryption key when Android's full device encryption is present, not setting this may lead to the inability to encrypt the device
+#canencryptbackup= -- 1 or 0 to enable/disable, makes TWRP encrypt the backup of this partition if the user chooses encryption (only applies to tar backups, not images)
+#userdataencryptbackup= -- 1 or 0 to enable/disable, makes TWRP encrypt only the userdata portion of this partition, certain subfuldes like /data/app would not be encrypted to save time
+#subpartitionof= -- must be succeeded by the equals sign and the path of the partition it is a subpartition of. A subpartition is treated as "part" of the main partition so for instance, TWRP automatically makes /datadata a subpartition of /data. This means that /datadata will not show up in the GUI listings, but /datadata would be wiped, backed up, restored, mounted, and unmounted anytime those operations are performed on /data. A good example of the use of subpartitions is the 3x efs partitions on the LG Optimus G:

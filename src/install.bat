@@ -1,6 +1,8 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+cd files
+
 REM #####################
 REM ## CHOICE CHECK
 REM #####################
@@ -44,8 +46,6 @@ echo =                                            =
 echo ==============================================
 echo.
 
-cd files
-
 set menu_currentIndex=1
 set menu_choices=1
 
@@ -84,13 +84,21 @@ if "!menu_decision!" == "5" (
 adb kill-server
 adb start-server
 
+echo.
 echo =============================================
 echo Waiting for Device, connect USB cable now...
 echo =============================================
 adb wait-for-device
 echo Device found!
 echo.
-
+echo =============================================
+echo Getting ro.build.product
+echo =============================================
+set product_name=
+for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i)
+echo Device model is %product_name%
+for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
+echo Firmware is %firmware%
 echo.
 echo =============================================
 echo Step2 : Sending the recovery files.
@@ -184,29 +192,10 @@ echo =============================================
 
 echo.
 echo =============================================
-echo Getting ro.build.product
-echo =============================================
-
-set product_name=
-for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i)
-echo Device model is %product_name%
-for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
-echo Firmware is %firmware%
-
-echo.
-echo =============================================
 echo Sending files
 echo =============================================
 
-set zxzFile=zxz.sh
-
-for /f "delims=" %%i in ('adb shell "ls /dev/kmem"') do ( set kmem_exist=%%i )
-if NOT "%kmem_exist%" == "/dev/kmem: No such file or directory " (
-  set zxzFile=zxz_kmem.sh
-  echo /dev/kmem exists. Using files of cubeundcube...
-)
-
-adb push easyroottool\%zxzFile% /data/local/tmp/zxz.sh
+adb push easyroottool\zxz.sh /data/local/tmp/zxz.sh
 adb push easyroottool\towelzxperia /data/local/tmp/
 adb push easyroottool\libexploit.so /data/local/tmp/
 adb push easyroottool\writekmem /data/local/tmp/
@@ -218,23 +207,30 @@ adb shell "chmod 777 /data/local/tmp/towelzxperia"
 adb shell "chmod 777 /data/local/tmp/writekmem"
 adb shell "chmod 777 /data/local/tmp/findricaddr"
 
-if "%zxzFile%" == "zxz.sh" (
-  echo.
-  echo Copying kernel module...
-  adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/kernelmodule_patch.sh
-  adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-  adb shell "/data/local/tmp/kernelmodule_patch.sh"
-)
+echo Copying kernel module...
+adb push easyroottool\wp_mod.ko /data/local/tmp/
+adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/
+adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
+adb push easyroottool\modulecrcpatch /data/local/tmp/
+adb shell "chmod 777 /data/local/tmp/modulecrcpatch"
+adb shell "/data/local/tmp/kernelmodule_patch.sh"
 
 echo.
 echo =============================================
-echo Installing using zxz0O0's towelzxperia ^(using geohot's towelroot library^)
+echo Installing using zxz0O0's towelzxperia
+echo ^(using geohot's towelroot library^)
 echo =============================================
 
 adb shell "/data/local/tmp/towelzxperia /data/local/tmp/recovery/install.sh unrooted"
 goto cleanup
 
 :WinDriverSetup
+echo.
+echo =============================================
+echo Connect your device while it is in any recovery now!
+echo =============================================
+echo.
+pause
 echo.
 echo =============================================
 echo Start installing adb driver. It's not signed,

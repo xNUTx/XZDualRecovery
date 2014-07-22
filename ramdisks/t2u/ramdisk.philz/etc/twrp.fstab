@@ -1,0 +1,10 @@
+#<mnt_point>	<type>		<src>						<flags>
+/boot		emmc		/dev/block/platform/msm_sdcc.1/by-name/boot
+/system		ext4		/dev/block/platform/msm_sdcc.1/by-name/system
+/cache		ext4		/dev/block/platform/msm_sdcc.1/by-name/cache
+/data		ext4		/dev/block/platform/msm_sdcc.1/by-name/userdata length=-16384
+/external_sd	vfat		/dev/block/mmcblk1p1 				flags=display="SD Card";storage;wipeingui;removable
+/boot/modem_fs1	emmc		/dev/block/platform/msm_sdcc.1/by-name/modemst1
+/boot/modem_fs2	emmc		/dev/block/platform/msm_sdcc.1/by-name/modemst2
+auto		auto		/devices/msm_sdcc.2/mmc_host
+auto		auto		/devices/platform/xhci-hcd		
