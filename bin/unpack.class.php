@@ -51,19 +51,9 @@ class unpackBoot {
 			"tail" => "tail.img"
 	);
 	
-	public function __construct($argv) {
+	public function __construct( $options ) {
 		
-		if (!is_array($argv) && ! file_exists ( $argv[1] )) {
-			throw new Exception ( 'File "' . $argv[1] . '" does not exists' );
-		}
-		if (isset($argv[2])) {
-			$this->target_path = rtrim($argv[2], "/");
-		}
-		$pathinfo = pathinfo($argv[1]);
-		$this->path = $pathinfo['dirname'];
-		$this->extension = $pathinfo['extension'];
-		$this->name = $pathinfo['filename'];
-		$this->filename = $pathinfo['basename'];
+		$this->setup( $options );
 		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
@@ -75,6 +65,42 @@ class unpackBoot {
 		
 		$this->splitBootIMG();
 		$this->getBootCMD();
+	}
+	
+	private function setup( $options ) {
+		
+		if (is_array($options)) {
+			if (file_exists ( $options[1] )) {
+				$pathinfo = pathinfo($options[1]);
+				
+				$this->path = $pathinfo['dirname'];
+				$this->extension = $pathinfo['extension'];
+				$this->name = $pathinfo['filename'];
+				$this->filename = $pathinfo['basename'];
+			} else {
+				throw new Exception ( 'File "' . $options[1] . '" does not exists' );
+			}
+			if (isset($options[2])) {
+				$this->target_path = rtrim($options[2], "/");
+			}
+		}
+		
+		if (is_object($options) {
+			if (file_exists ( $options->file )) {
+				$pathinfo = pathinfo($options->file);
+				
+				$this->path = $pathinfo['dirname'];
+				$this->extension = $pathinfo['extension'];
+				$this->name = $pathinfo['filename'];
+				$this->filename = $pathinfo['basename'];
+			} else {
+				throw new Exception ( 'File "' . $options->file . '" does not exists' );
+			}
+			if (isset($options->storage)) {
+				$this->target_path = rtrim($options->storage, "/");
+			}
+		}
+		
 	}
 	
 	private function splitBootIMG() {
