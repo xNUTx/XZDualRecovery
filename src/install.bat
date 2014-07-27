@@ -1,40 +1,8 @@
 @echo off
-setlocal EnableDelayedExpansion
 
 cd files
 
-REM #####################
-REM ## CHOICE CHECK
-REM #####################
-choice /T 0 /D Y /C Y /M test > nul 2>&1
-if "!errorlevel!" == "1" (
-	set CHOICE=choice
-	set CHOICE_TEXT_PARAM=/M
-) else (
-	choice /T 0 /D Y /C Y test > nul 2>&1
-	if "!errorlevel!" == "1" (
-		set CHOICE=choice
-		set CHOICE_TEXT_PARAM=
-	) else (
-		tools\choice32.exe /TY,1 /CY > nul 2>&1
-		if "!errorlevel!" == "1" (
-			set CHOICE=tools\choice32.exe
-		) else (
-			tools\choice32_alt.exe /T 0 /D Y /C Y /M test > nul 2>&1
-			if "!errorlevel!" == "1" (
-				set CHOICE=tools\choice32_alt.exe
-				set CHOICE_TEXT_PARAM=/M
-			) else (
-				tools\choice64.exe /T 0 /D Y /C Y /M test > nul 2>&1
-				if "!errorlevel!" == "1" (
-					set CHOICE=tools\choice64.exe
-					set CHOICE_TEXT_PARAM=/M
-				)
-			)
-		)
-	)
-)
-
+:menu
 echo.
 echo ==============================================
 echo =                                            =
@@ -46,41 +14,26 @@ echo =                                            =
 echo ==============================================
 echo.
 
-set menu_currentIndex=1
-set menu_choices=1
+echo 1. Installation on ROM rooted with SuperSU
+echo 2. Installation on ROM rooted with SuperUser
+echo 3. Installation on unrooted ROM using the TowelRoot method
+echo 4. Install ADB drivers to windows
+echo 5. Exit
+echo.
+echo Please choose install action.
+set /P C=[1,2,3,4,5]?
 
-echo [ !menu_currentIndex!. Installation on ROM rooted with SuperSU ]
-
-set /a menu_currentIndex+=1 >nul
-set menu_choices=!menu_choices!!menu_currentIndex!
-
-echo [ !menu_currentIndex!. Installation on ROM rooted with SuperUser ]
-
-set /a menu_currentIndex+=1 >nul
-set menu_choices=!menu_choices!!menu_currentIndex!
-
-echo [ !menu_currentIndex!. Installation on unrooted ROM using the TowelRoot method ]
-
-set /a menu_currentIndex+=1 >nul
-set menu_choices=!menu_choices!!menu_currentIndex!
-
-echo [ !menu_currentIndex!. Install ADB drivers to windows ]
-
-set /a menu_currentIndex+=1 >nul
-set menu_choices=!menu_choices!!menu_currentIndex!
-
-echo [ !menu_currentIndex!. Exit ]
-
-%CHOICE% /c:!menu_choices! %CHOICE_TEXT_PARAM% "Please choose install action."
-
-set menu_decision=%errorlevel%
-set menu_currentIndex=
-set menu_choices=
-
-if "!menu_decision!" == "5" (
+if "%C%" == "5" (
 	goto abort
 )
+if "%C%" LSS "5" (
+	goto install
+)
+cls
+echo %C% is not a valid menu choice
+goto menu
 
+:install
 adb kill-server
 adb start-server
 
@@ -127,7 +80,7 @@ echo =============================================
 adb shell "chmod 755 /data/local/tmp/recovery/install.sh"
 adb shell "chmod 755 /data/local/tmp/recovery/busybox"
 
-if "!menu_decision!" == "1" (
+if "%C%" == "1" (
 	echo Look at your device and grant supersu access!
 	echo Press any key to continue AFTER granting root access.
 	adb shell "/system/xbin/su -c /data/local/tmp/recovery/busybox ls -la /data/local/tmp/recovery/busybox"
@@ -136,16 +89,16 @@ if "!menu_decision!" == "1" (
 	goto cleanup
 )
 
-if "!menu_decision!" == "2" (
+if "%C%" == "2" (
 	adb shell "su -c /data/local/tmp/recovery/install.sh"
 	goto cleanup
 )
 
-if "!menu_decision!" == "3" (
+if "%C%" == "3" (
 	goto easyRootTool
 )
 
-if "!menu_decision!" == "4" (
+if "%C%" == "4" (
 	goto WinDriverSetup
 )
 
