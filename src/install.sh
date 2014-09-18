@@ -161,12 +161,23 @@ runinstall() {
 
 	./${ADBBINARY} wait-for-device
 	./${ADBBINARY} shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
+	if [ "`./${ADBBINARY} shell '/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh' | tr '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
+		echo ""
+		echo "============================================="
+		echo "Installation finished. Enjoy the recoveries!"
+		echo "============================================="
+		echo ""
+	else
+		echo ""
+		echo "============================================="
+		echo "             Installation FAILED!"
+		echo ""
+		echo "Please copy and paste the contents of"
+		echo "this window/screen to the DevDB thread."
+		echo "============================================="
+		echo ""
+	fi
 	./${ADBBINARY} kill-server
-	echo ""
-	echo "============================================="
-	echo "Installation finished. Enjoy the recoveries!"
-	echo "============================================="
-	echo ""
 	exit 0
 }
 

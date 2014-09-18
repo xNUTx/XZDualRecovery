@@ -1,8 +1,8 @@
 @echo off
-
 cd files
 
 :menu
+cls
 echo.
 echo ==============================================
 echo =                                            =
@@ -26,6 +26,10 @@ set /P C=[1,2,3,4,5]?
 if "%C%" == "5" (
 	goto abort
 )
+if "%C%" == "4" (
+	goto WinDriverSetup
+)
+
 if "%C%" LSS "5" (
 	goto install
 )
@@ -98,22 +102,32 @@ if "%C%" == "3" (
 	goto easyRootTool
 )
 
-if "%C%" == "4" (
-	goto WinDriverSetup
-)
-
 :cleanup
 
 adb wait-for-device
 adb shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
+
+set install_status=
+for /f "delims=" %%i in ('adb shell "/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh"') do ( set install_status=%%i)
+
+if NOT "%install_status%" == "" (
+	echo.
+	echo =============================================
+	echo Installation finished. Enjoy the recoveries!
+	echo =============================================
+	echo.
+) else (
+	echo.
+	echo =============================================
+	echo             Installation FAILED!
+	echo.
+	echo Please copy and paste the contents of this
+	echo window to the DevDB thread for troubleshooting!
+	echo =============================================
+	echo.
+)
+
 adb kill-server
-
-echo.
-echo =============================================
-echo Installation finished. Enjoy the recoveries!
-echo =============================================
-echo.
-
 pause
 goto end
 
@@ -183,20 +197,23 @@ echo =============================================
 echo Connect your device while it is in any recovery now!
 echo =============================================
 echo.
-pause
+echo Open the windows device manager, look up the device with an exclamation mark.
+echo Right click on it and choose 'update driver'. You will want to locate
+echo a driver on your disk and for that purpose point the installation wizard
+echo to lockeddualrecovery\files\adbdrivers and install the driver there.
 echo.
 echo =============================================
-echo Start installing adb driver. It's not signed,
-echo but it's safe to install!
+echo IMPORTANT NOTE:
+echo It's not signed, but it's safe to install!
 echo =============================================
 echo.
-RUNDLL32.EXE SETUPAPI.DLL,InstallHinfSection DefaultInstall 132 adbdrivers/android_winusb.inf
-echo.
+adb wait-for-device
 echo =============================================
 echo            Installation finished!
 echo =============================================
 echo.
-ping 1.1.1.1 -n 1 -w 2000 > nul
+pause
 goto menu
 
 :end
+cd ..
