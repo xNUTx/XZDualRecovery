@@ -156,6 +156,9 @@ buildallxed() {
 
 		buildtabz2 auto
 		doall
+                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+                        doallkernel
+                fi
 
 		buildt2u auto
 		doall
