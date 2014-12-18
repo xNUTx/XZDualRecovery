@@ -185,6 +185,10 @@ if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBO
 	${BUSYBOX} chmod 755 /system/xbin/disableric
 fi
 
+if [ -f "/system/etc/.xzdrbusybox" ]; then
+	${BUSYBOX} rm -f /system/etc/.xzdrbusybox
+fi
+
 if [ ! -d "$SECUREDIR" ]; then
 	echo "Creating $SECUREDIR to store a backup copy of busybox."
 	mkdir $SECUREDIR
@@ -194,6 +198,7 @@ echo "Copy busybox to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
 ${BUSYBOX} chmod 755 /system/xbin/busybox
+${BUSYBOX} chmod 755 $SECUREDIR/busybox
 
 echo "Trying to find and update the gpio-keys event node."
 GPIOINPUTDEV="$(gpioKeysSearch)"
