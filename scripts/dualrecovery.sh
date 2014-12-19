@@ -46,6 +46,9 @@ dualrecovery_menu_opt() {
 	echo "          13/ Xperia Z2		(x)"
 	echo "          14/ Xperia Tablet Z2	(x)"
 	echo "          15/ Xperia T2 Ultra	(x)"
+	echo "          16/ Xperia Z3"
+	echo "          17/ Xperia Z3 Compact"
+	echo "          18/ Xperia Tablet Z3 Compact"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -80,6 +83,9 @@ dualrecovery_menu_opt() {
 	        13) clear; buildz2;;
 	        14) clear; buildtabz2;;
 	        15) clear; buildt2u;;
+	        16) clear; buildz3;;
+	        17) clear; buildz3c;;
+	        18) clear; buildtabz3c;;
 		i|I) clear; incrrev;;
 		v|V) clear; version_menu_opt;;
 		u|U) clear; uploadallfiles;;
@@ -472,6 +478,69 @@ buildt2u() {
 	LABEL="T2U"
 	DRPATH="t2u"
 	CODENAME="tianchi"
+	REPO="cm11.0"
+	BUILDPHILZ="yes"
+	BASE="0x00000000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="yes"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+buildz3() {
+        cd $WORKDIR
+	LABEL="Z3"
+	DRPATH="z3"
+	CODENAME="leo"
+	REPO="cm11.0"
+	BUILDPHILZ="yes"
+	BASE="0x00000000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="yes"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+buildz3c() {
+        cd $WORKDIR
+	LABEL="Z3C"
+	DRPATH="z3c"
+	CODENAME="aries"
+	REPO="cm11.0"
+	BUILDPHILZ="yes"
+	BASE="0x00000000"
+	RAMDISKOFFSET="0x02000000"
+	TAGS="yes"
+	TAGSOFFSET="0x01E00000"
+	PAGESIZE="2048"
+	KERNEL="Kernel"
+	PACKRAMDISK="yes"
+	PACKKERNELRAMDISK="yes"
+	if [ "$*" != "auto" ]; then
+		source scripts/buildmenu.sh
+		dualrecovery_action_menu_opt
+	fi
+}
+
+buildtabz3c() {
+        cd $WORKDIR
+	LABEL="TabZ3C"
+	DRPATH="tabz3c"
+	CODENAME="scorpion"
 	REPO="cm11.0"
 	BUILDPHILZ="yes"
 	BASE="0x00000000"
