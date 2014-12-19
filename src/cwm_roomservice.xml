@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest>
+  <project name="xNUTx/proprietary_vendor_sony" path="vendor/sony" remote="github" />
+  <remove-project name="CyanogenMod/android_bootable_recovery-cm" />
+  <remove-project name="CyanogenMod/android_system_core" />
+  <project name="xNUTx/android_system_core" path="system/core" remote="github" />
+  <project name="xNUTx/android_device_sony_nypon" path="device/sony/nypon" remote="github" />
+  <project name="xNUTx/android_hardware_ste-sony" path="hardware/ste-sony" remote="github" />
+  <project name="xNUTx/android_device_sony_montblanc-common" path="device/sony/montblanc-common" remote="github" />
+  <project name="xNUTx/android_device_sony_jlo" path="device/sony/jlo" remote="github" />
+  <project name="xNUTx/android_device_sony_tamsui-common" path="device/sony/tamsui-common" remote="github" revision="cm-11.0-new" />
+  <project name="xNUTx/android_device_sony_aries" path="device/sony/aries" remote="github" revision="cm-12.0" />
+  <project name="xNUTx/android_device_sony_leo" path="device/sony/leo" remote="github" />
+  <project name="xNUTx/android_device_sony_scorpion" path="device/sony/scorpion" remote="github" revision="cm-12.0" />
+  <project name="xNUTx/android_device_sony_scorpion_windy" path="device/sony/scorpion_windy" remote="github" revision="cm-12.0" />
+  <project name="xNUTx/android_device_sony_nozomi" path="device/sony/nozomi" remote="github" />
+  <project name="xNUTx/android_device_sony_tianchi" path="device/sony/tianchi" remote="github" />
+  <project name="xNUTx/android_device_sony_msm8226-common" path="device/sony/msm8226-common" remote="github" />
+  <project name="xNUTx/android_device_sony_huashan_dmca_free" path="device/sony/huashan" remote="github" />
+  <project name="xNUTx/android_device_sony_sirius" path="device/sony/sirius" remote="github" />
+  <project name="xNUTx/android_device_sony_taoshan" path="device/sony/taoshan" remote="github" />
+  <project name="xNUTx/android_device_sony_msm8960-common" path="device/sony/msm8960-common" remote="github" />
+  <project name="xNUTx/android_device_sony_castor" path="device/sony/castor" remote="github" />
+  <project name="xNUTx/android_device_sony_castor_windy" path="device/sony/castor_windy" remote="github" />
+  <project name="xNUTx/android_device_sony_shinano-common" path="device/sony/shinano-common" remote="github" />
+  <project name="xNUTx/android_device_sony_fusion3-common" path="device/sony/fusion3-common" remote="github" />
+  <project name="xNUTx/android_device_sony_yuga" path="device/sony/yuga" remote="github" />
+  <project name="xNUTx/android_device_sony_dogo" path="device/sony/dogo" remote="github" />
+  <project name="xNUTx/android_device_sony_honami" path="device/sony/honami" remote="github" />
+  <project name="xNUTx/android_device_sony_amami" path="device/sony/amami" remote="github" />
+  <project name="xNUTx/android_device_sony_rhine-common" path="device/sony/rhine-common" remote="github" />
+  <project name="xNUTx/android_device_sony_togari" path="device/sony/togari" remote="github" />
+  <project name="xNUTx/android_device_sony_odin" path="device/sony/odin" remote="github" />
+  <project name="xNUTx/android_device_sony_mint" path="device/sony/mint" remote="github" />
+  <project name="xNUTx/android_device_sony_blue-common" path="device/sony/blue-common" remote="github" />
+  <project name="xNUTx/android_device_sony_pollux_windy" path="device/sony/pollux_windy" remote="github" />
+  <project name="xNUTx/android_device_sony_pollux-common" path="device/sony/pollux-common" remote="github" />
+  <project name="xNUTx/android_device_sony_pollux" path="device/sony/pollux" remote="github" />
+  <project name="xNUTx/android_device_sony_common" path="device/sony/common" remote="github" />
+  <project name="xNUTx/android_device_sony_qcom-common" path="device/sony/qcom-common" remote="github" />
+  <project name="xNUTx/android_device_qcom_common" path="device/qcom/common" remote="github" />
+  <project name="xNUTx/android_device_sony_fuji-common" path="device/sony/fuji-common" remote="github" />
+  <project name="CyanogenMod/android_hardware_sony_DASH" path="hardware/sony/DASH" remote="github" />
+  <project name="CyanogenMod/android_hardware_qcom_display-caf-new" path="hardware/qcom/display-caf-new" remote="github" />
+  <project name="CyanogenMod/android_hardware_qcom_media-caf-new" path="hardware/qcom/media-caf-new" remote="github" />
+</manifest>
