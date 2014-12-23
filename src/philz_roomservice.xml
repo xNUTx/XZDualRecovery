@@ -3,9 +3,9 @@
   <project name="xNUTx/proprietary_vendor_sony" path="vendor/sony" remote="github" />
   <remove-project name="CyanogenMod/android_bootable_recovery-cm" />
   <remove-project name="CyanogenMod/android_bootable_recovery" />
-  <project name="PhilZ-cwm6/philz_touch_cwm6" path="bootable/recovery" remote="github" />
+  <project name="xNUTx/philz_touch_cwm6" path="bootable/recovery" remote="github" />
   <remove-project name="CyanogenMod/android_system_vold" />
-  <project name="PhilZ-cwm6/android_system_vold" path="system/vold" remote="github" />
+  <project name="xNUTx/android_system_vold" path="system/vold" remote="github" />
   <remove-project name="CyanogenMod/android_system_core" />
   <project name="xNUTx/android_system_core" path="system/core" remote="github" />
   <project name="xNUTx/android_device_sony_nypon" path="device/sony/nypon" remote="github" />
