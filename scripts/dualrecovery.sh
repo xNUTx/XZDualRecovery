@@ -31,24 +31,24 @@ dualrecovery_menu_opt() {
         echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
         echo "          Current type: ${RELEASE}"
 	echo ""
-	echo "          1 / Xperia Z		(x)"
-	echo "          2 / Xperia Z1		(x)"
-	echo "          3 / Xperia ZU		(x)"
-	echo "          4 / Xperia ZL		(x)"
-	echo "          5 / Xperia Tablet Z	(x)"
-	echo "          6 / Xperia Z1 Compact	(x)"
-	echo "          7 / Xperia ZR		(x)"
+	echo "          1 / Xperia Z			(x)"
+	echo "          2 / Xperia Z1			(x)"
+	echo "          3 / Xperia ZU			(x)"
+	echo "          4 / Xperia ZL			(x)"
+	echo "          5 / Xperia Tablet Z		(x)"
+	echo "          6 / Xperia Z1 Compact		(x)"
+	echo "          7 / Xperia ZR			(x)"
 	echo "          8 / Xperia J"
 	echo "          9 / Xperia P"
-	echo "          10/ Xperia T/TL/TX/V	(x)"
-	echo "          11/ Xperia SP		(x)"
-	echo "          12/ Xperia S		(x)"
-	echo "          13/ Xperia Z2		(x)"
-	echo "          14/ Xperia Tablet Z2	(x)"
-	echo "          15/ Xperia T2 Ultra	(x)"
-	echo "          16/ Xperia Z3"
-	echo "          17/ Xperia Z3 Compact"
-	echo "          18/ Xperia Tablet Z3 Compact"
+	echo "          10/ Xperia T/TL/TX/V		(x)"
+	echo "          11/ Xperia SP			(x)"
+	echo "          12/ Xperia S			(x)"
+	echo "          13/ Xperia Z2			(x)"
+	echo "          14/ Xperia Tablet Z2		(x)"
+	echo "          15/ Xperia T2 Ultra		(x)"
+	echo "          16/ Xperia Z3			(x)"
+	echo "          17/ Xperia Z3 Compact		(x)"
+	echo "          18/ Xperia Tablet Z3 Compact	(x)"
 	echo ""
 	if [ -n "$PROJECTS" ]; then
 		echo "          B/ Back to Projects menu"
@@ -168,6 +168,22 @@ buildallxed() {
 
 		buildt2u auto
 		doall
+
+		buildz3 auto
+		doall
+
+		buildz3c auto
+		doall
+                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+                        doallkernel
+                fi
+
+		buildtabz3c auto
+		doall
+                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+                        doallkernel
+                fi
+
 	fi
 	uploadallfiles auto
 }
