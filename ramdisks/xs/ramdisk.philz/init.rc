@@ -1,63 +1,30 @@
-on early-init
-    start ueventd
+import /init.original.rc
 
 on init
-    export PATH /sbin
-    export LD_LIBRARY_PATH .:/sbin
-    export ANDROID_ROOT /system
-    export ANDROID_DATA /data
-    export EXTERNAL_STORAGE /sdcard
 
-    symlink /system/etc /etc
-
-    mkdir /boot
-    mkdir /sdcard
-    mkdir /sd-ext
-    mkdir /datadata
-    mkdir /emmc
-    mkdir /system
-    mkdir /data
-    mkdir /cache
-    mount /tmp /tmp tmpfs
-
-    chown root shell /tmp
-    chmod 0775 /tmp
+    mkdir /tmp
+    exec /sbin/busybox mount -t tmpfs tmpfs /tmp
+    exec /sbin/busybox mount -t sysfs sysfs /sys
+    exec /sbin/busybox mount -t proc proc /proc
+    exec /sbin/busybox mount -t devtmpfs devtmpfs /dev
 
     write /sys/class/android_usb/android0/enable 0
-    write /sys/class/android_usb/android0/idVendor 0fce
-    write /sys/class/android_usb/android0/idProduct 6169
-    write /sys/class/android_usb/android0/functions adb
+    write /sys/class/android_usb/android0/idVendor 0FCE
+    write /sys/class/android_usb/android0/idProduct D001
+    write /sys/class/android_usb/android0/functions mass_storage,adb
     write /sys/class/android_usb/android0/iManufacturer ${ro.product.manufacturer}
     write /sys/class/android_usb/android0/iProduct ${ro.product.model}
     write /sys/class/android_usb/android0/iSerial ${ro.serialno}
 
+    # Sony kernel, so lets set SELinux to permissive
+    write /sys/fs/selinux/enforce 0
 
 on boot
-    ifup lo
-    hostname localhost
-    domainname localdomain
 
-    class_start default
+    # Starting the XZDR fix script before anything else gets started
+    start xzdualrecovery
 
-on post-fs
-    mount vfat /dev/block/mmcblk0p15 /sdcard
-
-service ueventd /sbin/ueventd
-    critical
-
-service recovery /sbin/recovery
-
-service adbd /sbin/adbd recovery
+# This kills all filesystem locking applications still in memory.
+service xzdualrecovery /sbin/xzdualrecovery.sh
+    oneshot
     disabled
-
-# Always start adbd on userdebug and eng builds
-on property:ro.debuggable=1
-    #write /sys/class/android_usb/android0/enable 1
-    #start adbd
-    setprop service.adb.root 1
-
-# Restart adbd so it can run as root
-on property:service.adb.root=1
-    write /sys/class/android_usb/android0/enable 0
-    restart adbd
-    write /sys/class/android_usb/android0/enable 1
