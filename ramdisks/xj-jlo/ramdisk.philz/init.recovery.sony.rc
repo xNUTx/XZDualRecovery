@@ -1,0 +1,2 @@
+on init
+    mount tmpfs tmpfs /tmp remount size=220M
