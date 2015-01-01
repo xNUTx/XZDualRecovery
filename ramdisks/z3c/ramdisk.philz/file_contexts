@@ -222,7 +222,7 @@
 /mnt/asec/[^/]+/res.zip   u:object_r:asec_public_file:s0
 /mnt/asec/[^/]+/lib(/.*)? u:object_r:asec_public_file:s0
 /data/app-asec(/.*)?      u:object_r:asec_image_file:s0
-#line 1 "device/sony/rhine-common/sepolicy/file_contexts"
+#line 1 "device/sony/shinano-common/sepolicy/file_contexts"
 # GPU device
 /dev/kgsl-3d0       u:object_r:gpu_device:s0
 #line 1 "vendor/cm/sepolicy/file_contexts"

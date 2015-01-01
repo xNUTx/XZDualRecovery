@@ -283,9 +283,6 @@
 /dev/socket/mpdecision(/.*)?     u:object_r:mpdecision_socket:s0
 
 # Block labeling
-/dev/block/mmcblk0p6          u:object_r:rmt_block_device:s0
-/dev/block/mmcblk0p7          u:object_r:rmt_block_device:s0
-/dev/block/mmcblk0p8          u:object_r:rmt_block_device:s0
 /dev/block/mmcblk0p18          u:object_r:efs_block_device:s0
 /dev/block/mmcblk0p19          u:object_r:efs_block_device:s0
 /dev/block/mmcblk0p20          u:object_r:efs_block_device:s0
@@ -300,7 +297,6 @@
 /data/etc/wlan_macaddr[0-3]    u:object_r:wifi_data_file:s0
 
 # System binaries
-/system/bin/rmt_storage          u:object_r:rmt_exec:s0
 /system/bin/thermald             u:object_r:thermald_exec:s0
 /system/bin/mpdecision           u:object_r:mpdecision_exec:s0
 /system/bin/qmuxd                u:object_r:qmux_exec:s0
