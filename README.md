@@ -21,6 +21,9 @@ Currently supported are:
 * Sony Xperia Z2
 * Sony Xperia Tablet Z2
 * Sony Xperia T2 Ultra
+* Sony Xperia Z3
+* Sony Xperia Z3 Compact
+* Sony Xperia Tablet Z3 Compact
 
 The main device menu is split up in to 3 major parts, 'Build' and 'Recovery'.
 
