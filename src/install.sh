@@ -161,7 +161,7 @@ runinstall() {
 
 	./${ADBBINARY} wait-for-device
 	./${ADBBINARY} shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
-	if [ "`./${ADBBINARY} shell '/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh' | tr '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
+	if [ "`./${ADBBINARY} shell '/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh' | tr -d '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
 		echo ""
 		echo "============================================="
 		echo "Installation finished. Enjoy the recoveries!"
