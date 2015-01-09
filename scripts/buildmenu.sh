@@ -156,7 +156,6 @@ version_menu_opt() {
 	echo ""
 	echo " Xperia DualRecovery Version Menu"
 	echo ""
-	echo "          Current device: ${LABEL} (${CODENAME})"
 	echo "          Current version: ${MAJOR}.${MINOR}.${REVISION}"
 	echo "          Current type: ${RELEASE}"
 	echo ""

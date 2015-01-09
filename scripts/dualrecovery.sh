@@ -87,7 +87,7 @@ dualrecovery_menu_opt() {
 	        17) clear; buildz3c;;
 	        18) clear; buildtabz3c;;
 		i|I) clear; incrrev;;
-		v|V) clear; version_menu_opt;;
+		v|V) clear; source scripts/buildmenu.sh; version_menu_opt;;
 		u|U) clear; uploadallfiles;;
 		a|A) clear; buildallxed;;
         	b|B) clear; projects_menu_opt;;
