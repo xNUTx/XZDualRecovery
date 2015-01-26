@@ -180,9 +180,9 @@ buildallxed() {
 
 		buildtabz3c auto
 		doall
-                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-                        doallkernel
-                fi
+#                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
+#                        doallkernel
+#                fi
 
 	fi
 	uploadallfiles auto
