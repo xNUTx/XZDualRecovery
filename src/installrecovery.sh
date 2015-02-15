@@ -124,6 +124,9 @@ fi
 if [ -e "/data/local/tmp/wp_mod.ko" ]; then
         insmod /data/local/tmp/wp_mod.ko
 fi
+if [ -e "/system/lib/modules/wp_mod.ko" ]; then
+        insmod /system/lib/modules/wp_mod.ko
+fi
 # Thanks to cubeandcube for this method
 if [ -e "/data/local/tmp/writekmem" -a -e "/data/local/tmp/ricaddr" ]; then
         /data/local/tmp/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/ricaddr` 0

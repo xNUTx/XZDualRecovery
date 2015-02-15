@@ -1,10 +1,14 @@
 #!/system/bin/sh
 
+BUSYBOX="/data/local/tmp/recovery/busybox"
+
 installModule(){
 	rm /data/local/tmp/ricaddr
 	rm /data/local/tmp/writekmem
-	insmod /data/local/tmp/wp_mod.ko
-
+	${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+	mount -o remount,rw /system
+	cp /data/local/tmp/wp_mod.ko /system/lib/modules/
+	insmod /system/lib/modules/wp_mod.ko
 	return 0
 }
 
@@ -40,5 +44,4 @@ else
 	installModule
 fi
 
-mount -o remount,rw /system
 exit

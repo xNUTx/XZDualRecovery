@@ -109,81 +109,38 @@ buildallxed() {
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		loadsources
-		echo "Include kernel versions? (y/n)"
-		read answer
-
 		buildxz auto
 		doall
-		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			doallkernel
-		fi
-
 		buildz1 auto
 		doall
-		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			doallkernel
-		fi
-
 		buildzu auto
 		doall
-		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			doallkernel
-		fi
-
 		buildzl auto
 		doall
-
 		buildtabz auto
 		doall
-
 		buildz1c auto
 		doall
-		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			doallkernel
-		fi
-
 		buildzr auto
 		doall
-
 		buildt auto
 		doall
-
 		buildsp auto
 		doall
-
 		builds auto
 		doall
-
 		buildz2 auto
 		doall
-		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			doallkernel
-		fi
-
 		buildtabz2 auto
 		doall
-                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-                        doallkernel
-                fi
-
 		buildt2u auto
 		doall
-
 		buildz3 auto
 		doall
-
 		buildz3c auto
 		doall
-                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-                        doallkernel
-                fi
-
 		buildtabz3c auto
 		doall
-#                if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-#                        doallkernel
-#                fi
-
 	fi
 	uploadallfiles auto
 }
