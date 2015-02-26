@@ -127,10 +127,29 @@ class unpackBoot {
 		$file = fopen($this->path . "/" . $this->filename, "rb");
 		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
 		echo $magic . "\n";
-		$ksize = bin2hex(fread($file, 4));
+		$ksize = hexdec(bin2hex(fread($file, 4)));
 		echo $ksize . "\n";
-		$kaddr = bin2hex(fread($file, 4));
+		$kaddr = hexdec(bin2hex(fread($file, 4)));
 		echo $kaddr . "\n";
+		$rsize = hexdec(bin2hex(fread($file, 4)));
+		echo $rsize . "\n";
+		$raddr = hexdec(bin2hex(fread($file, 4)));
+		echo $raddr . "\n";
+		
+		fseek($file, $kaddr, SEEK_SET);
+		$kernel = bin2hex(fread($file, $ksize));
+
+		fseek($file, $raddr, SEEK_SET);
+		$ramdisk = bin2hex(fread($file, $rsize));
+		
+		fclose($file);
+		
+		$file = fopen($this->target_path . "/" . $this->name . ".testkernel", "wb");
+		fwrite($file, hex2bin($kernel));
+		fclose($file);
+		
+		$file = fopen($this->target_path . "/" . $this->name . ".testramdisk", "wb");
+		fwrite($file, hex2bin($ramdisk));
 		fclose($file);
 		
 	}
