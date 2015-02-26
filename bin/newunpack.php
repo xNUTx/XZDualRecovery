@@ -96,6 +96,8 @@ class unpackBoot {
 		$this->file_contents = bin2hex($contents);
 		$this->filesize = strlen($this->file_contents);
 		
+		$this->readHeader();
+		
 		$this->splitBootIMG();
 		$this->getBootCMD();
 	}
@@ -121,7 +123,16 @@ class unpackBoot {
 	}
 	
 	private function readHeader() {
-
+		
+		$file = fopen($this->path . "/" . $this->filename, "rb");
+		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
+		echo $magic . "\n";
+		$ksize = bin2hex(fread($file, 4));
+		echo $ksize . "\n";
+		$kaddr = bin2hex(fread($file, 4));
+		echo $kaddr . "\n";
+		fclose($file);
+		
 	}
 
 	private function getBootCMD() {
