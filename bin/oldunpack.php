@@ -22,40 +22,21 @@ class unpackBoot {
 	private $boot_type = null;
 	private $header_start = null;
 	private $zImage_start = null;
-	private $gzipa_start = null;
-	private $gzipb_start = null;
-	private $bzip2_start = null;
-	private $xz_start = null;
-	private $lzma_start = null;
+	private $gzip_start = null;
 	private $dtimg_start = null;
 	private $tail_start = null;
 	private $bootcmd_str = null;
 	private $parts = array();
 	
-	private $sin = '53494E';
-	private $elf = '454C46';
+	private $sin = '0353494E';
+	private $elf = '7F454C46';
 	private $android = '414E44524F494421';
-	private $zImage = '0000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E1';
+	private $zImage = '000000000000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E1020000EA18286F';
 	private $zImage_offset = '8';
-	private $compressed = array(
-			"gzipa" => '000000001F8B',
-			"gzipa_offset" => '8',
-			"gzipa_ext" => 'gz',
-			"gzipb" => '000000001F9E',
-			"gzipb_offset" => '8',
-			"gzipb_ext" => 'gz',
-			"bzip2" => '00000000425A',
-			"bzip2_offset" => '8',
-			"bzip2_ext" => 'bzip2',
-			"xz" => '00000000FD37',
-			"xz_offset" => '8',
-			"xz_ext" => 'xz',
-			"lzma" => '000000005D00',
-			"lzma_offset" => '8',
-			"lzma_ext" => 'lzma'
-	);
-	private $dtimg = '51434454';
-	private $dtimg_offset = '4';
+	private $gzip = '000000001F8B';
+	private $gzip_offset = '8';
+	private $dtimg = '0051434454';
+	private $dtimg_offset = '2';
 	private $tail = '00000000010000000000E001616E64726F696462';
 	private $tail_offset = '8';
 	private $bootcmd = array('start' => '616E64726F6964626F6F74', 'end' => '00000000000000000000000000000000000000000000000000');
@@ -65,11 +46,7 @@ class unpackBoot {
 			"ANDROID" => "header.img",
 			"ELF" => "header.img",
 			"zImage" => "zImage",
-			"gzipa" => "ramdisk.cpio.gz",
-			"gzipb" => "ramdisk.cpio.gz",
-			"lzma" => "ramdisk.cpio.lzma",
-			"bzip2" => "ramdisk.cpio.bzip2",
-			"xz" => "ramdisk.cpio.xz",
+			"ramdisk" => "ramdisk.cpio.gz",
 			"dtimg" => "dt.img",
 			"tail" => "tail.img"
 	);
@@ -90,28 +67,14 @@ class unpackBoot {
 		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
-		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
-				
-		if ($magic == "ANDROID!") {
-			
-			fclose($file);
-			
-			$this->unpackAndroidBoot();
-			
-		} else {
-			
-			fseek($file, 0, SEEK_SET);
-			$contents = fread($file, filesize($this->path . "/" . $this->filename));
-			fclose($file);
-			
-			$this->file_contents = bin2hex($contents);
-			$this->filesize = strlen($this->file_contents);
-				
-			$this->splitBootIMG();
-			$this->getBootCMD();
-			
-		}
+		$contents = fread($file, filesize($this->path . "/" . $this->filename));
+		fclose($file);
 		
+		$this->file_contents = bin2hex($contents);
+		$this->filesize = strlen($this->file_contents);
+		
+		$this->splitBootIMG();
+		$this->getBootCMD();
 	}
 	
 	private function splitBootIMG() {
@@ -134,113 +97,6 @@ class unpackBoot {
 		
 	}
 	
-	private function unpackAndroidBoot() {
-		
-		$infile = fopen($this->path . "/" . $this->filename, "rb");
-		
-		// Page Size
-		fseek($infile, 36, SEEK_SET);
-		$pagesize = unpack("I", fread($infile, 4));
-		$page_size = $pagesize[1];
-		echo "Bootimage page size: " . $page_size . "\n";
-		
-		// Kernel commandline Size
-		fseek($infile, 64, SEEK_SET);
-		$bootcmd = $this->hexToStr(bin2hex(fread($infile, 512)));
-		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
-		
-		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "w");
-		fwrite($outfile, $bootcmd);
-		fclose($outfile);
-		
-		// Finding the kernel
-		fseek($infile, 8, SEEK_SET);
-		$ksize = unpack("I", fread($infile, 4));
-		$kernelsize = $ksize[1];
-		fseek($infile, 12, SEEK_SET);
-		$kaddr = bin2hex(fread($infile, 4));
-		$kernelstart = $page_size;
-		// Extracting the kernel
-		fseek($infile, $kernelstart, SEEK_SET);
-		
-		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
-		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
-		fwrite($outfile, fread($infile, $kernelsize));
-		fclose($outfile);
-		
-		// Finding the ramdisk
-		fseek($infile, 16, SEEK_SET);
-		$rsize = unpack("I", fread($infile, 4));
-		$ramdisksize = $rsize[1];
-		fseek($infile, 20, SEEK_SET);
-		$raddr = bin2hex(fread($infile, 4));
-		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
-		// Extracting the ramdisk
-		fseek($infile, $ramdiskstart, SEEK_SET);
-		
-		$magic = strtoupper(bin2hex(fread($infile, 2)));
-		$compressed = array(
-				"1F8B" => 'gz',
-				"1F9E" => 'gz',
-				"425A" => 'bzip2',
-				"FD37" => 'xz',
-				"5D00" => 'lzma'
-		);
-		
-		fseek($infile, $ramdiskstart, SEEK_SET);
-		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . "\n";
-		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
-		fwrite($outfile, fread($infile, $ramdisksize));
-		fclose($outfile);
-		
-		// Finding the second ramdisk
-		fseek($infile, 24, SEEK_SET);
-		$srsize = unpack("I", fread($infile, 4));
-		$secondramdisksize = $srsize[1];
-		fseek($infile, 28, SEEK_SET);
-		$sraddr = bin2hex(fread($infile, 4));
-		$secondramdiskstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
-		// Extracting the second ramdisk
-		if ($secondramdisksize != 0) {
-			fseek($infile, $secondramdiskstart, SEEK_SET);
-			
-			$magic = strtoupper(bin2hex(fread($infile, 2)));
-			$compressed = array(
-				"1F8B" => 'gz',
-				"1F9E" => 'gz',
-				"425A" => 'bzip2',
-				"FD37" => 'xz',
-				"5D00" => 'lzma'
-			);
-			
-			fseek($infile, $secondramdiskstart, SEEK_SET);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . "\n";
-			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
-			fwrite($outfile, fread($infile, $secondramdisksize));
-			fclose($outfile);
-		}
-		
-		// Finding the QCDT
-		fseek($infile, 40, SEEK_SET);
-		$qcdr = unpack("I", fread($infile, 4));
-		$qcdtsize = $qcdr[1];
-		fseek($infile, 44, SEEK_SET);
-		$qcdraddr = bin2hex(fread($infile, 4));
-		$qcdtstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
-		// Extracting the dt
-		if ($qcdtsize != 0) {
-			fseek($infile, $qcdtstart, SEEK_SET);
-			
-			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
-			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
-			fwrite($outfile, fread($infile, $qcdtsize));
-			fclose($outfile);
-		}
-		
-		fclose($infile);
-		
-	}
-
 	private function getBootCMD() {
 	
 		$start = $this->findHex($this->bootcmd["start"]);
@@ -301,11 +157,7 @@ class unpackBoot {
 		}
 		
 		$this->zImage_start = $this->findHex($this->zImage);
-		$this->gzipa_start = $this->findHex($this->compressed["gzipa"]);
-		$this->gzipb_start = $this->findHex($this->compressed["gzipb"]);
-		$this->bzip2_start = $this->findHex($this->compressed["bzip2"]);
-		$this->xz_start = $this->findHex($this->compressed["xz"]);
-		$this->lzma_start = $this->findHex($this->compressed["lzma"]);
+		$this->gzip_start = $this->findHex($this->gzip);
 		$this->dtimg_start = $this->findHex($this->dtimg);
 		$this->tail_start = $this->findHex($this->tail);
 		
@@ -313,20 +165,8 @@ class unpackBoot {
 		if (!is_null($this->zImage_start)) {
 			$each["zImage"] = ($this->zImage_start + $this->zImage_offset);
 		}
-		if (!is_null($this->gzipa_start)) {
-			$each["gzipa"] = ($this->gzipa_start + $this->compressed["gzipa_offset"]);
-		}
-		if (!is_null($this->gzipb_start)) {
-			$each["gzipb"] = ($this->gzipb_start + $this->compressed["gzipb_offset"]);
-		}
-		if (!is_null($this->bzip2_start)) {
-			$each["bzip2"] = ($this->bzip2_start + $this->compressed["bzip2_offset"]);
-		}
-		if (!is_null($this->xz_start)) {
-			$each["xz"] = ($this->xz_start + $this->compressed["xz_offset"]);
-		}
-		if (!is_null($this->lzma_start)) {
-			$each["lzma"] = ($this->lzma_start + $this->compressed["lzma_offset"]);
+		if (!is_null($this->gzip_start)) {
+			$each["ramdisk"] = ($this->gzip_start + $this->gzip_offset);
 		}
 		if (!is_null($this->dtimg_start)) {
 			$each["dtimg"] = ($this->dtimg_start + $this->dtimg_offset);
