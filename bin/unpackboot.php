@@ -74,14 +74,15 @@ class unpackBoot {
 	);
 	public $errormessage;
 	
-	public function __construct($argv) {
+	public function __construct($sinfile, $target = false) {
 		
-		if (!is_array($argv) && ! file_exists ( $argv[1] )) {
-			throw new Exception ( 'File "' . $argv[1] . '" does not exists' );
+		if (!file_exists( $sinfile )) {
+			throw new Exception ( 'File "' . $sinfile . '" does not exists' );
 		}
-		if (isset($argv[2])) {
-			$this->target_path = rtrim($argv[2], "/");
+		if ($target !== false) {
+			$this->target_path = rtrim($target, "/");
 		}
+		
 		$pathinfo = pathinfo($argv[1]);
 		$this->path = $pathinfo['dirname'];
 		$this->extension = $pathinfo['extension'];
