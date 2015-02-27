@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 
 /*
@@ -31,10 +32,10 @@ class unpackBoot {
 	private $bootcmd_str = null;
 	private $parts = array();
 	
-	private $sin = '0353494E';
-	private $elf = '7F454C46';
+	private $sin = '53494E';
+	private $elf = '454C46';
 	private $android = '414E44524F494421';
-	private $zImage = '000000000000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E1020000EA18286F';
+	private $zImage = '0000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E10000A0E1';
 	private $zImage_offset = '8';
 	private $compressed = array(
 			"gzipa" => '000000001F8B',
@@ -53,8 +54,8 @@ class unpackBoot {
 			"lzma_offset" => '8',
 			"lzma_ext" => 'lzma'
 	);
-	private $dtimg = '0051434454';
-	private $dtimg_offset = '2';
+	private $dtimg = '51434454';
+	private $dtimg_offset = '4';
 	private $tail = '00000000010000000000E001616E64726F696462';
 	private $tail_offset = '8';
 	private $bootcmd = array('start' => '616E64726F6964626F6F74', 'end' => '00000000000000000000000000000000000000000000000000');
@@ -66,45 +67,59 @@ class unpackBoot {
 			"zImage" => "zImage",
 			"gzipa" => "ramdisk.cpio.gz",
 			"gzipb" => "ramdisk.cpio.gz",
+			"lzma" => "ramdisk.cpio.lzma",
 			"bzip2" => "ramdisk.cpio.bzip2",
 			"xz" => "ramdisk.cpio.xz",
-			"lzma" => "ramdisk.cpio.lzma",
 			"dtimg" => "dt.img",
 			"tail" => "tail.img"
 	);
 	public $errormessage;
 	
-	public function __construct($sinfile, $target = false) {
+	public function __construct($argv) {
 		
-		if (!file_exists( $sinfile )) {
-			throw new Exception ( 'File "' . $sinfile . '" does not exists' );
+		if (!is_array($argv) && ! file_exists ( $argv[1] )) {
+			throw new Exception ( 'File "' . $argv[1] . '" does not exists' );
 		}
-		if ($target !== false) {
-			$this->target_path = rtrim($target, "/");
+		if (isset($argv[2])) {
+			$this->target_path = rtrim($argv[2], "/");
 		}
-		$pathinfo = pathinfo($sinfile);
+		$pathinfo = pathinfo($argv[1]);
 		$this->path = $pathinfo['dirname'];
 		$this->extension = $pathinfo['extension'];
 		$this->name = $pathinfo['filename'];
 		$this->filename = $pathinfo['basename'];
 		
+	}
+	
+	public function unpack() {
+		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
-		$contents = fread($file, filesize($this->path . "/" . $this->filename));
-		fclose($file);
+		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
 		
-		$this->file_contents = bin2hex($contents);
-		$this->filesize = strlen($this->file_contents);
+		if ($magic == "ANDROID!") {
+				
+			fclose($file);
+				
+			$this->unpackAndroidBoot();
+				
+		} else {
+				
+			fseek($file, 0, SEEK_SET);
+			$contents = fread($file, filesize($this->path . "/" . $this->filename));
+			fclose($file);
+				
+			$this->file_contents = bin2hex($contents);
+			$this->filesize = strlen($this->file_contents);
 		
-	}
-
-	public function unpack() {
-
-		if (!$this->splitBootIMG()) {
-			return false;
+			if (!$this->splitBootIMG()) {
+				return false;
+			}
+		
+			$this->getBootCMD();
+				
 		}
-		$this->getBootCMD();
-
+		
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipa"];
 		if (file_exists($testtarget)) {
 			passthru("/bin/gzip -t " . $testtarget, $status);
@@ -140,10 +155,10 @@ class unpackBoot {
 				return "lzma";
 			}
 		}
-
+		
 		$this->errormessage = "Ramdisk doesn't look right...\n";
 		return false;
-
+		
 	}
 	
 	private function splitBootIMG() {
@@ -151,7 +166,7 @@ class unpackBoot {
 		if (!$this->findParts()) {
 			return false;
 		}
-
+		
 		end($this->parts);
 		$last = key($this->parts);
 		for ($i = 0; $i < count($this->parts); $i++) {
@@ -165,11 +180,130 @@ class unpackBoot {
 			$this->dumpPart($this->parts[$i]["location"], $this->parts[$i]["length"], $this->parts[$i]["type"]);
 			
 		}
-
+		
 		return true;
-
+		
 	}
 	
+	private function unpackAndroidBoot() {
+		
+		$infile = fopen($this->path . "/" . $this->filename, "rb");
+		
+		// Page Size
+		fseek($infile, 36, SEEK_SET);
+		$pagesize = unpack("I", fread($infile, 4));
+		$page_size = $pagesize[1];
+		echo "Bootimage page size: " . $page_size . "\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
+		
+		// Kernel commandline Size
+		fseek($infile, 64, SEEK_SET);
+		$bootcmd = $this->hexToStr(bin2hex(fread($infile, 512)));
+		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
+		
+		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "w");
+		fwrite($outfile, $bootcmd);
+		fclose($outfile);
+		
+		// Finding the kernel
+		fseek($infile, 8, SEEK_SET);
+		$ksize = unpack("I", fread($infile, 4));
+		$kernelsize = $ksize[1];
+		fseek($infile, 12, SEEK_SET);
+		$kaddr = bin2hex(fread($infile, 4));
+		$kernelstart = $page_size;
+		// Extracting the kernel
+		fseek($infile, $kernelstart, SEEK_SET);
+		
+		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
+		echo str_pad("",6144," ");
+        echo "<br>";
+		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
+		fwrite($outfile, fread($infile, $kernelsize));
+		fclose($outfile);
+		
+		// Finding the ramdisk
+		fseek($infile, 16, SEEK_SET);
+		$rsize = unpack("I", fread($infile, 4));
+		$ramdisksize = $rsize[1];
+		fseek($infile, 20, SEEK_SET);
+		$raddr = bin2hex(fread($infile, 4));
+		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
+		// Extracting the ramdisk
+		fseek($infile, $ramdiskstart, SEEK_SET);
+		
+		$magic = strtoupper(bin2hex(fread($infile, 2)));
+		$compressed = array(
+				"1F8B" => 'gz',
+				"1F9E" => 'gz',
+				"425A" => 'bzip2',
+				"FD37" => 'xz',
+				"5D00" => 'lzma'
+		);
+		
+		fseek($infile, $ramdiskstart, SEEK_SET);
+		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . "\n";
+		echo str_pad("",6144," ");
+        echo "<br>";
+		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
+		fwrite($outfile, fread($infile, $ramdisksize));
+		fclose($outfile);
+		
+		// Finding the second ramdisk
+		fseek($infile, 24, SEEK_SET);
+		$srsize = unpack("I", fread($infile, 4));
+		$secondramdisksize = $srsize[1];
+		fseek($infile, 28, SEEK_SET);
+		$sraddr = bin2hex(fread($infile, 4));
+		$secondramdiskstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
+		// Extracting the second ramdisk
+		if ($secondramdisksize != 0) {
+			fseek($infile, $secondramdiskstart, SEEK_SET);
+			
+			$magic = strtoupper(bin2hex(fread($infile, 2)));
+			$compressed = array(
+				"1F8B" => 'gz',
+				"1F9E" => 'gz',
+				"425A" => 'bzip2',
+				"FD37" => 'xz',
+				"5D00" => 'lzma'
+			);
+			
+			fseek($infile, $secondramdiskstart, SEEK_SET);
+			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . "\n";
+			echo str_pad("",6144," ");
+	        echo "<br>";
+			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
+			fwrite($outfile, fread($infile, $secondramdisksize));
+			fclose($outfile);
+		}
+		
+		// Finding the QCDT
+		fseek($infile, 40, SEEK_SET);
+		$qcdr = unpack("I", fread($infile, 4));
+		$qcdtsize = $qcdr[1];
+		fseek($infile, 44, SEEK_SET);
+		$qcdraddr = bin2hex(fread($infile, 4));
+		$qcdtstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
+		// Extracting the dt
+		if ($qcdtsize != 0) {
+			fseek($infile, $qcdtstart, SEEK_SET);
+			
+			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
+			echo str_pad("",6144," ");
+	        echo "<br>";
+			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
+			fwrite($outfile, fread($infile, $qcdtsize));
+			fclose($outfile);
+		}
+		
+		fclose($infile);
+		
+	}
+
 	private function getBootCMD() {
 	
 		$start = $this->findHex($this->bootcmd["start"]);
@@ -182,18 +316,18 @@ class unpackBoot {
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			echo "Extracted and saving " . $this->name . ".boot.cmd\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
 			echo str_pad("",6144," ");
-                	echo "<br>";
+			echo "<br>";
 		} else {
 			$part = substr ( $this->file_contents , $start, $this->filesize);
 			$this->bootcmd_str = trim($this->hexToStr($part));
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			echo "Extracted and saving " . $this->name . ".boot.cmd\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
 			echo str_pad("",6144," ");
-                	echo "<br>";
+			echo "<br>";
 		}
 		
 	}
@@ -204,9 +338,7 @@ class unpackBoot {
 			throw new Exception ( 'Not enough parameters supplied to dump a filepart, exiting.' );
 		}
 		
-		echo "Extracted and saving " . $this->name . "." . $this->fileextensions[$what] . "\n";
-		echo str_pad("",6144," ");
-               	echo "<br>";
+		echo "Writing " . $this->target_path . "/" . $this->name . "." . $this->fileextensions[$what] . "\n";
 		
 		$part = trim(substr ( $this->file_contents , $start, $length));
 		
@@ -325,3 +457,6 @@ class unpackBoot {
 	}
 	
 }
+
+$finder = new unpackBoot ( $argv );
+?>

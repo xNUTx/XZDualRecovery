@@ -73,6 +73,7 @@ class unpackBoot {
 			"dtimg" => "dt.img",
 			"tail" => "tail.img"
 	);
+	public $errormessage;
 	
 	public function __construct($argv) {
 		
@@ -88,35 +89,83 @@ class unpackBoot {
 		$this->name = $pathinfo['filename'];
 		$this->filename = $pathinfo['basename'];
 		
+	}
+	
+	public function unpack() {
+		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
 		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
-				
+		
 		if ($magic == "ANDROID!") {
-			
+				
 			fclose($file);
-			
+				
 			$this->unpackAndroidBoot();
-			
+				
 		} else {
-			
+				
 			fseek($file, 0, SEEK_SET);
 			$contents = fread($file, filesize($this->path . "/" . $this->filename));
 			fclose($file);
-			
+				
 			$this->file_contents = bin2hex($contents);
 			$this->filesize = strlen($this->file_contents);
-				
-			$this->splitBootIMG();
+		
+			if (!$this->splitBootIMG()) {
+				return false;
+			}
+		
 			$this->getBootCMD();
-			
+				
 		}
+		
+		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipa"];
+		if (file_exists($testtarget)) {
+			passthru("/bin/gzip -t " . $testtarget, $status);
+			if ($status == "0" || $status == "2") {
+				return "gz";
+			}
+		}
+		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipb"];
+		if (file_exists($testtarget)) {
+			passthru("/bin/gzip -t " . $testtarget, $status);
+			if ($status == "0" || $status == "2") {
+				return "gzip";
+			}
+		}
+		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["bzip2"];
+		if (file_exists($testtarget)) {
+			passthru("/bin/bzip2 -t " . $testtarget, $status);
+			if ($status == "0") {
+				return "bzip2";
+			}
+		}
+		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["xz"];
+		if (file_exists($testtarget)) {
+			passthru("/usr/bin/xz -t " . $testtarget, $status);
+			if ($status == "0") {
+				return "xz";
+			}
+		}
+		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["lzma"];
+		if (file_exists($testtarget)) {
+			passthru("/usr/bin/lzma -t " . $testtarget, $status);
+			if ($status == "0") {
+				return "lzma";
+			}
+		}
+		
+		$this->errormessage = "Ramdisk doesn't look right...\n";
+		return false;
 		
 	}
 	
 	private function splitBootIMG() {
 		
-		$this->findParts();
+		if (!$this->findParts()) {
+			return false;
+		}
 		
 		end($this->parts);
 		$last = key($this->parts);
@@ -132,6 +181,8 @@ class unpackBoot {
 			
 		}
 		
+		return true;
+		
 	}
 	
 	private function unpackAndroidBoot() {
@@ -143,11 +194,15 @@ class unpackBoot {
 		$pagesize = unpack("I", fread($infile, 4));
 		$page_size = $pagesize[1];
 		echo "Bootimage page size: " . $page_size . "\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
 		
 		// Kernel commandline Size
 		fseek($infile, 64, SEEK_SET);
 		$bootcmd = $this->hexToStr(bin2hex(fread($infile, 512)));
 		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
 		
 		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "w");
 		fwrite($outfile, $bootcmd);
@@ -164,6 +219,8 @@ class unpackBoot {
 		fseek($infile, $kernelstart, SEEK_SET);
 		
 		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
+		echo str_pad("",6144," ");
+        echo "<br>";
 		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
 		fwrite($outfile, fread($infile, $kernelsize));
 		fclose($outfile);
@@ -189,6 +246,8 @@ class unpackBoot {
 		
 		fseek($infile, $ramdiskstart, SEEK_SET);
 		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . "\n";
+		echo str_pad("",6144," ");
+        echo "<br>";
 		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
 		fwrite($outfile, fread($infile, $ramdisksize));
 		fclose($outfile);
@@ -215,6 +274,8 @@ class unpackBoot {
 			
 			fseek($infile, $secondramdiskstart, SEEK_SET);
 			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . "\n";
+			echo str_pad("",6144," ");
+	        echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
 			fwrite($outfile, fread($infile, $secondramdisksize));
 			fclose($outfile);
@@ -232,6 +293,8 @@ class unpackBoot {
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
 			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
+			echo str_pad("",6144," ");
+	        echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
 			fwrite($outfile, fread($infile, $qcdtsize));
 			fclose($outfile);
@@ -254,6 +317,8 @@ class unpackBoot {
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
 			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+			echo str_pad("",6144," ");
+			echo "<br>";
 		} else {
 			$part = substr ( $this->file_contents , $start, $this->filesize);
 			$this->bootcmd_str = trim($this->hexToStr($part));
@@ -261,6 +326,8 @@ class unpackBoot {
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
 			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+			echo str_pad("",6144," ");
+			echo "<br>";
 		}
 		
 	}
@@ -294,7 +361,8 @@ class unpackBoot {
 			}
 		}
 		if (is_null($position)) {
-			throw new Exception ( 'Unable to determine the type, are you sure this is a boot image or kernel.sin?' );
+			$this->errormessage = "Unable to determine the type, are you sure this is a boot image or kernel.sin?\n";
+			return false;
 		} else {
 			$this->header_start = $position;
 			$this->boot_type = $type;
@@ -346,6 +414,8 @@ class unpackBoot {
 			$this->parts[] = array("type" => $name, "location" => $position);
 			
 		}
+
+		return true;
 		
 	}
 	
