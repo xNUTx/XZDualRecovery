@@ -187,71 +187,7 @@ class unpackBoot {
 	
 	private function unpackAndroidBoot() {
 		
-		$infile = fopen($this->path . "/" . $this->filename, "rb");
-		
-		// Page Size and RAM storage addresses
-		fseek($infile, 36, SEEK_SET);
-		$pagesize = unpack("I", fread($infile, 4));
-		$page_size = $pagesize[1];
-		echo "Bootimage page size: " . $page_size . "\n";
-		echo "<br>";
-		fseek($infile, 12, SEEK_SET);
-		$kaddr = unpack("I", fread($infile, 4));
-		echo "Kernel address (" . $kaddr[1] . "): " . sprintf("0x%08X", $kaddr[1]) . "\n";
-		echo "<br>";
-		fseek($infile, 20, SEEK_SET);
-		$raddr = unpack("I", fread($infile, 4));
-		echo "Ramdisk address (" . $raddr[1] . "): " . sprintf("0x%08X", $raddr[1]) . "\n";
-		echo "<br>";
-		fseek($infile, 28, SEEK_SET);
-		$sraddr = unpack("I", fread($infile, 4));
-		echo "Second ramdisk address (" . $sraddr[1] . "): " . sprintf("0x%08X", $sraddr[1]) . "\n";
-		echo "<br>";
-		fseek($infile, 44, SEEK_SET);
-		$qcdraddr = unpack("I", fread($infile, 4));
-		echo "QCDT address (" . $qcdraddr[1] . "): " . sprintf("0x%08X", $qcdtaddr[1]) . "\n";
-		echo "<br>";
-		fseek($infile, 32, SEEK_SET);
-		$tagsaddr = unpack("I", fread($infile, 4));
-		echo "Tags address (" . $tagsaddr[1] . "): " . sprintf("0x%08X", $tagsaddr[1]) . "\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
-		
-		// Kernel commandline Size
-		fseek($infile, 64, SEEK_SET);
-		$bootcmd = $this->hexToStr(bin2hex(fread($infile, 512)));
-		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
-		
-		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
-		fwrite($outfile, $bootcmd);
-		fclose($outfile);
-		
-		// Finding the kernel
-		fseek($infile, 8, SEEK_SET);
-		$ksize = unpack("I", fread($infile, 4));
-		$kernelsize = $ksize[1];
-		// Extracting the kernel
-		$kernelstart = $page_size;
-		fseek($infile, $kernelstart, SEEK_SET);
-		
-		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
-		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
-		fwrite($outfile, fread($infile, $kernelsize));
-		fclose($outfile);
-		
-		// Finding the ramdisk
-		fseek($infile, 16, SEEK_SET);
-		$rsize = unpack("I", fread($infile, 4));
-		$ramdisksize = $rsize[1];
-		// Extracting the ramdisk
-		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
-		fseek($infile, $ramdiskstart, SEEK_SET);
-		
-		$magic = strtoupper(bin2hex(fread($infile, 2)));
+		// Used to determine the ramdisk compression format
 		$compressed = array(
 				"1F8B" => 'gz',
 				"1F9E" => 'gz',
@@ -260,34 +196,109 @@ class unpackBoot {
 				"5D00" => 'lzma'
 		);
 		
+		$infile = fopen($this->path . "/" . $this->filename, "rb");
+		
+		// Page Size and RAM storage addresses
+		fseek($infile, 36, SEEK_SET);
+		$pagesize = unpack("I", fread($infile, 4));
+		$page_size = $pagesize[1];
+		echo "Page size: " . $page_size . "\n";
+		echo "<br>";
+		// Kernel
+		fseek($infile, 12, SEEK_SET);
+		$kaddr_raw = unpack("I", fread($infile, 4));
+		$kaddr = sprintf("0x%08X", $kaddr_raw[1]);
+		echo "Kernel address (" . $kaddr_raw[1] . "): " . $kaddr . "\n";
+		echo "<br>";
+		// First Ramdisk
+		fseek($infile, 20, SEEK_SET);
+		$raddr_raw = unpack("I", fread($infile, 4));
+		$raddr = sprintf("0x%08X", $raddr_raw[1]);
+		echo "Ramdisk address (" . $raddr_raw[1] . "): " . $raddr . "\n";
+		echo "<br>";
+		// Checking the second ramdisk size first, this changes some things.
+		fseek($infile, 24, SEEK_SET);
+		$srsize = unpack("I", fread($infile, 4));
+		$secondramdisksize = $srsize[1];
+		if ($secondramdisksize != 0) {
+			fseek($infile, 28, SEEK_SET);
+			$sraddr_raw = unpack("I", fread($infile, 4));
+			$sraddr = sprintf("0x%08X", $sraddr_raw[1]);
+			echo "Second ramdisk address (" . $sraddr_raw[1] . "): " . $sraddr . "\n";
+			echo "<br>";
+		}
+		// Determining the QCDT size and extracting it (if it exists).
+		fseek($infile, 40, SEEK_SET);
+		$qcdr = unpack("I", fread($infile, 4));
+		$qcdtsize = $qcdr[1];
+		if ($qcdtsize != 0) {
+			fseek($infile, 44, SEEK_SET);
+			$qcdtaddr_raw = unpack("I", fread($infile, 4));
+			$qcdtaddr = sprintf("0x%08X", $qcdtaddr_raw[1]);
+			echo "QCDT address (" . $qcdtaddr_raw[1] . "): " . $qcdtaddr . "\n";
+			echo "<br>";
+
+			fseek($infile, 32, SEEK_SET);
+			$tagsaddr_raw = unpack("I", fread($infile, 4));
+			$tagsaddr = sprintf("0x%08X", $tagsaddr_raw[1]);
+			echo "Tags address (" . $tagsaddr_raw[1] . "): " . $tagsaddr . "\n";
+			echo "<br>";
+		}
+		
+		echo str_pad("",6144," ");
+		
+		// Kernel commandline
+		fseek($infile, 64, SEEK_SET);
+		$bootcmd = $this->hexToStr(rtrim(bin2hex(fread($infile, 512)), "00"));
+		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
+		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
+		fwrite($outfile, $bootcmd);
+		fclose($outfile);
+		
+		// Determining the kernel size
+		fseek($infile, 8, SEEK_SET);
+		$ksize = unpack("I", fread($infile, 4));
+		$kernelsize = $ksize[1];
+		// Extracting the kernel
+		$kernelstart = $page_size;
+		fseek($infile, $kernelstart, SEEK_SET);
+		
+		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage (" . round(($kernelsize/1024)/1024, 2) . "MiB)\n";
+		echo str_pad("",6144," ");
+		echo "<br>";
+		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
+		fwrite($outfile, fread($infile, $kernelsize));
+		fclose($outfile);
+		
+		// Determining the ramdisk size
+		fseek($infile, 16, SEEK_SET);
+		$rsize = unpack("I", fread($infile, 4));
+		$ramdisksize = $rsize[1];
+		// Extracting the ramdisk
+		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
 		fseek($infile, $ramdiskstart, SEEK_SET);
-		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . "\n";
+		
+		$magic = strtoupper(bin2hex(fread($infile, 2)));
+		
+		fseek($infile, $ramdiskstart, SEEK_SET);
+		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (" . round(($ramdisksize/1024)/1024, 2) . "MiB)\n";
 		echo str_pad("",6144," ");
 		echo "<br>";
 		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
 		fwrite($outfile, fread($infile, $ramdisksize));
 		fclose($outfile);
 		
-		// Finding the second ramdisk
-		fseek($infile, 24, SEEK_SET);
-		$srsize = unpack("I", fread($infile, 4));
-		$secondramdisksize = $srsize[1];
-		// Extracting the second ramdisk
+		// Extracting the second ramdisk (if it exists)
 		if ($secondramdisksize != 0) {
 			$secondramdiskstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size));
 			fseek($infile, $secondramdiskstart, SEEK_SET);
 			
 			$magic = strtoupper(bin2hex(fread($infile, 2)));
-			$compressed = array(
-				"1F8B" => 'gz',
-				"1F9E" => 'gz',
-				"425A" => 'bzip2',
-				"FD37" => 'xz',
-				"5D00" => 'lzma'
-			);
 			
 			fseek($infile, $secondramdiskstart, SEEK_SET);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . "\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (" . round(($secondramdisksize/1024)/1024, 2) . "MiB)\n";
 			echo str_pad("",6144," ");
 			echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
@@ -295,10 +306,6 @@ class unpackBoot {
 			fclose($outfile);
 		}
 		
-		// Finding the QCDT
-		fseek($infile, 40, SEEK_SET);
-		$qcdr = unpack("I", fread($infile, 4));
-		$qcdtsize = $qcdr[1];
 		// Extracting the dt
 		if ($qcdtsize != 0) {
 			if ($secondramdisksize != 0) {
@@ -308,7 +315,7 @@ class unpackBoot {
 			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
-			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)\n";
 			echo str_pad("",6144," ");
 			echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
