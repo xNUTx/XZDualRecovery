@@ -83,7 +83,7 @@ class unpackBoot {
 			$this->target_path = rtrim($target, "/");
 		}
 		
-		$pathinfo = pathinfo($argv[1]);
+		$pathinfo = pathinfo($sinfile);
 		$this->path = $pathinfo['dirname'];
 		$this->extension = $pathinfo['extension'];
 		$this->name = $pathinfo['filename'];
