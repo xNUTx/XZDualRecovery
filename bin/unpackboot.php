@@ -218,7 +218,7 @@ class unpackBoot {
 		$kernelstart = $page_size;
 		fseek($infile, $kernelstart, SEEK_SET);
 		
-		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
+		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage (address " . strtoupper($kaddr) . ")\n";
 		echo str_pad("",6144," ");
         echo "<br>";
 		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
@@ -245,7 +245,7 @@ class unpackBoot {
 		);
 		
 		fseek($infile, $ramdiskstart, SEEK_SET);
-		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . "\n";
+		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (address " . strtoupper($raddr) . ")\n";
 		echo str_pad("",6144," ");
         echo "<br>";
 		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
@@ -273,7 +273,7 @@ class unpackBoot {
 			);
 			
 			fseek($infile, $secondramdiskstart, SEEK_SET);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . "\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (address " . strtoupper($$sraddr) . ")\n";
 			echo str_pad("",6144," ");
 	        echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
@@ -296,7 +296,7 @@ class unpackBoot {
 			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
-			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
+			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img (address " . strtoupper($qcdraddr) . ")\n";
 			echo str_pad("",6144," ");
 	        echo "<br>";
 			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
