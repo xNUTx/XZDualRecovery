@@ -458,5 +458,4 @@ class unpackBoot {
 	
 }
 
-$finder = new unpackBoot ( $argv );
 ?>
