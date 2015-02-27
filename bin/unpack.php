@@ -199,7 +199,7 @@ class unpackBoot {
 		$secondramdisksize = $srsize[1];
 		fseek($infile, 28, SEEK_SET);
 		$sraddr = bin2hex(fread($infile, 4));
-		$secondramdiskstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
+		$secondramdiskstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size));
 		// Extracting the second ramdisk
 		if ($secondramdisksize != 0) {
 			fseek($infile, $secondramdiskstart, SEEK_SET);
@@ -226,7 +226,11 @@ class unpackBoot {
 		$qcdtsize = $qcdr[1];
 		fseek($infile, 44, SEEK_SET);
 		$qcdraddr = bin2hex(fread($infile, 4));
-		$qcdtstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
+		if ($secondramdisksize != 0) {
+			$qcdtstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size)) + (((floor($secondramdisksize / $page_size)+1)*$page_size));
+		} else {
+			$qcdtstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size));
+		}
 		// Extracting the dt
 		if ($qcdtsize != 0) {
 			fseek($infile, $qcdtstart, SEEK_SET);

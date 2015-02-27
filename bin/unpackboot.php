@@ -204,7 +204,7 @@ class unpackBoot {
 		echo str_pad("",6144," ");
 		echo "<br>";
 		
-		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "w");
+		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 		fwrite($outfile, $bootcmd);
 		fclose($outfile);
 		
@@ -214,8 +214,8 @@ class unpackBoot {
 		$kernelsize = $ksize[1];
 		fseek($infile, 12, SEEK_SET);
 		$kaddr = bin2hex(fread($infile, 4));
-		$kernelstart = $page_size;
 		// Extracting the kernel
+		$kernelstart = $page_size;
 		fseek($infile, $kernelstart, SEEK_SET);
 		
 		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage\n";
@@ -231,8 +231,8 @@ class unpackBoot {
 		$ramdisksize = $rsize[1];
 		fseek($infile, 20, SEEK_SET);
 		$raddr = bin2hex(fread($infile, 4));
-		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
 		// Extracting the ramdisk
+		$ramdiskstart = ((floor($kernelsize / $page_size)+1)*$page_size)+$page_size;
 		fseek($infile, $ramdiskstart, SEEK_SET);
 		
 		$magic = strtoupper(bin2hex(fread($infile, 2)));
@@ -258,9 +258,9 @@ class unpackBoot {
 		$secondramdisksize = $srsize[1];
 		fseek($infile, 28, SEEK_SET);
 		$sraddr = bin2hex(fread($infile, 4));
-		$secondramdiskstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
 		// Extracting the second ramdisk
 		if ($secondramdisksize != 0) {
+			$secondramdiskstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size));
 			fseek($infile, $secondramdiskstart, SEEK_SET);
 			
 			$magic = strtoupper(bin2hex(fread($infile, 2)));
@@ -287,9 +287,13 @@ class unpackBoot {
 		$qcdtsize = $qcdr[1];
 		fseek($infile, 44, SEEK_SET);
 		$qcdraddr = bin2hex(fread($infile, 4));
-		$qcdtstart = ((floor($ramdiskstart / $page_size)+1)*$page_size)+$page_size;
 		// Extracting the dt
 		if ($qcdtsize != 0) {
+			if ($secondramdisksize != 0) {
+				$qcdtstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size)) + (((floor($secondramdisksize / $page_size)+1)*$page_size));
+			} else {
+				$qcdtstart = (((floor($kernelsize / $page_size)+1)*$page_size)+$page_size) + (((floor($ramdisksize / $page_size)+1)*$page_size));
+			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
 			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img\n";
