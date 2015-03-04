@@ -10,26 +10,26 @@
  */
 
 class unpackBoot {
-	private $filename = null;
-	private $path = null;
-	private $extension = null;
-	private $name = null;
-	private $filesize = null;
-	private $file_contents = null;
-	private $target_path = '.';
+	public $filename = null;
+	public $path = null;
+	public $extension = null;
+	public $name = null;
+	public $filesize = null;
+	public $file_contents = null;
+	public $target_path = '.';
 	
-	private $boot_type = null;
-	private $header_start = null;
-	private $zImage_start = null;
-	private $gzipa_start = null;
-	private $gzipb_start = null;
-	private $bzip2_start = null;
-	private $xz_start = null;
-	private $lzma_start = null;
-	private $dtimg_start = null;
-	private $tail_start = null;
-	private $bootcmd_str = null;
-	private $parts = array();
+	public $boot_type = null;
+	public $header_start = null;
+	public $zImage_start = null;
+	public $gzipa_start = null;
+	public $gzipb_start = null;
+	public $bzip2_start = null;
+	public $xz_start = null;
+	public $lzma_start = null;
+	public $dtimg_start = null;
+	public $tail_start = null;
+	public $bootcmd_str = null;
+	public $parts = array();
 	
 	private $sin = '53494E';
 	private $elf = '454C46';
@@ -91,33 +91,158 @@ class unpackBoot {
 		
 	}
 	
+	private function decryptSinFile() {
+		
+		echo "SIN v3 file found, decrypting now...\n";
+		$infile = fopen($this->path . "/" . $this->filename, "rb");
+		
+		fseek($infile, 4, SEEK_SET);
+		$sinsize_raw = unpack("N", fread($infile, 4));
+		$sinsize = $sinsize_raw[1];
+		
+		echo "Header Size: " . $sinsize . "\n";
+		
+		$elfoffset = ($sinsize+209);
+		
+		// SIN and ELF magic
+		fseek($infile, $elfoffset, SEEK_SET);
+		$magic = $this->hexToStr(bin2hex(fread($infile, 3)));
+		
+		echo $magic . "\n";
+		
+		fclose($infile);
+		
+		//if ($magic == "ELF") {
+		//	return $elfoffset;
+		//}
+		return false;
+		
+	}
+	
+	private function unpackELFBoot( $sinoffset = 0 ) {
+		
+		if ($sinoffset == "0") {
+			echo "ELF header found, extracting parts...\n";
+		} else {
+			echo "Extracting ELF parts from SIN kernel image...\n";
+		}
+		$infile = fopen($this->path . "/" . $this->filename, "rb");
+		
+		// Find offset (e_phoff)
+		fseek($infile, ($sinoffset+28), SEEK_SET);
+		$offset_raw = unpack("I", fread($infile, 4));
+		$offset = $offset_raw[1];
+		
+		echo $offset . "\n";
+		
+		// Find part size (e_phentsize)
+		fseek($infile, ($sinoffset+42), SEEK_SET);
+		$partsize_raw = bin2hex(fread($infile, 2));
+		$partsize = base_convert($partsize_raw, 16, 10);
+		
+		echo $partsize . "\n";
+		
+		// Find number of parts (e_phnum)
+		fseek($infile, ($sinoffset+44), SEEK_SET);
+		$parts_raw = bin2hex(fread($infile, 2));
+		$parts = base_convert($parts_raw, 16, 10);
+		
+		echo $parts . "\n";
+		
+		for ($i = 0; $i < $parts; $i++) {
+			fseek($infile, ($sinoffset+$offset), SEEK_SET);
+			//fread($infile, 352);
+			
+/*
+  			fin.seek(offset);
+			fin.read(programHeaderData, 0, this.e_phentsize);
+			this.phEntries[i] = new ElfProgram(this, programHeaderData,i+1);
+			fin.seek(phEntries[i].getOffset());
+			byte[] ident = new byte[phEntries[i].getProgramSize()<352?(int)phEntries[i].getProgramSize():352];
+			fin.read(ident);
+			String identHex = HexDump.toHex(ident);
+			if (identHex.contains("[1F, 8B"))
+				this.phEntries[i].setContentType("ramdisk.gz");
+			else if (identHex.contains("[00, 00, A0, E1"))
+				this.phEntries[i].setContentType("Image");
+			else if (identHex.contains("53, 31, 5F, 52, 50, 4D"))
+				this.phEntries[i].setContentType("rpm.bin");
+			else if (new String(ident).contains("S1_Root") || new String(ident).contains("S1_SW_Root"))
+				this.phEntries[i].setContentType("cert");
+			else if (ident.length<200) this.phEntries[i].setContentType("bootcmd");
+			else this.phEntries[i].setContentType("");
+			offset += this.e_phentsize;
+*/
+			$offset = ($offset+$partsize);
+		}
+		
+	}
+	
 	public function unpack() {
+		
+		echo "Checking " . $this->path . "/" . $this->filename . " image type...\n";
 		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
-		$magic = $this->hexToStr(bin2hex(fread($file, 8)));
 		
-		if ($magic == "ANDROID!") {
-				
+		// SIN and ELF magic
+		fseek($file, 1, SEEK_SET);
+		$magic = $this->hexToStr(bin2hex(fread($file, 3)));
+		
+		if (strpos($magic, "SIN") !== false) {
+			
 			fclose($file);
+			
+			if ( ($offset = $this->decryptSinFile()) !== false ) {
 				
-			$this->unpackAndroidBoot();
+				$this->unpackELFBoot( $offset );
 				
+			}
+			
+		} elseif (strpos($magic, "ELF") !== false) {
+			
+			fclose($file);
+			
+			$this->unpackELFBoot();
+			
 		} else {
-				
+			
+			echo "NO SIN/ELF...\n";
+			
+			// ANDROID magic
 			fseek($file, 0, SEEK_SET);
-			$contents = fread($file, filesize($this->path . "/" . $this->filename));
-			fclose($file);
+			$magic = $this->hexToStr(bin2hex(fread($file, 8)));
+			
+			if ($magic == "ANDROID!") {
 				
-			$this->file_contents = bin2hex($contents);
-			$this->filesize = strlen($this->file_contents);
-		
-			if (!$this->splitBootIMG()) {
-				return false;
+				echo "ANDROID!...\n";
+				
+				fclose($file);
+					
+				$this->unpackAndroidBoot();
+					
+			} else {
+				
+				echo "WTF?...\n";
+				
+				die("EXIT!\n");
+				
+				# Fallback to the old (insecure) method
+				fseek($file, 0, SEEK_SET);
+				$contents = fread($file, filesize($this->path . "/" . $this->filename));
+				fclose($file);
+					
+				$this->file_contents = bin2hex($contents);
+				$this->filesize = strlen($this->file_contents);
+			
+				if (!$this->splitBootIMG()) {
+					return false;
+				}
+			
+				$this->getBootCMD();
+					
 			}
 		
-			$this->getBootCMD();
-				
 		}
 		
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipa"];
