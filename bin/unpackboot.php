@@ -93,28 +93,50 @@ class unpackBoot {
 	
 	private function decryptSinFile() {
 		
-		echo "SIN v3 file found, decrypting now...\n";
+		$this->echoMsg("SIN v3 file found, decrypting now...");
 		$infile = fopen($this->path . "/" . $this->filename, "rb");
 		
 		fseek($infile, 4, SEEK_SET);
 		$sinsize_raw = unpack("N", fread($infile, 4));
 		$sinsize = $sinsize_raw[1];
 		
-		echo "Header Size: " . $sinsize . "\n";
+		$this->echoMsg("SIN Header Size: " . $sinsize);
 		
-		$elfoffset = ($sinsize+209);
+		// MMCF magic
+		fseek($infile, $sinsize, SEEK_SET);
+		$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
+		$this->echoMsg("Found: " . $magic);
+		
+		// MMCF Size
+		fseek($infile, ($sinsize+4), SEEK_SET);
+		$mmcf_raw = unpack("N", fread($infile, 4));
+		$mmcf = $mmcf_raw[1];
+		$this->echoMsg("Size: " . $mmcf);
+		
+		// GPTP magic
+		fseek($infile, $sinsize+8, SEEK_SET);
+		$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
+		$this->echoMsg("Found: " . $magic);
+		
+		// GPTP Size
+		fseek($infile, $sinsize+12, SEEK_SET);
+		$gptp_raw = unpack("N", fread($infile, 4));
+		$gptp = $gptp_raw[1];
+		$this->echoMsg("Size: " . $gptp);
+		
+		$elfoffset = ($sinsize+$mmcf+$gptp-16);
+		
+		$this->echoMsg("Calculated size: " . $elfoffset);
 		
 		// SIN and ELF magic
-		fseek($infile, $elfoffset, SEEK_SET);
+		fseek($infile, ($elfoffset+1), SEEK_SET);
 		$magic = $this->hexToStr(bin2hex(fread($infile, 3)));
-		
-		echo $magic . "\n";
 		
 		fclose($infile);
 		
-		//if ($magic == "ELF") {
-		//	return $elfoffset;
-		//}
+		if ($magic == "ELF") {
+			return $elfoffset;
+		}
 		return false;
 		
 	}
@@ -122,37 +144,255 @@ class unpackBoot {
 	private function unpackELFBoot( $sinoffset = 0 ) {
 		
 		if ($sinoffset == "0") {
-			echo "ELF header found, extracting parts...\n";
+			$this->echoMsg("ELF header found, extracting parts...");
 		} else {
-			echo "Extracting ELF parts from SIN kernel image...\n";
+			$this->echoMsg("Extracting ELF parts from SIN kernel image...");
 		}
 		$infile = fopen($this->path . "/" . $this->filename, "rb");
 		
-		// Find offset (e_phoff)
-		fseek($infile, ($sinoffset+28), SEEK_SET);
-		$offset_raw = unpack("I", fread($infile, 4));
-		$offset = $offset_raw[1];
+		// Point to the start of the ELF binary
+		fseek($infile, $sinoffset, SEEK_SET);
 		
-		echo $offset . "\n";
+		$elfHeader = new stdClass();
 		
-		// Find part size (e_phentsize)
-		fseek($infile, ($sinoffset+42), SEEK_SET);
-		$partsize_raw = bin2hex(fread($infile, 2));
-		$partsize = base_convert($partsize_raw, 16, 10);
+		// e_ident
+		$elfHeader->e_ident = fread($infile, 16);
+		// e_type
+		$elfHeader->e_type = bin2hex(fread($infile, 2));
+		// e_machine
+		$elfHeader->e_machine = bin2hex(fread($infile, 2));
+		// e_version
+		$elfHeader->e_version = bin2hex(fread($infile, 4));
+		// e_entry
+		$elfHeader->e_entry = bin2hex(fread($infile, 4));
+		// e_phoff
+		$data = unpack("I", fread($infile, 4));
+		$elfHeader->e_phoff = $data[1];
+		// e_shoff
+		$data = unpack("I", fread($infile, 4));
+		$elfHeader->e_shoff = $data[1];
+		// e_flags
+		$data = unpack("I", fread($infile, 4));
+		$elfHeader->e_flags = $data[1];
+		// e_ehsize
+		$elfHeader->e_ehsize = base_convert(bin2hex(fread($infile, 2)), 16, 10);
+		// e_phentsize
+		$elfHeader->e_phentsize = base_convert(bin2hex(fread($infile, 2)), 16, 10);
+		// e_phnum
+		$elfHeader->e_phnum = base_convert(bin2hex(fread($infile, 2)), 16, 10);
+		// e_shentsize
+		$elfHeader->e_shentsize = base_convert(bin2hex(fread($infile, 2)), 16, 10);
+		// e_shnum
+		$elfHeader->e_shnum = base_convert(bin2hex(fread($infile, 2)), 16, 10);
+		// e_shstrndx
+		$elfHeader->e_shstrndx = base_convert(bin2hex(fread($infile, 2)), 16, 10);
 		
-		echo $partsize . "\n";
+		print_r($elfHeader);
+
+		$PT = array(
+			"PT_NULL" => "0",
+			"PT_LOAD" => "1",
+			"PT_NOTE" => "4"
+		);
+		$elfProgramHeaders = array();
+
+		$offset = ($sinoffset+$elfHeader->e_phoff);
 		
-		// Find number of parts (e_phnum)
-		fseek($infile, ($sinoffset+44), SEEK_SET);
-		$parts_raw = bin2hex(fread($infile, 2));
-		$parts = base_convert($parts_raw, 16, 10);
-		
-		echo $parts . "\n";
-		
-		for ($i = 0; $i < $parts; $i++) {
-			fseek($infile, ($sinoffset+$offset), SEEK_SET);
-			//fread($infile, 352);
+		for ($i = 1; $i <= $elfHeader->e_phnum; $i++) {
 			
+			fseek($infile, $offset, SEEK_SET);
+			
+			// p_type
+			$data = unpack("I", fread($infile, 4));
+			$p_type = $data[1];
+			
+			if (array_search($p_type, $PT) === false) {
+				
+				fseek($infile, ($offset + $elfHeader->e_phentsize), SEEK_SET);
+				continue;
+				
+			}
+			
+			$elfProgramHeader = new stdClass();
+			
+			$elfProgramHeader->p_type = $p_type;
+			
+			// p_offset
+			$data = unpack("I", fread($infile, 4));
+			$elfProgramHeader->p_offset = $data[1];
+			
+			// p_vaddr
+			$elfProgramHeader->p_vaddr = bin2hex(fread($infile, 4));
+			
+			// p_paddr
+			$elfProgramHeader->p_paddr = bin2hex(fread($infile, 4));
+			
+			// p_filesz
+			$data = unpack("I", fread($infile, 4));
+			$elfProgramHeader->p_filesz = $data[1];
+			
+			// p_memsz
+			$data = unpack("I", fread($infile, 4));
+			$elfProgramHeader->p_memsz = $data[1];
+			
+			// p_flags
+			$elfProgramHeader->p_flags = bin2hex(fread($infile, 4));
+			
+			// p_align
+			$data = unpack("I", fread($infile, 4));
+			$elfProgramHeader->p_align = $data[1];
+			
+			$elfProgramHeaders[] = $elfProgramHeader;
+			unset($elfProgramHeader);
+			
+			$offset = ($offset + $elfHeader->e_phentsize);
+			
+		}
+		
+		print_r($elfProgramHeaders);
+		
+		/*
+		$elfSectionHeaders = array();
+		
+		$offset = $sinoffset+$elfHeader->e_shoff;
+		
+		for ($i = 0; $i < $elfHeader->e_shnum; $i++) {
+			
+			fseek($infile, $offset, SEEK_SET);
+		
+			$elfSectionHeader = new stdClass();
+			
+			// sh_name
+			$binary = fread($infile, 4);
+			$data = @unpack("I", $binary);
+			
+			if (!is_null($data[1])) {
+				
+				$elfSectionHeader->sh_name = $data[1];
+				
+				// sh_type
+				$data = @unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_type = $data[1];
+				
+				if (is_null($elfSectionHeader->sh_type)) {
+					unset($elfSectionHeader);
+					$offset = $offset+$elfHeader->e_shentsize;
+					continue;
+				}
+				
+				// sh_flags
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_flags = $data[1];
+				
+				// sh_addr
+				$elfSectionHeader->sh_addr = bin2hex(fread($infile, 4));
+				
+				// sh_offset
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_offset = $data[1];
+				
+				// sh_size
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_size = $data[1];
+				
+				// sh_link
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_link = $data[1];
+				
+				// sh_info
+				$elfSectionHeader->sh_info = bin2hex(fread($infile, 4));
+				
+				// sh_addralign
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_addralign = $data[1];
+				
+				// sh_entsize
+				$data = unpack("I", fread($infile, 4));
+				$elfSectionHeader->sh_entsize = $data[1];
+				
+				$elfSectionHeaders[$i] = $elfSectionHeader;
+				unset($elfSectionHeader);
+					
+				$offset = $offset+$elfHeader->e_shentsize;
+				
+			}
+			
+		}
+		
+		print_r($elfSectionHeaders);
+		*/
+		
+		/*
+		$this->echoMsg("Kernel should start here: " . ($sinoffset+$elfSectionHeader->p_offset));
+		
+		$elfSectionHeader2 = new stdClass();
+		
+		// p_type
+		$data = unpack("I", fread($infile, 4));
+		$elfSectionHeader2->p_type = $data[1];
+		
+		// p_offset
+		$data = unpack("I", fread($infile, 4));
+		$elfSectionHeader2->p_offset = $data[1];
+		
+		// p_vaddr
+		$elfSectionHeader2->p_vaddr = bin2hex(fread($infile, 4));
+		
+		// p_paddr
+		$elfSectionHeader2->p_paddr = bin2hex(fread($infile, 4));
+		
+		// p_filesz
+		$data = unpack("I", fread($infile, 4));
+		$elfSectionHeader2->p_filesz = $data[1];
+		
+		// p_memsz
+		$data = unpack("I", fread($infile, 4));
+		$elfSectionHeader2->p_memsz = $data[1];
+		
+		// p_flags
+		$elfSectionHeader2->p_flags = bin2hex(fread($infile, 4));
+		
+		// p_align
+		$data = unpack("I", fread($infile, 4));
+		$elfSectionHeader2->p_align = $data[1];
+		
+		print_r($elfSectionHeader2);
+		
+		$this->echoMsg("Ramdisk should start here: " . ($sinoffset+$elfSectionHeader2->p_offset));
+		*/
+		//fseek($infile, ($sinoffset+$elfSectionHeader2->p_offset), SEEK_SET);
+		
+		//$outfile = fopen("./ramdisk", "wb");
+		//fwrite($outfile, fread($infile, $elfSectionHeader2->p_filesz));
+		//fclose($outfile);
+		
+		//$head = $this->hexToStr(bin2hex(fread($infile, 4)));
+		//if (strpos($head, "1F8B") !== false) {
+		//	$this->echoMsg("gzipped ramdisk!");
+		//}
+		
+		//fseek($infile, ($sinoffset+$elfSectionHeader->p_offset), SEEK_SET);
+		//$outfile = fopen("./zImage", "wb");
+		//fwrite($outfile, fread($infile, $elfSectionHeader->p_filesz));
+		//fclose($outfile);
+		
+		/*
+		fseek($infile, (($sinoffset+$offset)+($parts*$partsize)), SEEK_SET);
+		$head = $this->hexToStr(bin2hex(fread($infile, 64)));
+		if (strpos($head, "1F9E") !== false) {
+			$this->echoMsg("found ramdisk!");
+		}
+		*/
+		//$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
+		
+		//for ($i = 0; $i < $parts; $i++) {
+			//fseek($infile, ($sinoffset+$offset), SEEK_SET);
+			//$data = fread($infile, ($sinoffset+$offset+($parts*$partsize)));
+			//$this->echoMsg(($sinoffset+$offset+($parts*$partsize)));
+			// SIN and ELF magic
+			//$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
+			
+			//$this->echoMsg($magic, true);
 /*
   			fin.seek(offset);
 			fin.read(programHeaderData, 0, this.e_phentsize);
@@ -173,14 +413,14 @@ class unpackBoot {
 			else this.phEntries[i].setContentType("");
 			offset += this.e_phentsize;
 */
-			$offset = ($offset+$partsize);
-		}
+			//$offset = ($offset+$partsize);
+		//}
 		
 	}
 	
 	public function unpack() {
 		
-		echo "Checking " . $this->path . "/" . $this->filename . " image type...\n";
+		$this->echoMsg("Checking " . $this->path . "/" . $this->filename . " image type...");
 		
 		clearstatcache();
 		$file = fopen($this->path . "/" . $this->filename, "rb");
@@ -197,6 +437,10 @@ class unpackBoot {
 				
 				$this->unpackELFBoot( $offset );
 				
+			} else {
+				
+				$this->echoMsg("Decrypting the SIN file failed!", true);
+				
 			}
 			
 		} elseif (strpos($magic, "ELF") !== false) {
@@ -207,7 +451,7 @@ class unpackBoot {
 			
 		} else {
 			
-			echo "NO SIN/ELF...\n";
+			$this->echoMsg("NO SIN/ELF...");
 			
 			// ANDROID magic
 			fseek($file, 0, SEEK_SET);
@@ -215,7 +459,7 @@ class unpackBoot {
 			
 			if ($magic == "ANDROID!") {
 				
-				echo "ANDROID!...\n";
+				$this->echoMsg("ANDROID!...");
 				
 				fclose($file);
 					
@@ -223,9 +467,9 @@ class unpackBoot {
 					
 			} else {
 				
-				echo "WTF?...\n";
+				$this->echoMsg("WTF?...");
 				
-				die("EXIT!\n");
+				$this->echoMsg("EXIT!\n", true);
 				
 				# Fallback to the old (insecure) method
 				fseek($file, 0, SEEK_SET);
@@ -281,7 +525,7 @@ class unpackBoot {
 			}
 		}
 		
-		$this->errormessage = "Ramdisk doesn't look right...\n";
+		$this->errormessage = "Ramdisk doesn't look right...";
 		return false;
 		
 	}
@@ -327,20 +571,17 @@ class unpackBoot {
 		fseek($infile, 36, SEEK_SET);
 		$pagesize = unpack("I", fread($infile, 4));
 		$page_size = $pagesize[1];
-		echo "Page size: " . $page_size . "\n";
-		echo "<br>";
+		$this->echoMsg("Page size: " . $page_size . "");
 		// Kernel
 		fseek($infile, 12, SEEK_SET);
 		$kaddr_raw = unpack("I", fread($infile, 4));
 		$kaddr = sprintf("0x%08X", $kaddr_raw[1]);
-		echo "Kernel address (" . $kaddr_raw[1] . "): " . $kaddr . "\n";
-		echo "<br>";
+		$this->echoMsg("Kernel address (" . $kaddr_raw[1] . "): " . $kaddr . "");
 		// First Ramdisk
 		fseek($infile, 20, SEEK_SET);
 		$raddr_raw = unpack("I", fread($infile, 4));
 		$raddr = sprintf("0x%08X", $raddr_raw[1]);
-		echo "Ramdisk address (" . $raddr_raw[1] . "): " . $raddr . "\n";
-		echo "<br>";
+		$this->echoMsg("Ramdisk address (" . $raddr_raw[1] . "): " . $raddr . "");
 		// Checking the second ramdisk size first, this changes some things.
 		fseek($infile, 24, SEEK_SET);
 		$srsize = unpack("I", fread($infile, 4));
@@ -349,8 +590,7 @@ class unpackBoot {
 			fseek($infile, 28, SEEK_SET);
 			$sraddr_raw = unpack("I", fread($infile, 4));
 			$sraddr = sprintf("0x%08X", $sraddr_raw[1]);
-			echo "Second ramdisk address (" . $sraddr_raw[1] . "): " . $sraddr . "\n";
-			echo "<br>";
+			$this->echoMsg("Second ramdisk address (" . $sraddr_raw[1] . "): " . $sraddr . "");
 		}
 		// Determining the QCDT size and extracting it (if it exists).
 		fseek($infile, 40, SEEK_SET);
@@ -360,24 +600,18 @@ class unpackBoot {
 			fseek($infile, 44, SEEK_SET);
 			$qcdtaddr_raw = unpack("I", fread($infile, 4));
 			$qcdtaddr = sprintf("0x%08X", $qcdtaddr_raw[1]);
-			echo "QCDT address (" . $qcdtaddr_raw[1] . "): " . $qcdtaddr . "\n";
-			echo "<br>";
+			$this->echoMsg("QCDT address (" . $qcdtaddr_raw[1] . "): " . $qcdtaddr . "");
 
 			fseek($infile, 32, SEEK_SET);
 			$tagsaddr_raw = unpack("I", fread($infile, 4));
 			$tagsaddr = sprintf("0x%08X", $tagsaddr_raw[1]);
-			echo "Tags address (" . $tagsaddr_raw[1] . "): " . $tagsaddr . "\n";
-			echo "<br>";
+			$this->echoMsg("Tags address (" . $tagsaddr_raw[1] . "): " . $tagsaddr . "");
 		}
-		
-		echo str_pad("",6144," ");
 		
 		// Kernel commandline
 		fseek($infile, 64, SEEK_SET);
 		$bootcmd = $this->hexToStr(rtrim(bin2hex(fread($infile, 512)), "00"));
-		echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
+		$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".boot.cmd");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 		fwrite($outfile, $bootcmd);
 		fclose($outfile);
@@ -390,9 +624,7 @@ class unpackBoot {
 		$kernelstart = $page_size;
 		fseek($infile, $kernelstart, SEEK_SET);
 		
-		echo "Writing " . $this->target_path . "/" . $this->name . ".zImage (" . round(($kernelsize/1024)/1024, 2) . "MiB)\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
+		$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".zImage (" . round(($kernelsize/1024)/1024, 2) . "MiB)");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
 		fwrite($outfile, fread($infile, $kernelsize));
 		fclose($outfile);
@@ -408,9 +640,7 @@ class unpackBoot {
 		$magic = strtoupper(bin2hex(fread($infile, 2)));
 		
 		fseek($infile, $ramdiskstart, SEEK_SET);
-		echo "Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (" . round(($ramdisksize/1024)/1024, 2) . "MiB)\n";
-		echo str_pad("",6144," ");
-		echo "<br>";
+		$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (" . round(($ramdisksize/1024)/1024, 2) . "MiB)");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
 		fwrite($outfile, fread($infile, $ramdisksize));
 		fclose($outfile);
@@ -423,9 +653,7 @@ class unpackBoot {
 			$magic = strtoupper(bin2hex(fread($infile, 2)));
 			
 			fseek($infile, $secondramdiskstart, SEEK_SET);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (" . round(($secondramdisksize/1024)/1024, 2) . "MiB)\n";
-			echo str_pad("",6144," ");
-			echo "<br>";
+			$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (" . round(($secondramdisksize/1024)/1024, 2) . "MiB)");
 			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
 			fwrite($outfile, fread($infile, $secondramdisksize));
 			fclose($outfile);
@@ -440,9 +668,7 @@ class unpackBoot {
 			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
-			echo "Writing " . $this->target_path . "/" . $this->name . ".dt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)\n";
-			echo str_pad("",6144," ");
-			echo "<br>";
+			$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".dt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)");
 			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
 			fwrite($outfile, fread($infile, $qcdtsize));
 			fclose($outfile);
@@ -464,18 +690,14 @@ class unpackBoot {
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
-			echo str_pad("",6144," ");
-			echo "<br>";
+			$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".boot.cmd");
 		} else {
 			$part = substr ( $this->file_contents , $start, $this->filesize);
 			$this->bootcmd_str = trim($this->hexToStr($part));
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			echo "Writing " . $this->target_path . "/" . $this->name . ".boot.cmd\n";
-			echo str_pad("",6144," ");
-			echo "<br>";
+			$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . ".boot.cmd");
 		}
 		
 	}
@@ -486,7 +708,7 @@ class unpackBoot {
 			throw new Exception ( 'Not enough parameters supplied to dump a filepart, exiting.' );
 		}
 		
-		echo "Writing " . $this->target_path . "/" . $this->name . "." . $this->fileextensions[$what] . "\n";
+		$this->echoMsg("Writing " . $this->target_path . "/" . $this->name . "." . $this->fileextensions[$what] . "");
 		
 		$part = trim(substr ( $this->file_contents , $start, $length));
 		
@@ -509,7 +731,7 @@ class unpackBoot {
 			}
 		}
 		if (is_null($position)) {
-			$this->errormessage = "Unable to determine the type, are you sure this is a boot image or kernel.sin?\n";
+			$this->errormessage = "Unable to determine the type, are you sure this is a boot image or kernel.sin?";
 			return false;
 		} else {
 			$this->header_start = $position;
@@ -602,6 +824,18 @@ class unpackBoot {
 			$string .= chr(hexdec($hex[$i].$hex[$i+1]));
 		}
 		return $string;
+	}
+	
+	public function echoMsg( $msg = "", $exit = false ) {
+		
+		echo $msg;
+		echo str_pad("",6144," ");
+		echo "<br>";
+		
+		if ($exit) {
+			die();
+		}
+		
 	}
 	
 }

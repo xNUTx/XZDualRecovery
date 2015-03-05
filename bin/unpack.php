@@ -35,6 +35,11 @@ class unpackBootImage extends unpackBoot {
 		
 	}
 	
+	public function echoMsg( $msg = "" ) {
+	
+		echo $msg . "\n";
+	
+	}
 }
 
 $finder = new unpackBootImage ( $argv );
