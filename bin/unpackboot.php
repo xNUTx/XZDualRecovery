@@ -31,6 +31,20 @@ class unpackBoot {
 	public $bootcmd_str = null;
 	public $parts = array();
 	
+	private $fileextensions = array(
+			"SIN" => "header.img",
+			"ANDROID" => "header.img",
+			"ELF" => "header.img",
+			"zImage" => "zImage",
+			"gzipa" => "ramdisk.cpio.gz",
+			"gzipb" => "ramdisk.cpio.gz",
+			"lzma" => "ramdisk.cpio.lzma",
+			"bzip2" => "ramdisk.cpio.bzip2",
+			"xz" => "ramdisk.cpio.xz",
+			"dtimg" => "qcdt.img",
+			"tail" => "tail.img"
+	);
+	
 	public $errormessage;
 	
 	public function __construct($sinfile, $target = false) {
@@ -548,19 +562,6 @@ class unpackBoot {
 	private $tail_offset = '8';
 	private $bootcmd = array('start' => '616E64726F6964626F6F74', 'end' => '00000000000000000000000000000000000000000000000000');
 	private $bootcmd_offset = '4';
-	private $fileextensions = array(
-			"SIN" => "header.img",
-			"ANDROID" => "header.img",
-			"ELF" => "header.img",
-			"zImage" => "zImage",
-			"gzipa" => "ramdisk.cpio.gz",
-			"gzipb" => "ramdisk.cpio.gz",
-			"lzma" => "ramdisk.cpio.lzma",
-			"bzip2" => "ramdisk.cpio.bzip2",
-			"xz" => "ramdisk.cpio.xz",
-			"dtimg" => "qcdt.img",
-			"tail" => "tail.img"
-	);
 	
 	/*
 	 * Fallback parts extraction method...
