@@ -12,7 +12,7 @@
  *  
  */
 
-include_once("../../bin/unpackboot.php");
+include_once("unpackboot.php");
 
 class unpackBootImage extends unpackBoot {
 	
