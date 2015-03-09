@@ -35,10 +35,15 @@ class unpackBootImage extends unpackBoot {
 		
 	}
 	
-	public function echoMsg( $msg = "" ) {
+	public function echoMsg( $msg = "", $exit = false ) {
 	
 		echo $msg . "\n";
 	
+
+		if ($exit) {
+			die();
+		}
+		
 	}
 }
 

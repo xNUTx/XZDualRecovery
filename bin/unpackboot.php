@@ -91,9 +91,13 @@ class unpackBoot {
 		
 	}
 	
-	private function decryptSinFile() {
+	private function decryptSinFile( $version3 = true ) {
 		
-		$this->echoMsg("SIN v3 file found, decrypting now...");
+		if ($version3) {
+			$this->echoMsg("SIN v3 file found, decrypting now...");
+		} else {
+			$this->echoMsg("SIN v1 or v2 file found, decrypting now...", true);
+		}
 		$infile = fopen($this->path . "/" . $this->filename, "rb");
 		
 		fseek($infile, 4, SEEK_SET);
@@ -158,9 +162,9 @@ class unpackBoot {
 		// e_ident
 		$elfHeader->e_ident = fread($infile, 16);
 		// e_type
-		$elfHeader->e_type = bin2hex(fread($infile, 2));
+		$elfHeader->e_type = base_convert(bin2hex(fread($infile, 2)), 16, 10);
 		// e_machine
-		$elfHeader->e_machine = bin2hex(fread($infile, 2));
+		$elfHeader->e_machine = base_convert(bin2hex(fread($infile, 2)), 16, 10);
 		// e_version
 		$elfHeader->e_version = bin2hex(fread($infile, 4));
 		// e_entry
@@ -187,10 +191,9 @@ class unpackBoot {
 		// e_shstrndx
 		$elfHeader->e_shstrndx = base_convert(bin2hex(fread($infile, 2)), 16, 10);
 		
-		print_r($elfHeader);
+		//print_r($elfHeader);
 
 		$PT = array(
-			"PT_NULL" => "0",
 			"PT_LOAD" => "1",
 			"PT_NOTE" => "4"
 		);
@@ -198,27 +201,22 @@ class unpackBoot {
 
 		$offset = ($sinoffset+$elfHeader->e_phoff);
 		
-		for ($i = 1; $i <= $elfHeader->e_phnum; $i++) {
-			
-			fseek($infile, $offset, SEEK_SET);
+		for ($i = 0; $i < $elfHeader->e_phnum; $i++) {
 			
 			// p_type
 			$data = unpack("I", fread($infile, 4));
 			$p_type = $data[1];
-			
-			if (array_search($p_type, $PT) === false) {
-				
-				fseek($infile, ($offset + $elfHeader->e_phentsize), SEEK_SET);
-				continue;
-				
-			}
 			
 			$elfProgramHeader = new stdClass();
 			
 			$elfProgramHeader->p_type = $p_type;
 			
 			// p_offset
-			$data = unpack("I", fread($infile, 4));
+			if ($p_type == "4") {
+				$data = unpack("I", fread($infile, 4));
+			} else {
+				$data = unpack("I", fread($infile, 4));
+			}
 			$elfProgramHeader->p_offset = $data[1];
 			
 			// p_vaddr
@@ -242,165 +240,77 @@ class unpackBoot {
 			$data = unpack("I", fread($infile, 4));
 			$elfProgramHeader->p_align = $data[1];
 			
-			$elfProgramHeaders[] = $elfProgramHeader;
-			unset($elfProgramHeader);
+			//$offset = ($offset + $elfProgramHeader->p_filesz);
 			
-			$offset = ($offset + $elfHeader->e_phentsize);
+			if (array_search($p_type, $PT) === false) {
 			
-		}
-		
-		print_r($elfProgramHeaders);
-		
-		/*
-		$elfSectionHeaders = array();
-		
-		$offset = $sinoffset+$elfHeader->e_shoff;
-		
-		for ($i = 0; $i < $elfHeader->e_shnum; $i++) {
+				//fseek($infile, $offset, SEEK_SET);
+				unset($elfProgramHeader);
+				continue;
 			
-			fseek($infile, $offset, SEEK_SET);
-		
-			$elfSectionHeader = new stdClass();
-			
-			// sh_name
-			$binary = fread($infile, 4);
-			$data = @unpack("I", $binary);
-			
-			if (!is_null($data[1])) {
+			} else {
 				
-				$elfSectionHeader->sh_name = $data[1];
-				
-				// sh_type
-				$data = @unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_type = $data[1];
-				
-				if (is_null($elfSectionHeader->sh_type)) {
-					unset($elfSectionHeader);
-					$offset = $offset+$elfHeader->e_shentsize;
-					continue;
-				}
-				
-				// sh_flags
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_flags = $data[1];
-				
-				// sh_addr
-				$elfSectionHeader->sh_addr = bin2hex(fread($infile, 4));
-				
-				// sh_offset
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_offset = $data[1];
-				
-				// sh_size
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_size = $data[1];
-				
-				// sh_link
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_link = $data[1];
-				
-				// sh_info
-				$elfSectionHeader->sh_info = bin2hex(fread($infile, 4));
-				
-				// sh_addralign
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_addralign = $data[1];
-				
-				// sh_entsize
-				$data = unpack("I", fread($infile, 4));
-				$elfSectionHeader->sh_entsize = $data[1];
-				
-				$elfSectionHeaders[$i] = $elfSectionHeader;
-				unset($elfSectionHeader);
-					
-				$offset = $offset+$elfHeader->e_shentsize;
+				$elfProgramHeaders[] = $elfProgramHeader;
+				unset($elfProgramHeader);
 				
 			}
 			
 		}
 		
-		print_r($elfSectionHeaders);
-		*/
+		print_r($elfProgramHeaders);
+		
+		$elfNotes = array();
+		
+		foreach ($elfProgramHeaders as $header) {
+			
+			if ($header->p_type == "1") {
+				continue;
+			}
+			
+			//print_r($header);
+			
+			$offset = ($sinoffset+52+$header->p_offset);
+			
+			fseek($infile, $offset, SEEK_SET);
+			
+			$elfNote = new stdClass();
+				
+			// name size
+			$data = unpack("I", fread($infile, 4));
+			$elfNote->namesize = $data[1];
+			
+			// Desc Size
+			$data = unpack("I", fread($infile, 4));
+			$elfNote->descsize = $data[1];
+				
+			// Type
+			$data = unpack("I", fread($infile, 4));
+			$elfNote->type = $data[1];
+			
+			// Name
+			$data = unpack("a", fread($infile, $elfNote->namesize));
+			$elfNote->name = $data[1];
+			
+			if ($elfNote->descsize > 0) {
+				// Desc
+				$data = unpack("N", fread($infile, $elfNote->descsize));
+				$elfNote->desc = $data[1];
+			} else {
+				$elfNote->desc = "";
+			}
+			
+			$elfNotes[] = $elfNote;
+			unset($elfNote);
+			
+		}
+		
+		print_r($elfNotes);
 		
 		/*
 		$this->echoMsg("Kernel should start here: " . ($sinoffset+$elfSectionHeader->p_offset));
 		
-		$elfSectionHeader2 = new stdClass();
-		
-		// p_type
-		$data = unpack("I", fread($infile, 4));
-		$elfSectionHeader2->p_type = $data[1];
-		
-		// p_offset
-		$data = unpack("I", fread($infile, 4));
-		$elfSectionHeader2->p_offset = $data[1];
-		
-		// p_vaddr
-		$elfSectionHeader2->p_vaddr = bin2hex(fread($infile, 4));
-		
-		// p_paddr
-		$elfSectionHeader2->p_paddr = bin2hex(fread($infile, 4));
-		
-		// p_filesz
-		$data = unpack("I", fread($infile, 4));
-		$elfSectionHeader2->p_filesz = $data[1];
-		
-		// p_memsz
-		$data = unpack("I", fread($infile, 4));
-		$elfSectionHeader2->p_memsz = $data[1];
-		
-		// p_flags
-		$elfSectionHeader2->p_flags = bin2hex(fread($infile, 4));
-		
-		// p_align
-		$data = unpack("I", fread($infile, 4));
-		$elfSectionHeader2->p_align = $data[1];
-		
-		print_r($elfSectionHeader2);
-		
 		$this->echoMsg("Ramdisk should start here: " . ($sinoffset+$elfSectionHeader2->p_offset));
-		*/
-		//fseek($infile, ($sinoffset+$elfSectionHeader2->p_offset), SEEK_SET);
 		
-		//$outfile = fopen("./ramdisk", "wb");
-		//fwrite($outfile, fread($infile, $elfSectionHeader2->p_filesz));
-		//fclose($outfile);
-		
-		//$head = $this->hexToStr(bin2hex(fread($infile, 4)));
-		//if (strpos($head, "1F8B") !== false) {
-		//	$this->echoMsg("gzipped ramdisk!");
-		//}
-		
-		//fseek($infile, ($sinoffset+$elfSectionHeader->p_offset), SEEK_SET);
-		//$outfile = fopen("./zImage", "wb");
-		//fwrite($outfile, fread($infile, $elfSectionHeader->p_filesz));
-		//fclose($outfile);
-		
-		/*
-		fseek($infile, (($sinoffset+$offset)+($parts*$partsize)), SEEK_SET);
-		$head = $this->hexToStr(bin2hex(fread($infile, 64)));
-		if (strpos($head, "1F9E") !== false) {
-			$this->echoMsg("found ramdisk!");
-		}
-		*/
-		//$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
-		
-		//for ($i = 0; $i < $parts; $i++) {
-			//fseek($infile, ($sinoffset+$offset), SEEK_SET);
-			//$data = fread($infile, ($sinoffset+$offset+($parts*$partsize)));
-			//$this->echoMsg(($sinoffset+$offset+($parts*$partsize)));
-			// SIN and ELF magic
-			//$magic = $this->hexToStr(bin2hex(fread($infile, 4)));
-			
-			//$this->echoMsg($magic, true);
-/*
-  			fin.seek(offset);
-			fin.read(programHeaderData, 0, this.e_phentsize);
-			this.phEntries[i] = new ElfProgram(this, programHeaderData,i+1);
-			fin.seek(phEntries[i].getOffset());
-			byte[] ident = new byte[phEntries[i].getProgramSize()<352?(int)phEntries[i].getProgramSize():352];
-			fin.read(ident);
-			String identHex = HexDump.toHex(ident);
 			if (identHex.contains("[1F, 8B"))
 				this.phEntries[i].setContentType("ramdisk.gz");
 			else if (identHex.contains("[00, 00, A0, E1"))
@@ -410,11 +320,8 @@ class unpackBoot {
 			else if (new String(ident).contains("S1_Root") || new String(ident).contains("S1_SW_Root"))
 				this.phEntries[i].setContentType("cert");
 			else if (ident.length<200) this.phEntries[i].setContentType("bootcmd");
-			else this.phEntries[i].setContentType("");
-			offset += this.e_phentsize;
-*/
-			//$offset = ($offset+$partsize);
-		//}
+			
+		*/
 		
 	}
 	
@@ -426,8 +333,8 @@ class unpackBoot {
 		$file = fopen($this->path . "/" . $this->filename, "rb");
 		
 		// SIN and ELF magic
-		fseek($file, 1, SEEK_SET);
-		$magic = $this->hexToStr(bin2hex(fread($file, 3)));
+		fseek($file, 0, SEEK_SET);
+		$magic = bin2hex(fread($file, 4));
 		
 		if (strpos($magic, "SIN") !== false) {
 			
@@ -443,7 +350,21 @@ class unpackBoot {
 				
 			}
 			
-		} elseif (strpos($magic, "ELF") !== false) {
+		} elseif (strpos($this->hexToStr($magic), "940900") !== false) {
+			
+			fclose($file);
+			
+			if ( ($offset = $this->decryptSinFile( false )) !== false ) {
+				
+				$this->unpackELFBoot( $offset );
+				
+			} else {
+				
+				$this->echoMsg("Decrypting the SIN file failed!", true);
+				
+			}
+			
+		} elseif (strpos($this->hexToStr($magic), "ELF") !== false) {
 			
 			fclose($file);
 			
@@ -469,7 +390,7 @@ class unpackBoot {
 				
 				$this->echoMsg("WTF?...");
 				
-				$this->echoMsg("EXIT!\n", true);
+				$this->echoMsg("EXIT!", true);
 				
 				# Fallback to the old (insecure) method
 				fseek($file, 0, SEEK_SET);
