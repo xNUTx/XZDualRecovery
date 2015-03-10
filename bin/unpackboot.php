@@ -374,11 +374,11 @@ class unpackBoot {
 		}
 		
 		$filetypes = array(
-				'1F8B' => ".ramdisk.gz",
-				'1F9E' => ".ramdisk.gz",
-				'425A' => ".ramdisk.bzip2",
-				'FD37' => ".ramdisk.xz",
-				'5D00' => ".ramdisk.lzma",
+				'1F8B' => ".ramdisk.cpio.gz",
+				'1F9E' => ".ramdisk.cpio.gz",
+				'425A' => ".ramdisk.cpio.bzip2",
+				'FD37' => ".ramdisk.cpio.xz",
+				'5D00' => ".ramdisk.cpio.lzma",
 				'0000A0E1' => ".zImage",
 				'53315F52504D' => ".rpm",
 				'51434454' => ".dt.img");
