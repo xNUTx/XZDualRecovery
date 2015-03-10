@@ -521,8 +521,8 @@ class unpackBoot {
 			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
-			$this->echoMsg("Saving DT to " . $this->target_path . "/" . $this->name . ".qcdt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)");
-			$outfile = fopen($this->target_path . "/" . $this->name . ".dt.img", "wb");
+			$this->echoMsg("Saving QCDT to " . $this->target_path . "/" . $this->name . ".qcdt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)");
+			$outfile = fopen($this->target_path . "/" . $this->name . ".qcdt.img", "wb");
 			fwrite($outfile, fread($infile, $qcdtsize));
 			fclose($outfile);
 		}
