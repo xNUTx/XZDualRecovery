@@ -385,7 +385,7 @@ class unpackBoot {
 				fseek($outfile, 0, SEEK_SET);
 				$head = bin2hex(fread($outfile, 352));
 				if (stripos($head, $hexstring) !== false || stripos($this->hexToStr($head), $hexstring) !== false) {
-					$this->echoMsg($messages[$hexstring] . $this->target_path . "/" . $this->name . $filetype);
+					$this->echoMsg($messages[$hexstring] . $this->name . $filetype);
 					rename($this->target_path . "/" . $this->name . ".tmp", $this->target_path . "/" . $this->name . $filetype);
 					fclose($outfile);
 					break;
@@ -477,7 +477,7 @@ class unpackBoot {
 		$kernelstart = $page_size;
 		fseek($infile, $kernelstart, SEEK_SET);
 		
-		$this->echoMsg("Saving kernel to " . $this->target_path . "/" . $this->name . ".zImage (" . round(($kernelsize/1024)/1024, 2) . "MiB)");
+		$this->echoMsg("Saving kernel to " . $this->name . ".zImage (" . round(($kernelsize/1024)/1024, 2) . "MiB)");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".zImage", "wb");
 		fwrite($outfile, fread($infile, $kernelsize));
 		fclose($outfile);
@@ -493,7 +493,7 @@ class unpackBoot {
 		$magic = strtoupper(bin2hex(fread($infile, 2)));
 		
 		fseek($infile, $ramdiskstart, SEEK_SET);
-		$this->echoMsg("Saving ramdisk to " . $this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (" . round(($ramdisksize/1024)/1024, 2) . "MiB)");
+		$this->echoMsg("Saving ramdisk to " . $this->name . ".ramdisk.cpio." . $compressed[$magic] . " (" . round(($ramdisksize/1024)/1024, 2) . "MiB)");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".ramdisk.cpio." . $compressed[$magic], "wb");
 		fwrite($outfile, fread($infile, $ramdisksize));
 		fclose($outfile);
@@ -506,7 +506,7 @@ class unpackBoot {
 			$magic = strtoupper(bin2hex(fread($infile, 2)));
 			
 			fseek($infile, $secondramdiskstart, SEEK_SET);
-			$this->echoMsg("Saving second ramdisk to " . $this->target_path . "/" . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (" . round(($secondramdisksize/1024)/1024, 2) . "MiB)");
+			$this->echoMsg("Saving second ramdisk to " . $this->name . ".secondramdisk.cpio." . $compressed[$magic] . " (" . round(($secondramdisksize/1024)/1024, 2) . "MiB)");
 			$outfile = fopen($this->target_path . "/" . $this->name . ".secondramdisk.cpio" . $compressed[$magic], "wb");
 			fwrite($outfile, fread($infile, $secondramdisksize));
 			fclose($outfile);
@@ -521,7 +521,7 @@ class unpackBoot {
 			}
 			fseek($infile, $qcdtstart, SEEK_SET);
 			
-			$this->echoMsg("Saving QCDT to " . $this->target_path . "/" . $this->name . ".qcdt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)");
+			$this->echoMsg("Saving QCDT to " . $this->name . ".qcdt.img (" . round(($qcdtsize/1024)/1024, 2) . "MiB)");
 			$outfile = fopen($this->target_path . "/" . $this->name . ".qcdt.img", "wb");
 			fwrite($outfile, fread($infile, $qcdtsize));
 			fclose($outfile);
@@ -611,14 +611,14 @@ class unpackBoot {
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			$this->echoMsg("Saving kernel commandline to " . $this->target_path . "/" . $this->name . ".boot.cmd");
+			$this->echoMsg("Saving kernel commandline to " . $this->name . ".boot.cmd");
 		} else {
 			$part = substr ( $this->file_contents , $start, $this->filesize);
 			$this->bootcmd_str = trim($this->hexToStr($part));
 			$file = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 			fwrite($file, $this->bootcmd_str);
 			fclose($file);
-			$this->echoMsg("Saving kernel commandline to " . $this->target_path . "/" . $this->name . ".boot.cmd");
+			$this->echoMsg("Saving kernel commandline to " . $this->name . ".boot.cmd");
 		}
 		
 	}
@@ -629,7 +629,7 @@ class unpackBoot {
 			throw new Exception ( 'Not enough parameters supplied to dump a filepart, exiting.' );
 		}
 		
-		$this->echoMsg("Saving " . $this->target_path . "/" . $this->name . "." . $this->fileextensions[$what] . "");
+		$this->echoMsg("Saving " . $this->name . "." . $this->fileextensions[$what] . "");
 		
 		$part = trim(substr ( $this->file_contents , $start, $length));
 		
