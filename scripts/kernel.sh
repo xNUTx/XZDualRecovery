@@ -152,9 +152,9 @@ packkernel() {
 
 	DTIMAGE=""
 
-	if [ -f "$WORKDIR/tmp/kernelparts/$KERNEL.dt.img" ]; then
+	if [ -f "$WORKDIR/tmp/kernelparts/$KERNEL.qcdt.img" ]; then
 
-		DTIMAGE="$WORKDIR/tmp/kernelparts/$KERNEL.dt.img"
+		DTIMAGE="$WORKDIR/tmp/kernelparts/$KERNEL.qcdt.img"
 
 	fi
 
