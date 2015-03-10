@@ -50,7 +50,7 @@ class unpackBoot {
 	public function __construct($sinfile, $target = false) {
 		
 		if (!file_exists( $sinfile )) {
-			throw new Exception ( 'File "' . $sinfile . '" does not exists' );
+			throw new Exception ( 'File "' . $sinfile . '" does not exist' );
 		}
 		if ($target !== false) {
 			$this->target_path = rtrim($target, "/");
@@ -144,35 +144,35 @@ class unpackBoot {
 		
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipa"];
 		if (file_exists($testtarget)) {
-			passthru("/bin/gzip -t " . $testtarget, $status);
+			passthru("/bin/gzip -vt " . $testtarget, $status);
 			if ($status == "0" || $status == "2") {
 				return "gz";
 			}
 		}
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["gzipb"];
 		if (file_exists($testtarget)) {
-			passthru("/bin/gzip -t " . $testtarget, $status);
+			passthru("/bin/gzip -vt " . $testtarget, $status);
 			if ($status == "0" || $status == "2") {
 				return "gzip";
 			}
 		}
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["bzip2"];
 		if (file_exists($testtarget)) {
-			passthru("/bin/bzip2 -t " . $testtarget, $status);
+			passthru("/bin/bzip2 -vt " . $testtarget, $status);
 			if ($status == "0") {
 				return "bzip2";
 			}
 		}
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["xz"];
 		if (file_exists($testtarget)) {
-			passthru("/usr/bin/xz -t " . $testtarget, $status);
+			passthru("/usr/bin/xz -vt " . $testtarget, $status);
 			if ($status == "0") {
 				return "xz";
 			}
 		}
 		$testtarget = $this->target_path . "/" . $this->name . "." . $this->fileextensions["lzma"];
 		if (file_exists($testtarget)) {
-			passthru("/usr/bin/lzma -t " . $testtarget, $status);
+			passthru("/usr/bin/lzma -vt " . $testtarget, $status);
 			if ($status == "0") {
 				return "lzma";
 			}
@@ -250,7 +250,7 @@ class unpackBoot {
 		fseek($infile, $sinoffset, SEEK_SET);
 		
 		if ($saveELF) {
-			$outfile = fopen($this->path . "/" . $this->name . ".ELF", "wb");
+			$outfile = fopen($this->target_path . "/" . $this->name . ".ELF", "wb");
 			fwrite($outfile, fread($infile, (filesize($this->path . "/" . $this->filename)-$sinoffset)));
 			fclose($outfile);
 		}
@@ -345,11 +345,11 @@ class unpackBoot {
 		}
 		
 		$filetypes = array(
-				'1F8B' => ".ramdisk.gz",
-				'1F9E' => ".ramdisk.gz",
-				'425A' => ".ramdisk.bzip2",
-				'FD37' => ".ramdisk.xz",
-				'5D00' => ".ramdisk.lzma",
+				'1F8B' => ".ramdisk.cpio.gz",
+				'1F9E' => ".ramdisk.cpio.gz",
+				'425A' => ".ramdisk.cpio.bzip2",
+				'FD37' => ".ramdisk.cpio.xz",
+				'5D00' => ".ramdisk.cpio.lzma",
 				'0000A0E1' => ".zImage",
 				'53315F52504D' => ".rpm.img",
 				'QCDT' => ".qcdt.img");
@@ -374,19 +374,19 @@ class unpackBoot {
 			
 			fseek($infile, $offset, SEEK_SET);
 			
-			$outfile = fopen($this->path . "/" . $this->name . ".tmp", "wb");
+			$outfile = fopen($this->target_path . "/" . $this->name . ".tmp", "wb");
 			fwrite($outfile, fread($infile, $program->p_filesz));
 			fclose($outfile);
 			
-			$outfile = fopen($this->path . "/" . $this->name . ".tmp", "rb");
+			$outfile = fopen($this->target_path . "/" . $this->name . ".tmp", "rb");
 			
 			foreach ($filetypes as $hexstring => $filetype) {
 				
 				fseek($outfile, 0, SEEK_SET);
 				$head = bin2hex(fread($outfile, 352));
 				if (stripos($head, $hexstring) !== false || stripos($this->hexToStr($head), $hexstring) !== false) {
-					$this->echoMsg($messages[$hexstring] . $this->path . "/" . $this->name . $filetype);
-					rename($this->path . "/" . $this->name . ".tmp", $this->path . "/" . $this->name . $filetype);
+					$this->echoMsg($messages[$hexstring] . $this->target_path . "/" . $this->name . $filetype);
+					rename($this->target_path . "/" . $this->name . ".tmp", $this->target_path . "/" . $this->name . $filetype);
 					fclose($outfile);
 					break;
 				}
