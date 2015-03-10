@@ -89,7 +89,7 @@ maketwrp() {
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.twrp.cpio
 	if [ "$1" = "yes" ]; then
-		lzma -e -4 $WORKDIR/tmp/recovery.twrp.cpio
+		lzma --compress -4 $WORKDIR/tmp/recovery.twrp.cpio
 	fi
 	cd $WORKDIR
 	if [ "$2" = "auto" ]; then
@@ -146,7 +146,7 @@ makecwm() {
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.cwm.cpio
 	if [ "$1" = "yes" ]; then
-		lzma -e -4 $WORKDIR/tmp/recovery.cwm.cpio
+		lzma --compress -4 $WORKDIR/tmp/recovery.cwm.cpio
 	fi
 	cd $WORKDIR
 	if [ "$2" = "auto" ]; then
@@ -203,7 +203,7 @@ makephilz() {
 	echo "packing destination package"
 	find . | cpio --create --format='newc' > $WORKDIR/tmp/recovery.philz.cpio
 	if [ "$1" = "yes" ]; then
-		lzma -e -4 $WORKDIR/tmp/recovery.philz.cpio
+		lzma --compress -4 $WORKDIR/tmp/recovery.philz.cpio
 	fi
 	cd $WORKDIR
 	if [ "$2" = "auto" ]; then

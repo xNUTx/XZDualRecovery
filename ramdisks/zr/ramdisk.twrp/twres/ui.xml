@@ -25,10 +25,10 @@
 		<resource name="progress" type="animation" filename="indeterminate" />
 		<resource name="progress_empty" type="image" filename="progress_empty" />
 		<resource name="progress_full" type="image" filename="progress_fill" />
-		<resource name="checkbox_false" type="image" filename="checkbox_empty" />
-		<resource name="checkbox_true" type="image" filename="checkbox_checked" />
-		<resource name="radio_false" type="image" filename="radio_empty" />
-		<resource name="radio_true" type="image" filename="radio_selected" />
+		<resource name="checkbox_false" type="image" filename="checkbox_empty" retainaspect="1" />
+		<resource name="checkbox_true" type="image" filename="checkbox_checked" retainaspect="1" />
+		<resource name="radio_false" type="image" filename="radio_empty" retainaspect="1" />
+		<resource name="radio_true" type="image" filename="radio_selected" retainaspect="1" />
 		<resource name="medium_button" type="image" filename="medium-button" />
 		<resource name="sort_button" type="image" filename="sort-button" />
 		<resource name="minus_button" type="image" filename="minus-button" />
@@ -43,7 +43,7 @@
 		<resource name="keyboard2" type="image" filename="keyboard2" />
 		<resource name="keyboard3" type="image" filename="keyboard3" />
 		<resource name="keyboard4" type="image" filename="keyboard4" />
-		<resource name="cursor" type="image" filename="cursor" />
+		<resource name="cursor" type="image" filename="cursor" retainaspect="1" />
 	</resources>
 
 	<variables>
@@ -148,12 +148,12 @@
 		<variable name="fileselector_highlight_color" value="#505050" />
 		<variable name="fileselector_highlight_font_color" value="#33B5E5" />
 		<variable name="fileselector_spacing" value="36" />
-		<variable name="fastscroll_linecolor" value="#808080" />
-		<variable name="fastscroll_rectcolor" value="#808080" />
+		<variable name="fastscroll_linecolor" value="#50505080" />
+		<variable name="fastscroll_rectcolor" value="#33B5E580" />
 		<variable name="fastscroll_w" value="60" />
 		<variable name="fastscroll_linew" value="2" />
-		<variable name="fastscroll_rectw" value="40" />
-		<variable name="fastscroll_recth" value="70" />
+		<variable name="fastscroll_rectw" value="16" />
+		<variable name="fastscroll_recth" value="40" />
 		<variable name="listbox_x" value="5" />
 		<variable name="listbox_width" value="710" />
 		<variable name="listbox_tz_height" value="590" />
@@ -241,8 +241,8 @@
 				<placement x="270" y="76" />
 				<conditions>
 					<condition var1="tw_no_battery_percent" var2="0" />
-					<condition var1="tw_battery" op=">" var2="0" />
-					<condition var1="tw_battery" op="<" var2="101" />
+					<condition var1="tw_battery" op="&gt;" var2="0" />
+					<condition var1="tw_battery" op="&lt;" var2="101" />
 				</conditions>
 				<text>Battery: %tw_battery%</text>
 			</object>
@@ -410,7 +410,7 @@
 				<layout3>
 					<keysize height="106" width="72" />
 					<row1 key01="1" key02="2" key03="3" key04="4" key05="5" key06="6" key07="7" key08="8" key09="9" key10="0" />
-					<row2 key01="@" key02="#" key03="$" key04="%" key05="&" key06="*" key07="-" key08="+" key09="(" key10=")" />
+					<row2 key01="@" key02="#" key03="$" key04="%" key05="&amp;" key06="*" key07="-" key08="+" key09="(" key10=")" />
 					<row3 key01="108:layout4" key02="!" key03="72:c:34" key04="'" key05=":" key06=";" key07="/" key08="?" key09="108:c:8" />
 					<row4 key01="100:layout1" key02="65:" key03="65:," key04="260: " key05="65:." key06="165:action" />
 				</layout3>
@@ -418,7 +418,7 @@
 					<keysize height="106" width="72" />
 					<row1 key01="~" key02="`" key03="|" key04="72:" key05="72:" key06="72:" key07="%" key08="72:" key09="{" key10="}" />
 					<row2 key01="72:" key02="72:" key03="72:" key04="72:" key05="72:" key06="^" key07="_" key08="=" key09="[" key10="]" />
-					<row3 key01="108:layout3" key02="72:" key03="72:" key04="72:" key05="72:" key06="\" key07="<" key08=">" key09="108:c:8" />
+					<row3 key01="108:layout3" key02="72:" key03="72:" key04="72:" key05="72:" key06="\" key07="&lt;" key08="&gt;" key09="108:c:8" />
 					<row4 key01="100:layout1" key02="65:" key03="65:c:34" key04="260: " key05="65:." key06="165:action" />
 				</layout4>
 			</object>
