@@ -19,7 +19,7 @@ class unpackBootImage extends unpackBoot {
 	public function __construct($argv, $blub = false) {
 		
 		if (!is_array($argv) && ! file_exists ( $argv[1] )) {
-			throw new Exception ( 'File "' . $argv[1] . '" does not exists' );
+			throw new Exception ( 'File "' . $argv[1] . '" does not exist' );
 		}
 		if (isset($argv[2])) {
 			$this->target_path = rtrim($argv[2], "/");
@@ -38,7 +38,6 @@ class unpackBootImage extends unpackBoot {
 	public function echoMsg( $msg = "", $exit = false ) {
 	
 		echo $msg . "\n";
-	
 
 		if ($exit) {
 			die();
