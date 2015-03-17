@@ -464,7 +464,7 @@ class unpackBoot {
 		// Kernel commandline
 		fseek($infile, 64, SEEK_SET);
 		$bootcmd = $this->hexToStr(rtrim(bin2hex(fread($infile, 512)), "00"));
-		$this->echoMsg("Saving kernel commandline to " . $this->target_path . "/" . $this->name . ".boot.cmd");
+		$this->echoMsg("Saving kernel commandline to " . $this->name . ".boot.cmd");
 		$outfile = fopen($this->target_path . "/" . $this->name . ".boot.cmd", "wb");
 		fwrite($outfile, $bootcmd);
 		fclose($outfile);
@@ -652,7 +652,7 @@ class unpackBoot {
 			}
 		}
 		if (is_null($position)) {
-			$this->errormessage = "Unable to determine the type, are you sure this is a boot image or kernel.sin?";
+			$this->errormessage = "Unable to determine the type, are you sure this is a boot image?";
 			return false;
 		} else {
 			$this->header_start = $position;
