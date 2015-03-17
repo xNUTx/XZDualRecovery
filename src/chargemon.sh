@@ -45,6 +45,7 @@ TEXECL(){
 }
 #86|87) TEXECL mount -t ntfs ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1; return $?;;
 MOUNTSDCARD(){
+	TEXECL blockdev --setrw ${BOOTREC_EXTERNAL_SDCARD};
 	case $* in
 		06|6|0B|b|0C|c|0E|e) TEXECL mount -t vfat ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1; return $?;;
 		07|7) TEXECL insmod /system/lib/modules/nls_utf8.ko;
@@ -223,6 +224,7 @@ fi
 #https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
 #The busybox in all of the recoveries has not yet been patched to take this in account.
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
 
 # If no good busybox has been found, we will replace the one in xbin
 # This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
@@ -298,31 +300,30 @@ if [ -x "${BUSYBOX}" ]; then
 
 	TECHOL "Using ${BUSYBOX}"
 
-	TEXECL mount -o remount,rw rootfs /
-	TEXECL mount -o remount,rw /system
+	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
+	TEXECL ${BUSYBOX} mount -o remount,rw /system
 
 	if [ -f "/system/xbin/disableric" ]; then
-		TEXECL mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
-		TEXECL mkdir -p /sys/kernel/security/sony_ric
-		TEXECL chmod 755 /sys/kernel/security/sony_ric
-		TEXECL echo "0" > /sys/kernel/security/sony_ric/enable
+		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
+		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
+		echo "0" > /sys/kernel/security/sony_ric/enable
 	fi
 
 	if [ -x "${BUSYBOX}" -a -x "/system/bin/dualrecovery.sh" ]; then
 
 		TECHOL "Install busybox to /sbin..."
-		${BUSYBOX} cp ${BUSYBOX} /sbin/
+		TEXECL ${BUSYBOX} cp ${BUSYBOX} /sbin/
 
-		if [ ! -f "/system/etc/.xzdrbusybox" ]; then
+		if [ ! -f "/system/etc/.xzdrbusybox" -o ! -x "/system/xbin/lzma" ]; then
 
 			TECHOL "Creating symlinks in /system/xbin to all functions of busybox."
 			# Create a symlink for each of the supported commands
 			for sym in `${BUSYBOX} --list`; do
-				TECHOL "Linking ${BUSYBOX} to /system/xbin/$sym"
-				${BUSYBOX} ln -sf ${BUSYBOX} /system/xbin/$sym
+				TEXECL ${BUSYBOX} ln -sf ${BUSYBOX} /system/xbin/$sym
 			done
 
-			${BUSYBOX} touch /system/etc/.xzdrbusybox
+			TEXECL ${BUSYBOX} touch /system/etc/.xzdrbusybox
 
 		else
 
@@ -333,8 +334,8 @@ if [ -x "${BUSYBOX}" ]; then
 		export PATH="/system/xbin"
 
 		TECHOL "Copying recovery files to /sbin"
-		TEXECL cp /system/bin/dualrecovery.sh /sbin/init.sh
-		TEXECL chmod 755 /sbin/init.sh
+		TEXECL ${BUSYBOX} cp /system/bin/dualrecovery.sh /sbin/init.sh
+		TEXECL ${BUSYBOX} chmod 755 /sbin/init.sh
 
 	else
 
@@ -344,8 +345,8 @@ if [ -x "${BUSYBOX}" ]; then
 
 	fi
 
-	TEXECL mount -o remount,ro rootfs /
-	TEXECL mount -o remount,ro /system
+	TEXECL ${BUSYBOX} mount -o remount,ro rootfs /
+	TEXECL ${BUSYBOX} mount -o remount,ro /system
 
 fi
 
