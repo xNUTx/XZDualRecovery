@@ -48,7 +48,7 @@ doallkernel() {
 #	copyphilz auto
 	recoverypatcher auto
 	maketwrp $PACKKERNELRAMDISK auto
-	makecwm $PACKKERNELRAMDISK auto
+#	makecwm $PACKKERNELRAMDISK auto
 	makephilz $PACKKERNELRAMDISK auto
 	patchramdisk auto
 	packramdisk auto

@@ -1,9 +1,9 @@
 # This introduces XZDualRecovery to the init
 
-import /init.original.rc
-
-on early-fs
+on fs
     exec /sbin/xzdr.sh
 
 on boot
     setprop dr.xzdr.install true
+
+import /init.original.rc

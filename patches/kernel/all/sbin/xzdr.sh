@@ -4,29 +4,80 @@ _PATH="$PATH"
 
 # Constants
 LOGDIR="XZDualRecovery"
-PREPLOG="boot.log"
+PREPLOG="/xztmp/boot.log"
 XZDRLOG="XZDualRecovery.log"
 BUSYBOX="/sbin/busybox"
 
 DRLOG="$PREPLOG"
 
-${BUSYBOX} cd /
-${BUSYBOX} mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system") /system
+MOUNTS=$(${BUSYBOX} mount)
+
+${BUSYBOX} mount -o remount,rw / 2>&1 >> /proc/kmsg
+
+if [ "$(`${BUSYBOX} mountpoint -q /dev`; ${BUSYBOX} echo $?)" = "1" ]; then
+	${BUSYBOX} mount -t devtmpfs devtmpfs /dev
+	MOUNTEDDEV=true
+fi
+if [ "$(`${BUSYBOX} mountpoint -q /proc`; ${BUSYBOX} echo $?)" = "1" ]; then
+	${BUSYBOX} mount -t proc proc /proc
+	MOUNTEDPROC=true
+fi
+if [ "$(`${BUSYBOX} mountpoint -q /sys`; ${BUSYBOX} echo $?)" = "1" ]; then
+	${BUSYBOX} mount -t sysfs sysfs /sys
+	MOUNTEDSYS=true
+fi
+
+echo "testmessage" >> /proc/kmsg
+
+${BUSYBOX} chcon -t system_file /sbin/busybox 2>&1 >> /proc/kmsg
+${BUSYBOX} chcon -t system_file /sbin/xzdr.sh 2>&1 >> /proc/kmsg
+
+${BUSYBOX} dd if=/dev/zero of=/test bs=1024 count=1024 2>&1 >> /proc/kmsg
+
+${BUSYBOX} mkdir -m 777 /xztmp
+${BUSYBOX} mount -t tmpfs tmpfs /xztmp
+
+cd /
+
 ${BUSYBOX} date > ${DRLOG}
+${BUSYBOX} echo $MOUNTS >> ${DRLOG}
 
 # create directories and setup the temporary bin path
+if [ ! -d "/system" ]; then
+	${BUSYBOX} mkdir -m 755 -p /system
+fi
 if [ ! -d "/cache" ]; then
-	${BUSYBOX} mkdir -m 777 -p /cache
+	${BUSYBOX} mkdir -m 755 -p /cache
 fi
-if [ ! -d "/storage/removable/sdcard1" ]; then
-	${BUSYBOX} mkdir -p /storage/removable/sdcard1
+if [ ! -d "/storage/sdcard1" ]; then
+	${BUSYBOX} mkdir -m 777 -p /storage/sdcard1
 fi
-${BUSYBOX} mkdir -m 777 -p /drbin
+
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
+${BUSYBOX} mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system") /system
+${BUSYBOX} mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache") /cache
+
+${BUSYBOX} mkdir -m 777 /drbin
 ${BUSYBOX} mount -t tmpfs tmpfs /drbin
 ${BUSYBOX} echo "Install busybox to /drbin..." >> ${DRLOG}
-${BUSYBOX} cp ${BUSYBOX} /drbin/
+#${BUSYBOX} cp ${BUSYBOX} /drbin/
+${BUSYBOX} chmod 755 /sbin
+${BUSYBOX} chmod 755 /sbin/busybox
 
-BUSYBOX="/drbin/busybox"
+#BUSYBOX="/drbin/busybox"
+
+${BUSYBOX} --list >> ${DRLOG}
+
+# Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
+${BUSYBOX} echo "Creating symlinks in /drbin to all functions of busybox." >> ${DRLOG}
+# Create a symlink for each of the supported commands
+for sym in `${BUSYBOX} --list`; do
+#	echo "Linking ${BUSYBOX} to /drbin/$sym" >> ${DRLOG}
+	${BUSYBOX} ln -sf ${BUSYBOX} /drbin/$sym
+done
+
+export PATH="/drbin:/sbin"
 
 # Function definitions
 # They rely on the busybox setup being complete, do not try to use them before it did.
@@ -47,13 +98,13 @@ EXECL(){
 
 MOUNTSDCARD(){
         case $* in
-                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/removable/sdcard1; return $?;;
+                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/sdcard1; return $?;;
                 07|7) EXECL insmod /system/lib/modules/nls_utf8.ko;
                       EXECL insmod /system/lib/modules/texfat.ko;
-                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/sdcard1;
                       return $?;;
-                83) PTYPE=$(/system/xbin/busybox blkid /dev/block/mmcblk1p1 | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
-                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                83) PTYPE=$(blkid /dev/block/mmcblk1p1 | awk -F' ' '{ print $NF }' | awk -F'[\"=]' '{ print $3 }');
+                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/sdcard1;
                     return $?;;
                  *) return 1;;
         esac
@@ -154,24 +205,10 @@ DRSETPROP() {
 
 }
 
-# Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
-${BUSYBOX} echo "Creating symlinks in /drbin to all functions of busybox." >> ${DRLOG}
-# Create a symlink for each of the supported commands
-for sym in `${BUSYBOX} --list`; do
-#	${BUSYBOX} echo "Linking ${BUSYBOX} to /drbin/$sym" >> ${DRLOG}
-	${BUSYBOX} ln -s ${BUSYBOX} /drbin/$sym
-done
-
-export PATH="/drbin"
-
 # drbin is now the only path, with all the busybox functions linked, it's safe to use normal commands from here on.
 # Using ECHOL from here on adds all the lines to the XZDR log file.
 # Using EXECL from here on will echo the command and it's result in to the logfile.
 # Not all commands will allow this to be used, so sometimes you will have to do without.
-
-MOUNTS=$(mount)
-ECHOL "DEBUGINFO=Current mounted filesystems:"
-ECHOL $MOUNTS
 
 # Attempting to mount the external sdcard.
 BOOT=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $2}'`
@@ -192,11 +229,11 @@ if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
 
 		echo "### Mounted SDCard1!" >> ${DRLOG}
 
-		DRPATH="/storage/removable/sdcard1/${LOGDIR}"
+#		DRPATH="/storage/sdcard1/${LOGDIR}"
 
 		if [ ! -d "${DRPATH}" ]; then
 			echo "Creating the ${LOGDIR} directory on SDCard1." >> ${DRLOG}
-			mkdir ${DRPATH}
+			mkdir -m 777 -p ${DRPATH}
 		fi
 
 	else
@@ -208,16 +245,22 @@ if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
 			EXECL mount /cache
 		fi
 
-		DRPATH="/cache/${LOGDIR}"
+#		DRPATH="/cache/${LOGDIR}"
 
 		if [ ! -d "${DRPATH}" ]; then
 			echo "Creating the ${LOGDIR} directory in /cache." >> ${DRLOG}
-		mkdir ${DRPATH}
+			mkdir -m 777 -p ${DRPATH}
 		fi
 
 	fi
 
 fi
+
+MOUNTS=$(mount)
+ECHOL "DEBUGINFO=Current mounted filesystems:"
+ECHOL $MOUNTS
+
+ECHOL $(whoami)
 
 # Rotate and merge logs
 ECHOL "Logfile rotation..."
@@ -227,15 +270,15 @@ fi
 EXECL touch ${DRPATH}/${XZDRLOG}
 EXECL chmod 660 ${DRPATH}/${XZDRLOG}
 cat ${DRLOG} > ${DRPATH}/${XZDRLOG}
-rm ${DRLOG}
+#rm ${DRLOG}
 DRLOG="${DRPATH}/${XZDRLOG}"
 
 # Initial setup of the XZDR.prop file, only once or whenever the file was removed
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
         ECHOL "Creating XZDR.prop file."
         touch ${DRPATH}/XZDR.prop
-        ECHOL "dr.recovery.boot will be set to PhilZ (default)"
-        DRSETPROP dr.recovery.boot philz
+        ECHOL "dr.recovery.boot will be set to TWRP (default)"
+        DRSETPROP dr.recovery.boot twrp
         ECHOL "dr.initd.active will be set to false (default)"
         DRSETPROP dr.initd.active false
         DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
@@ -324,6 +367,13 @@ fi
 
 if [ "$RECOVERYBOOT" = "true" ]; then
 
+	# kill all services
+	for i in $(getprop | grep init.svc | sed -r 's/^\[init\.svc\.(.+)\]:.*$/\1/'); do
+		ECHOL "stopping ${i}"
+		stop ${i}
+		sleep 1
+	done
+
         # Recovery boot mode notification
         SETLED on 255 0 255
 
@@ -353,12 +403,17 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	RAMDISK="/sbin/recovery.$RECLOAD.cpio"
 	PACKED="false"
 
-	if [ ! -f "$RAMDISK" ]; then
+	if [ ! -f "$RAMDISK" -a -f "/sbin/recovery.${RECLOAD}.cpio.lzma" ]; then
 		ECHOL "CPIO Archive not found, accepting it probably is an lzma version!"
-		EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
+		EXECL cp /sbin/recovery.${RECLOAD}.cpio.lzma /xztmp/
+		EXECL lzma -d /xztmp/recovery.${RECLOAD}.cpio.lzma
+		RAMDISK="/xztmp/recovery.$RECLOAD.cpio"
+	else
+		ECHOL "Recovery ramdisk missing!"
 	fi
 
-	EXECL mkdir /recovery
+	EXECL mkdir -m 777 /recovery
+	EXECL mount -t tmpfs tmpfs /recovery
 	EXECL cd /recovery
 
 	# Unmount all active filesystems
@@ -376,6 +431,10 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	# Unpack the ramdisk image
 	cpio -i -u < $RAMDISK
 
+	EXECL cp -a /sbin/2nd-init /recovery/sbin/
+	EXECL cp -a /sbin/init.sh /recovery/sbin/
+	EXECL cp -a /sbin/taskset /recovery/sbin/
+
 	SETLED off
 
 	# Executing INIT.
@@ -383,19 +442,23 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 	# Here the log dies.
 	/sbin/busybox umount -l /cache
-	/sbin/busybox umount -l /storage/removable/sdcard1
-	/sbin/busybox umount -l /drbin
-	/sbin/busybox rm -r /drbin
-	/sbin/busybox chroot /recovery /init
+	/sbin/busybox umount -l /storage/sdcard1
+#	/sbin/busybox umount -l /drbin
+#	/sbin/busybox rm -r /drbin
+	/sbin/busybox chroot /recovery /sbin/init.sh
+	exit
 
 fi
 
+SETLED off
+
 ECHOL "Booting Android."
 
-/sbin/busybox umount /drbin
+#/sbin/busybox umount /drbin
 /sbin/busybox umount /system
-/sbin/busybox umount -l /storage/removable/sdcard1
+/sbin/busybox umount /cache
+/sbin/busybox umount -l /storage/sdcard1
 export PATH="$_PATH"
-/sbin/busybox rm -r /drbin
+#/sbin/busybox rm -r /drbin
 
 exit 0
