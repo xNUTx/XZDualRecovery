@@ -34,6 +34,10 @@ if [ "$ROMVER" = "14.2.A.0.290"   -o "$ROMVER" = "14.2.A.1.136"   -o "$ROMVER" =
 	cp /tmp/disableric /system/xbin/
 	chmod 755 /system/xbin/disableric
 
+	# Part of byeselinux, requisit for Lollipop based firmwares
+	/tmp/sysrw.sh
+	/tmp/byeselinux.sh
+
 fi
 
 exit 0

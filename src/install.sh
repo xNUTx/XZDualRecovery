@@ -77,6 +77,11 @@ runinstall() {
 	./${ADBBINARY} push dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 	./${ADBBINARY} push NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk
 	./${ADBBINARY} push rickiller.sh /data/local/tmp/recovery/rickiller.sh
+	./${ADBBINARY} push byeselinux\byeselinux.ko /data/local/tmp/recovery/byeselinux.ko
+	./${ADBBINARY} push byeselinux\byeselinux.sh /data/local/tmp/recovery/byeselinux.sh
+	./${ADBBINARY} push byeselinux\wp_mod.ko /data/local/tmp/recovery/wp_mod.ko
+	./${ADBBINARY} push byeselinux\sysrw.sh /data/local/tmp/recovery/sysrw.sh
+	./${ADBBINARY} push byeselinux\modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
 	./${ADBBINARY} push disableric /data/local/tmp/recovery/disableric
 	./${ADBBINARY} push busybox /data/local/tmp/recovery/busybox
 	./${ADBBINARY} push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
