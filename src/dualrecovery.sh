@@ -450,12 +450,15 @@ else
 	EXECL mount -o remount,ro /system
 
 	ECHOL "Return to normal boot mode..."
-	
+
 	/system/bin/setprop dr.xzdr.install true
 
 	# Ending log
 	DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
 	echo "STOP Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
+
+	# Unload the byeselinux module.
+	/system/xbin/busybox rmmod -f byeselinux.ko
 
 	# Unmount SDCard1
 	umount -f /storage/sdcard1

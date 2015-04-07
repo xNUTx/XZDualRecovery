@@ -102,7 +102,7 @@ EXIT2CM(){
 	# Turn on a red led, as a visual warning to the user
 	SETLED on 255 0 0
 
-	sleep 2
+	/system/xbin/busybox sleep 2
 
 	# Turn off LED
 	SETLED off
@@ -111,7 +111,9 @@ EXIT2CM(){
 	DATETIME=`/system/xbin/busybox date +"%d-%m-%Y %H:%M:%S"`
 	echo "STOP Dual Recovery STAGE 1 at ${DATETIME}" >> ${PREPLOG}
 
-	umount -l /storage/sdcard1
+	/system/xbin/busybox umount -l /storage/sdcard1
+
+	/system/xbin/busybox rmmod -f byeselinux.ko
 
 	export PATH="${_PATH}"
 
@@ -225,6 +227,12 @@ fi
 #The busybox in all of the recoveries has not yet been patched to take this in account.
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
+
+# Part of byeselinux, requisit for Lollipop based firmwares.
+if [ -e "/system/lib/modules/byeselinux.ko" ]; then
+        # This runs every time, enableing the modification of the ramdisk.
+        ${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
+fi
 
 # If no good busybox has been found, we will replace the one in xbin
 # This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
