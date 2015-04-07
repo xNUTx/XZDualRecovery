@@ -112,30 +112,28 @@ echo "#####"
 echo ""
 
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
-if [ "$1" = "unrooted" ]; then
-	/data/local/tmp/zxz.sh
-fi
 # Thanks to Androxyde for this method!
 RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
 if [ "$RICPATH" != "" ]; then
 	${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
 fi
-# Thanks to MohammadAG for this method
-if [ -e "/data/local/tmp/wp_mod.ko" ]; then
-        insmod /data/local/tmp/wp_mod.ko
-fi
+
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+
+# Thanks to MohammadAG and zxz0O0 for this method
 if [ -e "/system/lib/modules/wp_mod.ko" ]; then
         insmod /system/lib/modules/wp_mod.ko
+	sleep 2
+	${BUSYBOX} mount -o remount,rw /
+	${BUSYBOX} mount -o remount,rw /system
+else
+	/data/local/tmp/recovery/sysrw.sh
 fi
-# Thanks to cubeandcube for this method
-if [ -e "/data/local/tmp/writekmem" -a -e "/data/local/tmp/ricaddr" ]; then
-        /data/local/tmp/writekmem `/data/local/tmp/recovery/busybox cat /data/local/tmp/ricaddr` 0
+if [ -e "/system/lib/modules/byeselinux.ko" ]; then
+        insmod /system/lib/modules/byeselinux.ko
+else
+	/data/local/tmp/recovery/byeselinux.sh
 fi
-
-sleep 2
-${BUSYBOX} mount -o remount,rw /
-${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-${BUSYBOX} mount -o remount,rw /system
 
 echo "Copy recovery files to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/recovery.twrp.cpio.lzma /system/bin/

@@ -28,4 +28,6 @@ fi
 $BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
 $BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
 
+$BUSYBOX insmod /system/lib/modules/byeselinux.ko
+
 exit 0
