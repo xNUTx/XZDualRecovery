@@ -27,6 +27,11 @@ if [ "$?" != "0" ]; then
         exit 1
 fi
 
+if [ -f "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
+	$BUSYBOX rm -f /system/lib/modules/mhl_sii8620_8061_drv.ko
+	$BUSYBOX cp /system/lib/modules/mhl_sii8620_8061_drv_orig.ko /system/lib/modules/mhl_sii8620_8061_drv.ko
+fi
+
 $BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
 $BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
 
