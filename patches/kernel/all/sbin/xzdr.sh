@@ -151,7 +151,13 @@ ${BUSYBOX} date > ${DRLOG}
 
 BBXECL cd /
 BBXECL blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-BBXECL mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system") /system
+if [ "$(${BUSYBOX} mount | ${BUSYBOX} grep system | ${BUSYBOX} wc -l)" = "0" ]; then
+	systemmounted="false"
+	BBXECL mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system") /system
+else
+	systemmounted="true"
+	BBXECL mount -o remount,rw /system
+fi
 
 # create directories and setup the temporary bin path
 if [ ! -d "/cache" ]; then
@@ -164,19 +170,24 @@ BBXECL mkdir -m 777 -p /drbin
 BBXECL mount -t tmpfs tmpfs /drbin
 
 # Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
-if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
-	# This should run only once each time system is wiped or reinstalled.
-	BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
-	for module in /system/lib/modules/*.ko; do
-		EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
-	done
-	BBXECL insmod /drbin/byeselinux.ko
-	BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
-	BBXECL chmod 644 /system/lib/modules/byeselinux.ko
-else
-	# This runs every time, enableing the modification of the ramdisk.
-	BBXECL insmod /system/lib/modules/byeselinux.ko
+# The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
+BBXECL dd if=/dev/zero of=/test bs=1024 count=10
+if [ -e "/test" -a ! -s "/test" ]; then
+	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+		# This should run only once each time system is wiped or reinstalled.
+		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
+		for module in /system/lib/modules/*.ko; do
+			EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
+		done
+		BBXECL insmod /drbin/byeselinux.ko
+		BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
+		BBXECL chmod 644 /system/lib/modules/byeselinux.ko
+	else
+		# This runs every time, enableing the modification of the ramdisk.
+		BBXECL insmod /system/lib/modules/byeselinux.ko
+	fi
 fi
+BBXECL rm -f /test
 
 # Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
 ECHOL "Creating symlinks in /drbin to all functions of busybox."
@@ -192,9 +203,6 @@ export PATH="/drbin"
 # Using ECHOL from here on adds all the lines to the XZDR log file.
 # Using EXECL from here on will echo the command and it's result in to the logfile.
 # Not all commands will allow this to be used, so sometimes you will have to do without.
-
-ECHOL "DEBUGINFO=Current mounted filesystems:"
-BBXECL mount
 
 # Attempting to mount the external sdcard.
 BOOT=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $2}'`
@@ -403,20 +411,24 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	ECHOL "Executing recovery init, have fun!"
 
 	# Here the log dies.
-	BBXECL umount -l /cache
-	BBXECL umount -l /storage/removable/sdcard1
+	/sbin/busyboxumount -l /cache
+	/sbin/busybox umount -l /storage/removable/sdcard1
 	/sbin/busybox umount -l /drbin
 	/sbin/busybox rm -r /drbin
 	/sbin/busybox rmmod byeselinux
-	/sbin/busybox rmmod texfat
 	/sbin/busybox chroot /recovery /init
 
 fi
 
-BBXECL umount /drbin
-BBXECL umount /system
+if [ "$systemmounted" = "false" ]; then
+	EXECL umount /system
+fi
+EXECL umount /drbin
 
-ECHOL "Booting Android."
+ECHOL "DEBUGINFO=Current mounted filesystems:"
+BBXECL mount
+
+ECHOL "Unmounting log location and booting to Android."
 
 /sbin/busybox umount -l /storage/removable/sdcard1
 /sbin/busybox rmmod byeselinux

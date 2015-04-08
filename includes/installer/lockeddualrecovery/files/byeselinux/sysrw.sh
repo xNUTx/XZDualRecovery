@@ -23,7 +23,9 @@ if [ ! -f /data/local/tmp/recovery/modulecrcpatch ]; then
 fi
 
 $BUSYBOX chmod 777 /data/local/tmp/recovery/modulecrcpatch
-/data/local/tmp/recovery/modulecrcpatch /data/local/tmp/recovery/wp_mod.ko /data/local/tmp/recovery/wp_mod.ko 1> /dev/null
+for module in /system/lib/modules/*.ko; do
+        /data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/wp_mod.ko 1> /dev/null
+done
 
 $BUSYBOX insmod /data/local/tmp/recovery/wp_mod.ko
 

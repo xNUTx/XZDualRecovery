@@ -9,7 +9,9 @@
 BUSYBOX="/sbin/busybox"
 
 $BUSYBOX chmod 777 /tmp/modulecrcpatch
-/tmp/modulecrcpatch /tmp/wp_mod.ko /tmp/wp_mod.ko 1> /dev/null
+for module in /system/lib/modules/*.ko; do
+	/tmp/modulecrcpatch $module /tmp/wp_mod.ko 1> /dev/null
+done
 
 $BUSYBOX cp /tmp/wp_mod.ko /system/lib/modules/wp_mod.ko
 $BUSYBOX chmod 644 /system/lib/modules/wp_mod.ko

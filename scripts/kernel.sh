@@ -219,8 +219,8 @@ fastbootkernel() {
 		echo "Flash it to the connected device? (y/n)"
 		read answer
 		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
-			$WORKDIR/bin/adb reboot bootloader
-			$WORKDIR/bin/fastboot flash boot $WORKDIR/.tmp/$KERNEL.img
+			$WORKDIR/bin/adb reboot-bootloader
+			$WORKDIR/bin/fastboot flash boot $WORKDIR/.tmp/flashable/tmp/$KERNEL.img
 			if [ "$?" = "0" ]; then
 				$WORKDIR/bin/fastboot reboot
 			fi

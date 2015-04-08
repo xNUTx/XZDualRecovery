@@ -122,16 +122,17 @@ ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-
 
 # Thanks to MohammadAG and zxz0O0 for this method
 if [ -e "/system/lib/modules/wp_mod.ko" ]; then
-        insmod /system/lib/modules/wp_mod.ko
+        ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
 	sleep 2
 	${BUSYBOX} mount -o remount,rw /
 	${BUSYBOX} mount -o remount,rw /system
 else
+	${BUSYBOX} chmod 755 /data/local/tmp/recovery/sysrw.sh
 	/data/local/tmp/recovery/sysrw.sh
 fi
-if [ -e "/system/lib/modules/byeselinux.ko" ]; then
-        insmod /system/lib/modules/byeselinux.ko
-else
+
+if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+	${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
 	/data/local/tmp/recovery/byeselinux.sh
 fi
 

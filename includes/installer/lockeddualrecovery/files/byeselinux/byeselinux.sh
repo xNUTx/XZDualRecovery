@@ -17,7 +17,9 @@ if [ ! -f /data/local/tmp/recovery/modulecrcpatch ]; then
 fi
 
 $BUSYBOX chmod 777 /data/local/tmp/recovery/modulecrcpatch
-/data/local/tmp/recovery/modulecrcpatch /data/local/tmp/recovery/byeselinux.ko /data/local/tmp/recovery/byeselinux.ko 1> /dev/null
+for module in /system/lib/modules/*.ko; do
+	/data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/byeselinux.ko 1> /dev/null
+done
 
 $BUSYBOX mount -o remount,rw /system
 if [ "$?" != "0" ]; then
@@ -27,7 +29,5 @@ fi
 
 $BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
 $BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
-
-$BUSYBOX insmod /system/lib/modules/byeselinux.ko
 
 exit 0

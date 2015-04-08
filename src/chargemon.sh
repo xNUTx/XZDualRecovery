@@ -229,10 +229,23 @@ ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
 
 # Part of byeselinux, requisit for Lollipop based firmwares.
-if [ -e "/system/lib/modules/byeselinux.ko" ]; then
-        # This runs every time, enableing the modification of the ramdisk.
+${BUSYBOX} mount -o remount,rw rootfs /
+${BUSYBOX} dd if=/dev/zero of=/test bs=1024 count=10
+if [ -e "/system/lib/modules/byeselinux.ko" -a -e "/test" -a ! -s "/test" ]; then
+        # This runs every time, enableing the modification of the ramdisk, but only if needed.
+	${BUSYBOX} mount -o remount,rw /system
         ${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
+	${BUSYBOX} mount -o remount,ro /system
+else
+	# The installer creates and installs this file always, but it's not always required, if it isn't but it exists, remove it.
+	if [ -e "/system/lib/modules/byeselinux.ko" ]; then
+		${BUSYBOX} mount -o remount,rw /system
+		${BUSYBOX} rm -f /system/lib/modules/byeselinux.ko
+		${BUSYBOX} mount -o remount,ro /system
+	fi
 fi
+${BUSYBOX} rm -f /test
+${BUSYBOX} mount -o remount,ro rootfs /
 
 # If no good busybox has been found, we will replace the one in xbin
 # This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra

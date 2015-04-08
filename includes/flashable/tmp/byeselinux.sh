@@ -9,7 +9,9 @@
 BUSYBOX="/sbin/busybox"
 
 $BUSYBOX chmod 777 /tmp/modulecrcpatch
-/tmp/modulecrcpatch /tmp/byeselinux.ko /tmp/byeselinux.ko 1> /dev/null
+for module in /system/lib/modules/*.ko; do
+	/tmp/modulecrcpatch $module /tmp/byeselinux.ko 1> /dev/null
+done
 
 $BUSYBOX cp /tmp/byeselinux.ko /system/lib/modules/byeselinux.ko
 $BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
