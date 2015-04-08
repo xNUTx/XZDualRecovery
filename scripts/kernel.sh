@@ -68,10 +68,10 @@ unpackkernel() {
 		return 1
 	fi
 
-	mkdir $WORKDIR/tmp/kernelparts
-	mkdir $WORKDIR/tmp/kernelramdisk
+	mkdir $WORKDIR/.tmp/kernelparts
+	mkdir $WORKDIR/.tmp/kernelramdisk
 
-	$WORKDIR/bin/php $WORKDIR/bin/unpack.php $KERNELPATH/$KERNEL $WORKDIR/tmp/kernelparts/
+	$WORKDIR/bin/php $WORKDIR/bin/unpack.php $KERNELPATH/$KERNEL $WORKDIR/.tmp/kernelparts/
 
 	if [ "$(grep '.sin' $KERNEL | wc -l)" = "1" ]; then
 		KERNEL=$(basename $KERNEL .sin)
@@ -81,9 +81,9 @@ unpackkernel() {
 		KERNEL=$(basename $KERNEL .elf)
 	fi
 
-	cd $WORKDIR/tmp/kernelramdisk/
+	cd $WORKDIR/.tmp/kernelramdisk/
 
-	gunzip -c $WORKDIR/tmp/kernelparts/$KERNEL.ramdisk.cpio.gz | cpio -i -u
+	gunzip -c $WORKDIR/.tmp/kernelparts/$KERNEL.ramdisk.cpio.gz | cpio -i -u
 
 	cd $WORKDIR
 
@@ -100,21 +100,21 @@ patchramdisk() {
 
 	echo "Patching kernel ramdisk."
 
-	mv -v $WORKDIR/tmp/kernelramdisk/init.rc $WORKDIR/tmp/kernelramdisk/init.original.rc
-	cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/tmp/kernelramdisk/
-	cp -v $WORKDIR/includes/busybox $WORKDIR/tmp/kernelramdisk/sbin/
+	mv -v $WORKDIR/.tmp/kernelramdisk/init.rc $WORKDIR/.tmp/kernelramdisk/init.original.rc
+	cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/.tmp/kernelramdisk/
+	cp -v $WORKDIR/includes/busybox $WORKDIR/.tmp/kernelramdisk/sbin/
 
 	# Comment out the sony_ric
 	#    mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
 	#    write /sys/kernel/security/sony_ric/enable 1
-	sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/tmp/kernelramdisk/init.*
-	sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/tmp/kernelramdisk/init.*
+	sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/.tmp/kernelramdisk/init.*
+	sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/.tmp/kernelramdisk/init.*
 
 	# Set fstab to rw
-	sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/tmp/kernelramdisk/fstab.qcom
+	sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/.tmp/kernelramdisk/fstab.qcom
 
 	# Disable the ric service
-	sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/tmp/kernelramdisk/init.*
+	sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/.tmp/kernelramdisk/init.*
 
 	if [ "$1" = "auto" ]; then
 		sleep 2
@@ -131,11 +131,11 @@ packramdisk() {
 
 	MKBOOTFS=$WORKDIR/bin/mkbootfs
 
-	cp $WORKDIR/tmp/recovery.* $WORKDIR/tmp/kernelramdisk/sbin/
-	$MKBOOTFS $WORKDIR/tmp/kernelramdisk > $WORKDIR/tmp/$KERNEL.ramdisk.cpio
-	gzip -fq $WORKDIR/tmp/$KERNEL.ramdisk.cpio
+	cp $WORKDIR/.tmp/recovery.* $WORKDIR/.tmp/kernelramdisk/sbin/
+	$MKBOOTFS $WORKDIR/.tmp/kernelramdisk > $WORKDIR/.tmp/$KERNEL.ramdisk.cpio
+	gzip -fq $WORKDIR/.tmp/$KERNEL.ramdisk.cpio
 
-	RAMDISK="$WORKDIR/tmp/$KERNEL.ramdisk.cpio.gz"
+	RAMDISK="$WORKDIR/.tmp/$KERNEL.ramdisk.cpio.gz"
 
 	if [ "$1" = "auto" ]; then
 		sleep 2
@@ -152,25 +152,25 @@ packkernel() {
 
 	DTIMAGE=""
 
-	if [ -f "$WORKDIR/tmp/kernelparts/$KERNEL.qcdt.img" ]; then
+	if [ -f "$WORKDIR/.tmp/kernelparts/$KERNEL.qcdt.img" ]; then
 
-		DTIMAGE="$WORKDIR/tmp/kernelparts/$KERNEL.qcdt.img"
+		DTIMAGE="$WORKDIR/.tmp/kernelparts/$KERNEL.qcdt.img"
 
 	fi
 
 	BOOTCMD=""
 
-	if [ -f "$WORKDIR/tmp/kernelparts/$KERNEL.boot.cmd" ]; then
+	if [ -f "$WORKDIR/.tmp/kernelparts/$KERNEL.boot.cmd" ]; then
 
-		BOOTCMD=$(cat $WORKDIR/tmp/kernelparts/$KERNEL.boot.cmd)
+		BOOTCMD=$(cat $WORKDIR/.tmp/kernelparts/$KERNEL.boot.cmd)
 
 	fi
 
 	ZIMAGE=""
 
-	if [ -f "$WORKDIR/tmp/kernelparts/$KERNEL.zImage" ]; then
+	if [ -f "$WORKDIR/.tmp/kernelparts/$KERNEL.zImage" ]; then
 
-		ZIMAGE="$WORKDIR/tmp/kernelparts/$KERNEL.zImage"
+		ZIMAGE="$WORKDIR/.tmp/kernelparts/$KERNEL.zImage"
 
 	fi
 
@@ -191,7 +191,7 @@ packkernel() {
 	fi
 	MKBOOTCMDS="$MKBOOTCMDS --pagesize $PAGESIZE"
 	MKBOOTCMDS="$MKBOOTCMDS --cmdline \"$BOOTCMD\""
-	MKBOOTCMDS="$MKBOOTCMDS --output $WORKDIR/tmp/$KERNEL.img"
+	MKBOOTCMDS="$MKBOOTCMDS --output $WORKDIR/.tmp/$KERNEL.img"
 
 	echo $MKBOOTCMDS
 
@@ -220,7 +220,7 @@ fastbootkernel() {
 		read answer
 		if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 			$WORKDIR/bin/adb reboot bootloader
-			$WORKDIR/bin/fastboot flash boot $WORKDIR/tmp/$KERNEL.img
+			$WORKDIR/bin/fastboot flash boot $WORKDIR/.tmp/$KERNEL.img
 			if [ "$?" = "0" ]; then
 				$WORKDIR/bin/fastboot reboot
 			fi

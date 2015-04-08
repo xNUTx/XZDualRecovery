@@ -6,7 +6,7 @@
 .project
 .metadata
 #bin/
-tmp/
+.tmp/
 *.tmp
 *.bak
 *.swp
@@ -142,7 +142,7 @@ AppPackages/
 # Others
 sql/
 out/
-tmp/
+#tmp/
 *.Cache
 ClientBin/
 [Ss]tyle[Cc]op.*

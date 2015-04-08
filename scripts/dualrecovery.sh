@@ -13,8 +13,8 @@ cd $WORKDIR
 if [ ! -d "$WORKDIR/out" ]; then
 	mkdir $WORKDIR/out
 fi
-if [ ! -d "$WORKDIR/tmp" ]; then
-	mkdir $WORKDIR/tmp
+if [ ! -d "$WORKDIR/.tmp" ]; then
+	mkdir $WORKDIR/.tmp
 fi
 
 MAJOR=`cat $WORKDIR/scripts/version`
