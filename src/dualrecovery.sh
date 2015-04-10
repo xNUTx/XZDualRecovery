@@ -458,7 +458,7 @@ else
 	echo "STOP Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
 
 	# Unload the byeselinux module.
-	/system/xbin/busybox rmmod -f byeselinux.ko
+	rmmod byeselinux
 
 	# Unmount SDCard1
 	umount -f /storage/sdcard1

@@ -1,2 +1,2 @@
 #!/sbin/busybox sh
-umount -l /storage/removable/sdcard1
+umount -l /storage/sdcard1

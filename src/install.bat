@@ -110,7 +110,7 @@ if "%C%" == "3" (
 :cleanup
 
 adb wait-for-device
-adb shell "/system/xbin/busybox rm -rf /data/local/tmp/*"
+adb shell "/system/xbin/busybox rm -rf /data/local/tmp/recovery"
 
 set install_status=
 for /f "delims=" %%i in ('adb shell "/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh"') do ( set install_status=%%i)

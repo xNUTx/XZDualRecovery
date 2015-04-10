@@ -205,18 +205,35 @@ pwrkeySearch() {
 	return 1
 }
 
+# We can safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
+${BUSYBOX} mount -o remount,rw rootfs /
+MADETMP="false"
+if [ ! -d "/tmp" ]; then
+
+	mkdir /tmp
+	${BUSYBOX} mount -t tmpfs tmpfs /tmp
+	echo "Created /tmp!" >> ${PREPLOG}
+
+fi
+${BUSYBOX} mkdir /tmp/XZDualRecovery
+${BUSYBOX} mount -o remount,ro rootfs /
+
+# Kickstarting log
+DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
+echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
+
 NOGOODBUSYBOX="true"
-# Busybox setup, chosing the one that supports lzcat, as it is vital for this recovery setup!
+# Busybox setup, chosing the one that supports lzma, as it is vital for this recovery setup!
 if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
-	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzcat | /system/xbin/busybox wc -l`
+	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzma | /system/xbin/busybox wc -l`
 	if [ "$CHECK" -gt "0" ]; then
  		BUSYBOX="/system/xbin/busybox"
 		NOGOODBUSYBOX="false"
 	fi
 fi
-# Fallback to the one in /system/bin, but only if it supports lzcat...
+# Fallback to the one in /system/bin, but only if it supports lzma...
 if [ -x "/system/bin/busybox" -a "$NOGOODBUSYBOX" = "true" ]; then
-	CHECK=`/system/bin/busybox --list | /system/bin/busybox grep lzcat | /system/bin/busybox wc -l`
+	CHECK=`/system/bin/busybox --list | /system/bin/busybox grep lzma | /system/bin/busybox wc -l`
 	if [ "$CHECK" -gt "0" ]; then
 		BUSYBOX="/system/bin/busybox"
 		NOGOODBUSYBOX="false"
@@ -229,23 +246,22 @@ ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-
 ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
 
 # Part of byeselinux, requisit for Lollipop based firmwares.
-${BUSYBOX} mount -o remount,rw rootfs /
-${BUSYBOX} dd if=/dev/zero of=/test bs=1024 count=10
-if [ -e "/system/lib/modules/byeselinux.ko" -a -e "/test" -a ! -s "/test" ]; then
-        # This runs every time, enableing the modification of the ramdisk, but only if needed.
-	${BUSYBOX} mount -o remount,rw /system
-        ${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
-	${BUSYBOX} mount -o remount,ro /system
-else
-	# The installer creates and installs this file always, but it's not always required, if it isn't but it exists, remove it.
+echo "Checking if byeselinux is required..." >> ${PREPLOG}
+ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+echo "ro.build.version.release=$(DRGETPROP ro.build.version.release), test result: $ANDROIDVER" >> ${PREPLOG}
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	echo "Byeselinux is required." >> ${PREPLOG}
+        # This will allow the modification of the ramdisk, but will only be loaded if needed.
 	if [ -e "/system/lib/modules/byeselinux.ko" ]; then
-		${BUSYBOX} mount -o remount,rw /system
-		${BUSYBOX} rm -f /system/lib/modules/byeselinux.ko
-		${BUSYBOX} mount -o remount,ro /system
+		echo "Module found, loading it now..." >> ${PREPLOG}
+		${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
+		if [ "$?" != "0" -a "$?" != "17" ]; then
+			echo "Loading the module failed with exit code $?" >> ${PREPLOG}
+		fi
+	else
+		echo "Byeselinux module not found!" >> ${PREPLOG}
 	fi
 fi
-${BUSYBOX} rm -f /test
-${BUSYBOX} mount -o remount,ro rootfs /
 
 # If no good busybox has been found, we will replace the one in xbin
 # This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
@@ -259,61 +275,22 @@ if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
 	BUSYBOX="/system/xbin/busybox"
 	rm /system/etc/.xzdrbusybox
 	${BUSYBOX} mount -o remount,ro /system
+	echo "Replaced busybox in /system/xbin!" >> ${PREPLOG}
 
 fi
 
-MADESECDIR="false"
-if [ ! -d "$SECUREDIR" -o -x "$SECUREDIR/busybox" ] && [ -x "${BUSYBOX}" ]; then
+if [ ! -d "$SECUREDIR" -o ! -x "$SECUREDIR/busybox" ] && [ -x "${BUSYBOX}" ]; then
 
-	MADESECDIR="true"
 	${BUSYBOX} mount -o remount,rw /system
 	if [ ! -d "$SECUREDIR" ]; then
 		${BUSYBOX} mkdir $SECUREDIR
 	fi
 	if [ ! -x "$SECUREDIR/busybox" ]; then
 		${BUSYBOX} cp ${BUSYBOX} $SECUREDIR/
+		${BUSYBOX} chmod 755 $SECUREDIR/busybox
 	fi
-	${BUSYBOX} mount -o remount,ro /system
-
-fi
-
-# We can actually safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
-${BUSYBOX} mount -o remount,rw rootfs /
-MADETMP="false"
-if [ ! -d "/tmp" ]; then
-
-	mkdir /tmp
-	${BUSYBOX} mount -t tmpfs tmpfs /tmp
-	if [ "$?" = "0" ]; then
-		MADETMP="true"
-	fi
-
-fi
-${BUSYBOX} mkdir /tmp/XZDualRecovery
-${BUSYBOX} mount -o remount,ro rootfs /
-
-# Kickstarting log
-DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
-echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
-
-# If $SECUREDIR was created, it will be noted in the log.
-if [ "$MADESECDIR" = "true" ]; then
-
 	echo "Created $SECUREDIR and put a busybox safety copy away in it.!" >> ${PREPLOG}
-
-fi
-
-# If /tmp was created, it will be noted in the log.
-if [ "$MADETMP" = "true" ]; then
-
-	echo "Created /tmp!" >> ${PREPLOG}
-
-fi
-
-# If the busybox binary has been replaced by a known good one, this will let us know in the log.
-if [ "$NOGOODBUSYBOX" = "true" ]; then
-
-	echo "Replaced busybox in /system/xbin!" >> ${PREPLOG}
+	${BUSYBOX} mount -o remount,ro /system
 
 fi
 
@@ -324,11 +301,19 @@ if [ -x "${BUSYBOX}" ]; then
 	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
 	TEXECL ${BUSYBOX} mount -o remount,rw /system
 
-	if [ -f "/system/xbin/disableric" ]; then
+	if [ ! -e "/system/lib/modules/wp_mod.ko" -a -f "/system/xbin/disableric" ]; then
 		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
 		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
 		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
-		echo "0" > /sys/kernel/security/sony_ric/enable
+		${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
+	elif [ ! -e "/system/lib/modules/wp_mod.ko" -a ! -f "/system/xbin/disableric" -a "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
+		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
+		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
+		${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
+	elif [ -e "/system/lib/modules/wp_mod.ko" ]; then
+		TECHOL "No disableric trigger found, but MohammadAG's module is there, lets load it."
+		TEXECL ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
 	fi
 
 	if [ -x "${BUSYBOX}" -a -x "/system/bin/dualrecovery.sh" ]; then
@@ -341,6 +326,9 @@ if [ -x "${BUSYBOX}" ]; then
 			TECHOL "Creating symlinks in /system/xbin to all functions of busybox."
 			# Create a symlink for each of the supported commands
 			for sym in `${BUSYBOX} --list`; do
+				if [ "$sym" = "" ]; then
+					continue;
+				fi
 				TEXECL ${BUSYBOX} ln -sf ${BUSYBOX} /system/xbin/$sym
 			done
 
@@ -534,9 +522,11 @@ cp ${PREPLOG} ${DRPATH}/
 # One last failsafe...
 if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
 
-	export PATH="${_PATH}"
+	export PATH="$_PATH"
 
+	/system/xbin/busybox mount -o remount,rw rootfs /
 	exec /sbin/init.sh $DRPATH $LOGFILE
+	/system/xbin/busybox mount -o remount,ro rootfs /
 
 else
 

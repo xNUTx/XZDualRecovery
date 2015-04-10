@@ -11,7 +11,10 @@ SECUREDIR="/system/.XZDualRecovery"
 DRPATH="/storage/sdcard1/${LOGDIR}"
 
 if [ ! -d "$DRPATH" ]; then
-	DRPATH="/cache/${LOGDIR}"
+	${BUSYBOX} mkdir $DRPATH 2>&1 > /dev/null
+	if [ ! -d "$DRPATH" ]; then
+		DRPATH="/cache/${LOGDIR}"
+	fi
 fi
 
 # Find the gpio-keys node, to listen on the right input event
@@ -111,29 +114,73 @@ echo "#"
 echo "#####"
 echo ""
 
+${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
 # Thanks to Androxyde for this method!
 RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
-if [ "$RICPATH" != "" ]; then
-	${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
-fi
 
-${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-
-# Thanks to MohammadAG and zxz0O0 for this method
-if [ -e "/system/lib/modules/wp_mod.ko" ]; then
-        ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
-	sleep 2
-	${BUSYBOX} mount -o remount,rw /
-	${BUSYBOX} mount -o remount,rw /system
+# Thanks to MohammadAG and zxz0O0 for this method, heavily modified by [NUT].
+${BUSYBOX} mount -o remount,rw /system 2>&1 > /dev/null
+if [ "$?" != "0" ]; then
+	echo "Remount of system failed, applying MohammadAG's wp_mod module solution now."
+	if [ -e "/system/lib/modules/wp_mod.ko" ]; then
+		echo "Module exists in system partition, loading it now."
+	        ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
+		if [ "$?" != "0" ]; then
+			echo "That module is not accepted by the running kernel, will try to replace it now."
+			${BUSYBOX} chmod 755 /data/local/tmp/recovery/sysrw.sh
+			/data/local/tmp/recovery/sysrw.sh
+		fi
+		if [ "$RICPATH" != "" ]; then
+			${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+		fi
+		${BUSYBOX} mount -o remount,rw /system
+		if [ "$?" != "0" ]; then
+			echo "Remount of /system failed again, ABORTING INSTALLATION NOW!"
+			exit 1
+		fi
+	else
+		echo "The wp_mod module does not exist, installing it now."
+		${BUSYBOX} chmod 755 /data/local/tmp/recovery/sysrw.sh
+		/data/local/tmp/recovery/sysrw.sh
+		if [ "$RICPATH" != "" ]; then
+			${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+		fi
+	fi
 else
-	${BUSYBOX} chmod 755 /data/local/tmp/recovery/sysrw.sh
-	/data/local/tmp/recovery/sysrw.sh
+	if [ "$RICPATH" != "" ]; then
+		${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+	fi
 fi
 
-if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
-	${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
-	/data/local/tmp/recovery/byeselinux.sh
+# Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
+ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	# Thanks to zxz0O0 for this method
+	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+		echo "The byeselinux module does not yet exist, installing it now."
+		${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
+		${BUSYBOX} chmod 755 /data/local/tmp/recovery/modulecrcpatch
+		/data/local/tmp/recovery/byeselinux.sh
+	else
+		echo "The byeselinux module exists, testing if the kernel accepts it."
+		${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
+		if [ "$?" != "0" -a "$?" != "17" ]; then
+			echo "That module is not accepted by the running kernel, will replace it now."
+			${BUSYBOX} chmod 755 /data/local/tmp/recovery/modulecrcpatch
+			${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
+			/data/local/tmp/recovery/byeselinux.sh
+		fi
+		${BUSYBOX} rmmod byeselinux
+	fi
+	if [ -e "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
+		echo "Removing zxz0O0's byeselinux patch module, restoring the original."
+		$BUSYBOX rm -f /system/lib/modules/mhl_sii8620_8061_drv.ko
+		$BUSYBOX mv /system/lib/modules/mhl_sii8620_8061_drv_orig.ko /system/lib/modules/mhl_sii8620_8061_drv.ko
+	fi
+else
+	echo "This firmware does not require byeselinux, will not install it."
 fi
 
 echo "Copy recovery files to system."
@@ -187,12 +234,12 @@ if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBO
 	${BUSYBOX} chmod 755 /system/xbin/disableric
 fi
 
-if [ -f "/system/etc/.xzdrbusybox" ]; then
+if [ -e "/system/etc/.xzdrbusybox" ]; then
 	${BUSYBOX} rm -f /system/etc/.xzdrbusybox
 fi
 
 if [ ! -d "$SECUREDIR" ]; then
-	echo "Creating $SECUREDIR to store a backup copy of busybox."
+	echo "Creating $SECUREDIR to store a backup copy of busybox and the init.rc files."
 	mkdir $SECUREDIR
 fi
 
@@ -201,6 +248,9 @@ ${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
 ${BUSYBOX} chmod 755 /system/xbin/busybox
 ${BUSYBOX} chmod 755 $SECUREDIR/busybox
+
+echo "Copy init's *.rc files in to $SECUREDIR."
+${BUSYBOX} cp /*.rc $SECUREDIR/
 
 echo "Trying to find and update the gpio-keys event node."
 GPIOINPUTDEV="$(gpioKeysSearch)"

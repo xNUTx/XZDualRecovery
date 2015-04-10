@@ -35,4 +35,9 @@ if [ "$?" != "0" ]; then
 	exit 1
 fi
 
+$BUSYBOX cp /data/local/tmp/recovery/wp_mod.ko /system/lib/modules/wp_mod.ko
+$BUSYBOX chmod 644 /system/lib/modules/wp_mod.ko
+
+echo "Module installed succesfully."
+
 exit 0

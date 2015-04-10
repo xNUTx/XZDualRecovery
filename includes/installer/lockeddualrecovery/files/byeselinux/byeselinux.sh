@@ -17,6 +17,7 @@ if [ ! -f /data/local/tmp/recovery/modulecrcpatch ]; then
 fi
 
 $BUSYBOX chmod 777 /data/local/tmp/recovery/modulecrcpatch
+
 for module in /system/lib/modules/*.ko; do
 	/data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/byeselinux.ko 1> /dev/null
 done
@@ -28,11 +29,21 @@ if [ "$?" != "0" ]; then
 fi
 
 if [ -f "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
+	echo "Removing the byeselinux patch module, restoring the original."
 	$BUSYBOX rm -f /system/lib/modules/mhl_sii8620_8061_drv.ko
-	$BUSYBOX cp /system/lib/modules/mhl_sii8620_8061_drv_orig.ko /system/lib/modules/mhl_sii8620_8061_drv.ko
+	$BUSYBOX mv /system/lib/modules/mhl_sii8620_8061_drv_orig.ko /system/lib/modules/mhl_sii8620_8061_drv.ko
 fi
 
 $BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
 $BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
 
-exit 0
+if [ "$?" == "0" ]; then
+
+	echo "Module installed succesfully."
+	exit 0
+
+fi
+
+echo "byeselinux module installation failed!"
+
+exit 1

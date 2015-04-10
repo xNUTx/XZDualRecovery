@@ -37,13 +37,13 @@ BBXECL(){
 
 MOUNTSDCARD(){
         case $* in
-                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/removable/sdcard1; return $?;;
+                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/sdcard1; return $?;;
                 07|7) EXECL insmod /system/lib/modules/nls_utf8.ko;
                       EXECL insmod /system/lib/modules/texfat.ko;
-                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/sdcard1;
                       return $?;;
                 83) PTYPE=$(/system/xbin/busybox blkid /dev/block/mmcblk1p1 | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
-                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/sdcard1;
                     return $?;;
                  *) return 1;;
         esac
@@ -163,8 +163,8 @@ fi
 if [ ! -d "/cache" ]; then
 	BBXECL mkdir -m 777 -p /cache
 fi
-if [ ! -d "/storage/removable/sdcard1" ]; then
-	BBXECL mkdir -p /storage/removable/sdcard1
+if [ ! -d "/storage/sdcard1" ]; then
+	BBXECL mkdir -p /storage/sdcard1
 fi
 BBXECL mkdir -m 777 -p /drbin
 BBXECL mount -t tmpfs tmpfs /drbin
@@ -172,7 +172,7 @@ BBXECL mount -t tmpfs tmpfs /drbin
 # Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
 # The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
 BBXECL dd if=/dev/zero of=/test bs=1024 count=10
-if [ -e "/test" -a ! -s "/test" ]; then
+if [ "$?" != "0" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		# This should run only once each time system is wiped or reinstalled.
 		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
@@ -223,7 +223,7 @@ if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
 
 		echo "### Mounted SDCard1!" >> ${DRLOG}
 
-		DRPATH="/storage/removable/sdcard1/${LOGDIR}"
+		DRPATH="/storage/sdcard1/${LOGDIR}"
 
 		if [ ! -d "${DRPATH}" ]; then
 			echo "Creating the ${LOGDIR} directory on SDCard1." >> ${DRLOG}
@@ -412,7 +412,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 	# Here the log dies.
 	/sbin/busyboxumount -l /cache
-	/sbin/busybox umount -l /storage/removable/sdcard1
+	/sbin/busybox umount -l /storage/sdcard1
 	/sbin/busybox umount -l /drbin
 	/sbin/busybox rm -r /drbin
 	/sbin/busybox rmmod byeselinux
@@ -430,7 +430,7 @@ BBXECL mount
 
 ECHOL "Unmounting log location and booting to Android."
 
-/sbin/busybox umount -l /storage/removable/sdcard1
+/sbin/busybox umount -l /storage/sdcard1
 /sbin/busybox rmmod byeselinux
 export PATH="$_PATH"
 /sbin/busybox rm -r /drbin
