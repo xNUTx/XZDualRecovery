@@ -2,7 +2,7 @@
 
 DRPATH="/storage/sdcard1/XZDualRecovery"
 
-if [ !-d "/storage/sdcard1/XZDualRecovery" ]; then
+if [ ! -d "/storage/sdcard1/XZDualRecovery" ]; then
 	DRPATH="/cache/XZDualRecovery"
 fi
 
