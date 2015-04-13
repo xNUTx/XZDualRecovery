@@ -271,7 +271,12 @@ echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
 if [ "$ANDROIDVER" = "lollipop" ]; then
-	DRSETPROP dr.keep.byeselinux false
+	if [ "$(DRGETPROP dr.keep.byeselinux)" != "true" ]; then
+	        #echo "Will unload byeselinux every boot"
+	        DRSETPROP dr.keep.byeselinux false
+	else
+	        DRSETPROP dr.keep.byeselinux true
+	fi
 fi
 
 FOLDER1=/sdcard/clockworkmod/

@@ -62,6 +62,7 @@ packflashablekernel() {
 	echo "Flashable Kernel: copying files to their locations..."
 	cp $WORKDIR/.tmp/$KERNEL.img $WORKDIR/.tmp/flashable/tmp/boot.img
 	cp $WORKDIR/src/setversion.sh $WORKDIR/.tmp/flashable/tmp/setversion.sh
+	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/flashable/tmp/installndrutils.sh
 	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/tmp/busybox
 	cp $WORKDIR/src/kernel-flashkernel.sh $WORKDIR/.tmp/flashable/tmp/flashkernel.sh
 	cp $WORKDIR/src/kernel-updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script

@@ -115,10 +115,17 @@ pwrkeySearch() {
 DRGETPROP() {
 
         # If it's empty, see if what was requested was a XZDR.prop value!
-        VAR=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-        PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+        VAR="$*"
+        PROP=$(/sbin/busybox grep "$*" ${DRPATH}/XZDR.prop | /sbin/busybox awk -F'=' '{ print $NF }')
 
-        if [ "$VAR" != "" ]; then
+	if [ "$PROP" = "" ]; then
+
+		# If it still is empty, try to get it from the build.prop
+		PROP=$(/sbin/busybox grep "$VAR" /system/build.prop | /sbin/busybox awk -F'=' '{ print $NF }')
+
+	fi
+
+        if [ "$VAR" != "" -a "$PROP" != "" ]; then
                 echo $PROP
         else
                 echo "false"
@@ -171,8 +178,8 @@ BBXECL mount -t tmpfs tmpfs /drbin
 
 # Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
 # The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
-BBXECL dd if=/dev/zero of=/test bs=1024 count=10
-if [ "$?" != "0" ]; then
+ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | BBXECL awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+if [ "$ANDROIDVER" = "lollipop" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		# This should run only once each time system is wiped or reinstalled.
 		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
@@ -187,7 +194,6 @@ if [ "$?" != "0" ]; then
 		BBXECL insmod /system/lib/modules/byeselinux.ko
 	fi
 fi
-BBXECL rm -f /test
 
 # Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
 ECHOL "Creating symlinks in /drbin to all functions of busybox."
@@ -269,6 +275,7 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
         DRSETPROP dr.recovery.boot twrp
         ECHOL "dr.initd.active will be set to false (default)"
         DRSETPROP dr.initd.active false
+        DRSETPROP dr.keep.byeselinux false
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
@@ -420,6 +427,8 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 fi
 
+KEEPBYESELINUX=$(DRGETPROP dr.keep.byeselinux)
+
 if [ "$systemmounted" = "false" ]; then
 	EXECL umount /system
 fi
@@ -431,7 +440,9 @@ BBXECL mount
 ECHOL "Unmounting log location and booting to Android."
 
 /sbin/busybox umount -l /storage/sdcard1
-/sbin/busybox rmmod byeselinux
+if [ "$KEEPBYESELINUX" != "true" ]; then
+	/sbin/busybox rmmod byeselinux
+fi
 export PATH="$_PATH"
 /sbin/busybox rm -r /drbin
 

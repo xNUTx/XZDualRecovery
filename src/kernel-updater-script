@@ -1,7 +1,7 @@
 ui_print("");ui_print("");ui_print("");
 ui_print("===========================================");
 ui_print("|                                         |");
-ui_print("|      *** XZDR AdvStock Kernel ***       |");
+ui_print("|           *** XZDR Kernel ***           |");
 ui_print("|                                         |");
 ui_print("|   PhilZ Touch, CWM & TWRP recoveries!   |");
 ui_print("| Maintained by [NUT] and shoey63 on XDA  |");
@@ -28,7 +28,8 @@ run_program("/tmp/flashkernel.sh");
 set_progress(0.550000);
 
 ui_print("  Installing NDRUtils...");
-package_extract_file("system/app/NDRUtils.apk", "/system/app/NDRUtils.apk");
+set_perm(0, 0, 0755, "/tmp/installndrutils.sh");
+run_program("/tmp/installndrutils.sh");
 set_progress(0.650000);
 
 ui_print("  Saving version...");
@@ -37,7 +38,6 @@ run_program("/tmp/setversion.sh");
 set_progress(0.750000);
 
 ui_print("  Correcting permissions...");
-set_perm(0, 2000, 0644, "/system/app/NDRUtils.apk");
 set_progress(0.850000);
 
 ui_print("  Unmounting SYSTEM...");
