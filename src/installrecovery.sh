@@ -106,6 +106,8 @@ DRSETPROP() {
 
 }
 
+ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+
 echo ""
 echo "##########################################################"
 echo "#"
@@ -155,7 +157,6 @@ else
 fi
 
 # Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
-ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
 if [ "$ANDROIDVER" = "lollipop" ]; then
 	# Thanks to zxz0O0 for this method
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
@@ -225,8 +226,15 @@ ${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh /system/bin/
 ${BUSYBOX} chmod 755 /system/bin/rickiller.sh
 
 echo "Installing NDRUtils to system."
-${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
-${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	${BUSYBOX} mkdir /system/app/NDRUtils
+	${BUSYBOX} chmod 755 /system/app/NDRUtils
+	${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/NDRUtils/
+	${BUSYBOX} chmod 644 /system/app/NDRUtils/NDRUtils.apk
+else
+	${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
+	${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
+fi
 
 if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
 	echo "Copy disableric to system."
@@ -261,6 +269,10 @@ echo "Trying to find and update the power key event node."
 PWRINPUTDEV="$(pwrkeySearch)"
 echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
+
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	DRSETPROP dr.keep.byeselinux false
+fi
 
 FOLDER1=/sdcard/clockworkmod/
 FOLDER2=/sdcard1/clockworkmod/

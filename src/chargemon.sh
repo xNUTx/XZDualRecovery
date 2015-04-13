@@ -462,8 +462,9 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 		TECHOL "dr.ramdisk.path will be empty (default)"
 		DRSETPROP dr.ramdisk.path
 	fi
-	DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
-	DRSETPROP dr.pwrkey.node $(pwrkeySearch)
+	if [ "$ANDROIDVER" = "lollipop" ]; then
+		DRSETPROP dr.keep.byeselinux false
+	fi
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.

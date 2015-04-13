@@ -457,8 +457,10 @@ else
 	DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
 	echo "STOP Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
 
-	# Unload the byeselinux module.
-	rmmod byeselinux
+	if [ "$(DRGETPROP dr.keep.byeselinux)" != "true" ]; then
+		# Unload the byeselinux module.
+		rmmod byeselinux
+	fi
 
 	# Unmount SDCard1
 	umount -f /storage/sdcard1
