@@ -139,6 +139,12 @@ EVENTNODE=$(DRGETPROP dr.gpiokeys.node)
 
 ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
+if [ -e "/system/lib/modules/wp_mod.ko" ]; then
+	ECHOL "MohammadAG's module is available, lets load it."
+	EXECL rmmod wp_mod
+	EXECL insmod /system/lib/modules/wp_mod.ko
+fi
+
 EXECL mount -o remount,rw rootfs /
 
 RECOVERYBOOT="false"

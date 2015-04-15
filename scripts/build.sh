@@ -66,7 +66,7 @@ packflashablekernel() {
 	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/tmp/busybox
 	cp $WORKDIR/src/kernel-flashkernel.sh $WORKDIR/.tmp/flashable/tmp/flashkernel.sh
 	cp $WORKDIR/src/kernel-updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script
-	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/system/app/NDRUtils.apk
+	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/tmp/NDRUtils.apk
 	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/.tmp/flashable/tmp/dr.prop
 	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/tmp/dr.prop
 
@@ -101,7 +101,8 @@ packflashable() {
 	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/system/xbin/busybox
 	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/flashable/backupstockbinaries.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script
-	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/system/app/NDRUtils.apk
+	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/tmp/NDRUtils.apk
+	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/flashable/tmp/installndrutils.sh
 	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/.tmp/flashable/dr.prop
 	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/dr.prop
 

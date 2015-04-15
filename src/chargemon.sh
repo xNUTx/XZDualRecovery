@@ -301,18 +301,32 @@ if [ -x "${BUSYBOX}" ]; then
 	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
 	TEXECL ${BUSYBOX} mount -o remount,rw /system
 
-	if [ ! -e "/system/lib/modules/wp_mod.ko" -a -f "/system/xbin/disableric" ]; then
+	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | wc -l)" = "1" ]; then
+		TECHOL "Sony's kernel security trigger found, running disableric."
 		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
 		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
 		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
 		${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
-	elif [ ! -e "/system/lib/modules/wp_mod.ko" -a ! -f "/system/xbin/disableric" -a "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
-		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
-		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
-		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
-		${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
-	elif [ -e "/system/lib/modules/wp_mod.ko" ]; then
-		TECHOL "No disableric trigger found, but MohammadAG's module is there, lets load it."
+	fi
+
+	if [ -e "/sbin/ric" ]; then
+		RICPATH="/sbin/ric"
+		TEXECL ${BUSYBOX} rm $RICPATH
+		TEXECL ${BUSYBOX} touch $RICPATH
+		${BUSYBOX} echo "#!/system/bin/sh" >> $RICPATH
+		${BUSYBOX} echo "while :" >> $RICPATH
+		${BUSYBOX} echo "do" >> $RICPATH
+		${BUSYBOX} echo 'if [ "$(busybox blockdev --getro $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system))" = "1" ]; then' >> $RICPATH
+		${BUSYBOX} echo "busybox blockdev --setrw $(find /dev/block/platform/msm_sdcc.1/by-name/ -iname system)" >> $RICPATH
+		${BUSYBOX} echo "fi" >> $RICPATH
+		${BUSYBOX} echo "sleep 60" >> $RICPATH
+		${BUSYBOX} echo "done" >> $RICPATH
+		TEXECL ${BUSYBOX} chmod 755 $RICPATH
+		TEXECL ${BUSYBOX} touch /tmp/killedric
+	fi
+
+	if [ -e "/system/lib/modules/wp_mod.ko" ]; then
+		TECHOL "MohammadAG's module is available, lets load it."
 		TEXECL ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
 	fi
 
@@ -525,9 +539,13 @@ if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
 
 	export PATH="$_PATH"
 
-	/system/xbin/busybox mount -o remount,rw rootfs /
-	exec /sbin/init.sh $DRPATH $LOGFILE
-	/system/xbin/busybox mount -o remount,ro rootfs /
+	if [ "$ANDROIDVER" = "lollipop" ]; then
+		/system/xbin/busybox mount -o remount,rw rootfs /
+		exec /sbin/init.sh $DRPATH $LOGFILE
+		/system/xbin/busybox mount -o remount,ro rootfs /
+	else
+		exec /sbin/init.sh $DRPATH $LOGFILE
+	fi
 
 else
 

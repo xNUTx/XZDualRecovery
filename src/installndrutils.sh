@@ -27,10 +27,10 @@ ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | awk '{if ($2 !=
 if [ "$ANDROIDVER" = "lollipop" ]; then
 	mkdir /system/app/NDRUtils
 	chmod 755 /system/app/NDRUtils
-	cp /data/local/tmp/recovery/NDRUtils.apk /system/app/NDRUtils/
+	cp /tmp/NDRUtils.apk /system/app/NDRUtils/NDRUtils.apk
 	chmod 644 /system/app/NDRUtils/NDRUtils.apk
 else
-	cp /data/local/tmp/recovery/NDRUtils.apk /system/app/
+	cp /tmp/NDRUtils.apk /system/app/
 	chmod 644 /system/app/NDRUtils.apk
 fi
 

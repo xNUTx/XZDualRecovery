@@ -286,6 +286,8 @@ if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -o "$(DRGETPROP dr.gpiokeys.node)" = "
         DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
 fi
 
+KEEPBYESELINUX=$(DRGETPROP dr.keep.byeselinux)
+
 # Base setup, find the right led nodes.
 BOOTREC_LED_RED="/sys/class/leds/$(ls -1 /sys/class/leds|grep red)/brightness"
 BOOTREC_LED_GREEN="/sys/class/leds/$(ls -1 /sys/class/leds|grep green)/brightness"
@@ -427,8 +429,6 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 fi
 
-KEEPBYESELINUX=$(DRGETPROP dr.keep.byeselinux)
-
 if [ "$systemmounted" = "false" ]; then
 	EXECL umount /system
 fi
@@ -440,10 +440,11 @@ BBXECL mount
 ECHOL "Unmounting log location and booting to Android."
 
 /sbin/busybox umount -l /storage/sdcard1
+export PATH="$_PATH"
+/sbin/busybox rm -r /drbin
+
 if [ "$KEEPBYESELINUX" != "true" ]; then
 	/sbin/busybox rmmod byeselinux
 fi
-export PATH="$_PATH"
-/sbin/busybox rm -r /drbin
 
 exit 0

@@ -56,12 +56,6 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 	/tmp/sysrw.sh
 	chmod 755 /tmp/byeselinux.sh
 	/tmp/byeselinux.sh
-
-	# This warrants the script to be renamed at a later date. The NDRUtils app is installed in system/app by the flashable package,
-	# but for Lollipop, this needs to be inside a folder called NDRUtils to prevent a 'starting applications' notice at boot.
-	mkdir /system/app/NDRUtils
-	chmod 755 /system/app/NDRUtils
-	mv /system/app/NDRUtils.apk /system/app/NDRUtils/
 fi
 
 exit 0
