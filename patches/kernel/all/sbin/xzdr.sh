@@ -13,37 +13,37 @@ DRLOG="$PREPLOG"
 # Function definitions
 # They rely on the busybox setup being complete, do not try to use them before it did.
 ECHOL(){
-  _TIME=`date +"%H:%M:%S"`
-  /sbin/busybox echo "${_TIME} >> $*" >> ${DRLOG}
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
+  ${BUSYBOX} echo "${_TIME} >> $*" >> ${DRLOG}
   return 0
 }
 
 EXECL(){
-  _TIME=`date +"%H:%M:%S"`
-  /sbin/busybox echo "${_TIME} >> $*" >> ${DRLOG}
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
+  ${BUSYBOX} echo "${_TIME} >> $*" >> ${DRLOG}
   $* 2>&1 >> ${DRLOG}
   _RET=$?
-  /sbin/busybox echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
+  ${BUSYBOX} echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
   return ${_RET}
 }
 BBXECL(){
-  _TIME=`date +"%H:%M:%S"`
-  /sbin/busybox echo "${_TIME} >> $*" >> ${DRLOG}
-  /sbin/busybox $* 2>&1 >> ${DRLOG}
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
+  ${BUSYBOX} echo "${_TIME} >> $*" >> ${DRLOG}
+  ${BUSYBOX} $* 2>&1 >> ${DRLOG}
   _RET=$?
-  /sbin/busybox echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
+  ${BUSYBOX} echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
   return ${_RET}
 }
 
 MOUNTSDCARD(){
         case $* in
-                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/sdcard1; return $?;;
-                07|7) EXECL insmod /system/lib/modules/nls_utf8.ko;
-                      EXECL insmod /system/lib/modules/texfat.ko;
-                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/sdcard1;
+                06|6|0B|b|0C|c|0E|e) BBXECL mount -t vfat /dev/block/mmcblk1p1 /storage/sdcard1; return $?;;
+                07|7) BBXECL insmod /system/lib/modules/nls_utf8.ko;
+                      BBXECL insmod /system/lib/modules/texfat.ko;
+                      BBXECL mount -t texfat /dev/block/mmcblk1p1 /storage/sdcard1;
                       return $?;;
-                83) PTYPE=$(/system/xbin/busybox blkid /dev/block/mmcblk1p1 | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
-                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/sdcard1;
+                83) PTYPE=$(${BUSYBOX} blkid /dev/block/mmcblk1p1 | ${BUSYBOX} awk -F' ' '{ print $NF }' | ${BUSYBOX} awk -F'[\"=]' '{ print $3 }');
+                    BBXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/sdcard1;
                     return $?;;
                  *) return 1;;
         esac
@@ -116,12 +116,12 @@ DRGETPROP() {
 
         # If it's empty, see if what was requested was a XZDR.prop value!
         VAR="$*"
-        PROP=$(/sbin/busybox grep "$*" ${DRPATH}/XZDR.prop | /sbin/busybox awk -F'=' '{ print $NF }')
+        PROP=$(${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | ${BUSYBOX} awk -F'=' '{ print $NF }')
 
 	if [ "$PROP" = "" ]; then
 
 		# If it still is empty, try to get it from the build.prop
-		PROP=$(/sbin/busybox grep "$VAR" /system/build.prop | /sbin/busybox awk -F'=' '{ print $NF }')
+		PROP=$(${BUSYBOX} grep "$VAR" /system/build.prop | ${BUSYBOX} awk -F'=' '{ print $NF }')
 
 	fi
 
@@ -176,49 +176,15 @@ fi
 BBXECL mkdir -m 777 -p /drbin
 BBXECL mount -t tmpfs tmpfs /drbin
 
-# Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
-# The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
-ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | BBXECL awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
-if [ "$ANDROIDVER" = "lollipop" ]; then
-	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
-		# This should run only once each time system is wiped or reinstalled.
-		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
-		for module in /system/lib/modules/*.ko; do
-			EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
-		done
-		BBXECL insmod /drbin/byeselinux.ko
-		BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
-		BBXECL chmod 644 /system/lib/modules/byeselinux.ko
-	else
-		# This runs every time, enableing the modification of the ramdisk.
-		BBXECL insmod /system/lib/modules/byeselinux.ko
-	fi
-fi
-
-# Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
-ECHOL "Creating symlinks in /drbin to all functions of busybox."
-# Create a symlink for each of the supported commands
-for sym in `${BUSYBOX} --list`; do
-#	${BUSYBOX} echo "Linking ${BUSYBOX} to /drbin/$sym" >> ${DRLOG}
-	${BUSYBOX} ln -s ${BUSYBOX} /drbin/$sym
-done
-
-export PATH="/drbin"
-
-# drbin is now the only path, with all the busybox functions linked, it's safe to use normal commands from here on.
-# Using ECHOL from here on adds all the lines to the XZDR log file.
-# Using EXECL from here on will echo the command and it's result in to the logfile.
-# Not all commands will allow this to be used, so sometimes you will have to do without.
-
 # Attempting to mount the external sdcard.
 BOOT=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $2}'`
 if [ "${BOOT}" = "*" ]; then
-	FSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $6}'`
-	TXTFSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{for(i=7;i<=NF;++i) printf("%s ", $i)}'`
+	FSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{print $6}'`
+	TXTFSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{for(i=7;i<=NF;++i) printf("%s ", $i)}'`
 	ECHOL "### SDCard1 FS found: ${TXTFSTYPE} with code '${FSTYPE}', bootflag was set."
 else
-	FSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $5}'`
-	TXTFSTYPE=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{for(i=6;i<=NF;++i) printf("%s ", $i)}'`
+	FSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{print $5}'`
+	TXTFSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{for(i=6;i<=NF;++i) printf("%s ", $i)}'`
 	ECHOL "### SDCard1 FS found: ${TXTFSTYPE} with code '${FSTYPE}'."
 fi
 
@@ -255,6 +221,40 @@ if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
 	fi
 
 fi
+
+# Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
+# The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
+ANDROIDVER=`${BUSYBOX} echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+		# This should run only once each time system is wiped or reinstalled.
+		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
+		for module in /system/lib/modules/*.ko; do
+			EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
+		done
+		BBXECL insmod /drbin/byeselinux.ko
+		BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
+		BBXECL chmod 644 /system/lib/modules/byeselinux.ko
+	else
+		# This runs every time, enableing the modification of the ramdisk.
+		BBXECL insmod /system/lib/modules/byeselinux.ko
+	fi
+fi
+
+# Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
+ECHOL "Creating symlinks in /drbin to all functions of busybox."
+# Create a symlink for each of the supported commands
+for sym in `${BUSYBOX} --list`; do
+#	${BUSYBOX} echo "Linking ${BUSYBOX} to /drbin/$sym" >> ${DRLOG}
+	${BUSYBOX} ln -s ${BUSYBOX} /drbin/$sym
+done
+
+export PATH="/drbin"
+
+# drbin is now the only path, with all the busybox functions linked, it's safe to use normal commands from here on.
+# Using ECHOL from here on adds all the lines to the XZDR log file.
+# Using EXECL from here on will echo the command and it's result in to the logfile.
+# Not all commands will allow this to be used, so sometimes you will have to do without.
 
 # Rotate and merge logs
 ECHOL "Logfile rotation..."
@@ -420,12 +420,11 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	ECHOL "Executing recovery init, have fun!"
 
 	# Here the log dies.
-	/sbin/busyboxumount -l /cache
-	/sbin/busybox umount -l /storage/sdcard1
-	/sbin/busybox umount -l /drbin
-	/sbin/busybox rm -r /drbin
-	/sbin/busybox rmmod byeselinux
-	/sbin/busybox chroot /recovery /init
+	${BUSYBOX} umount -l /cache
+	${BUSYBOX} umount -l /storage/sdcard1
+	${BUSYBOX} umount -l /drbin
+	${BUSYBOX} rm -r /drbin
+	${BUSYBOX} chroot /recovery /init
 
 fi
 
@@ -439,12 +438,12 @@ BBXECL mount
 
 ECHOL "Unmounting log location and booting to Android."
 
-/sbin/busybox umount -l /storage/sdcard1
+${BUSYBOX} umount -l /storage/sdcard1
 export PATH="$_PATH"
-/sbin/busybox rm -r /drbin
+${BUSYBOX} rm -r /drbin
 
 if [ "$KEEPBYESELINUX" != "true" ]; then
-	/sbin/busybox rmmod byeselinux
+	${BUSYBOX} rmmod byeselinux
 fi
 
 exit 0

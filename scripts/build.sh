@@ -103,8 +103,8 @@ packflashable() {
 	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script
 	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/tmp/NDRUtils.apk
 	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/flashable/tmp/installndrutils.sh
-	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/.tmp/flashable/dr.prop
-	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/dr.prop
+	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/.tmp/flashable/tmp/dr.prop
+	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/tmp/dr.prop
 
 	cd $WORKDIR/.tmp/flashable
 	echo "Creating flashable zip..."

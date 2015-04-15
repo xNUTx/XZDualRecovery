@@ -247,7 +247,7 @@ ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-
 
 # Part of byeselinux, requisit for Lollipop based firmwares.
 echo "Checking if byeselinux is required..." >> ${PREPLOG}
-ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+ANDROIDVER=`${BUSYBOX} echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
 echo "ro.build.version.release=$(DRGETPROP ro.build.version.release), test result: $ANDROIDVER" >> ${PREPLOG}
 if [ "$ANDROIDVER" = "lollipop" ]; then
 	echo "Byeselinux is required." >> ${PREPLOG}
@@ -301,7 +301,7 @@ if [ -x "${BUSYBOX}" ]; then
 	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
 	TEXECL ${BUSYBOX} mount -o remount,rw /system
 
-	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | wc -l)" = "1" ]; then
+	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | wc -l)" != "0" ]; then
 		TECHOL "Sony's kernel security trigger found, running disableric."
 		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
 		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric

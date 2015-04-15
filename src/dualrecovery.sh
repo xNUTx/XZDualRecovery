@@ -433,6 +433,8 @@ if [ "$STOCKRAMDISK" != "" -a "$INSECUREBOOT" != "" ]; then
 
 else
 
+	KEEPBYESELINUX=$(DRGETPROP dr.keep.byeselinux)
+
 	# init.d support
 	if [ "$(DRGETPROP dr.initd.active)" = "true" ]; then
 
@@ -463,13 +465,13 @@ else
 	DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
 	echo "STOP Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
 
-	if [ "$(DRGETPROP dr.keep.byeselinux)" != "true" ]; then
+	# Unmount SDCard1
+	umount -f /storage/sdcard1
+
+	if [ "$KEEPBYESELINUX" != "true" ]; then
 		# Unload the byeselinux module.
 		rmmod byeselinux
 	fi
-
-	# Unmount SDCard1
-	umount -f /storage/sdcard1
 
 	# Return path variable to default
 	export PATH="${_PATH}"
