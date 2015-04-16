@@ -279,7 +279,7 @@ if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
 
 fi
 
-if [ -d "$SECUREDIR" -a ! -e "$SECUREDIR/init.sony-platform.rc" ]; then
+if [ -d "$SECUREDIR" ]; then
 
 	${BUSYBOX} mount -o remount,rw /system
 	${BUSYBOX} cp /init.* $SECUREDIR/
