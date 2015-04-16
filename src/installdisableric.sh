@@ -24,7 +24,7 @@ DRGETPROP() {
 
 ROMVER=$(DRGETPROP ro.build.id)
 
-if [ -e "/system/.XZDualRecovery/init.rc" ]; then
+if [ -e "/system/.XZDualRecovery/init.sony-platform.rc" ]; then
 
 	if [ "$(grep '/sys/kernel/security/sony_ric/enable' /system/.XZDualRecovery/init.* | wc -l)" = "1" ]; then
 

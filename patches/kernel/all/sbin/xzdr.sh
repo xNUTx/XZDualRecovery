@@ -153,8 +153,12 @@ DRSETPROP() {
 
 # Kickstart the log
 ${BUSYBOX} date > ${DRLOG}
+BBXECL chmod 666 ${DRLOG}
 
 # The start of all we need to do.
+
+ECHOL "DEBUGINFO=Current mounted filesystems:"
+BBXECL mount
 
 BBXECL cd /
 BBXECL blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
@@ -168,16 +172,19 @@ fi
 
 # create directories and setup the temporary bin path
 if [ ! -d "/cache" ]; then
-	BBXECL mkdir -m 777 -p /cache
+	BBXECL mkdir /cache
+	BBXECL chmod 777 /cache
 fi
 if [ ! -d "/storage/sdcard1" ]; then
 	BBXECL mkdir -p /storage/sdcard1
 fi
-BBXECL mkdir -m 777 -p /drbin
+
+BBXECL mkdir /drbin
+BBXECL chmod 777 /drbin
 BBXECL mount -t tmpfs tmpfs /drbin
 
 # Attempting to mount the external sdcard.
-BOOT=`fdisk -l /dev/block/mmcblk1 | grep "/dev/block/mmcblk1p1" | awk '{print $2}'`
+BOOT=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{print $2}'`
 if [ "${BOOT}" = "*" ]; then
 	FSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{print $6}'`
 	TXTFSTYPE=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{for(i=7;i<=NF;++i) printf("%s ", $i)}'`
@@ -188,35 +195,25 @@ else
 	ECHOL "### SDCard1 FS found: ${TXTFSTYPE} with code '${FSTYPE}'."
 fi
 
-if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
+if [ "$(${BUSYBOX} mount | ${BUSYBOX} grep 'sdcard1' | ${BUSYBOX} wc -l)" = "0" ]; then
 
 	MOUNTSDCARD ${FSTYPE}
 	if [ "$?" -eq "0" ]; then
 
-		echo "### Mounted SDCard1!" >> ${DRLOG}
+		ECHOL "### Mounted SDCard1!"
 
 		DRPATH="/storage/sdcard1/${LOGDIR}"
 
-		if [ ! -d "${DRPATH}" ]; then
-			echo "Creating the ${LOGDIR} directory on SDCard1." >> ${DRLOG}
-			mkdir ${DRPATH}
-		fi
-
 	else
 
-		echo "### Not mounting SDCard1, using /cache instead!" >> ${DRLOG}
+		ECHOL "### Not mounting SDCard1, using /cache instead!"
 
 		# Mount cache, it is the XZDR fallback
-		if [ "$(mount | grep 'cache' | wc -l)" = "0" ]; then
-			EXECL mount /cache
+		if [ "$(${BUSYBOX} mount | ${BUSYBOX} grep 'cache' | ${BUSYBOX} wc -l)" = "0" ]; then
+			BBXECL mount /cache
 		fi
 
 		DRPATH="/cache/${LOGDIR}"
-
-		if [ ! -d "${DRPATH}" ]; then
-			echo "Creating the ${LOGDIR} directory in /cache." >> ${DRLOG}
-		mkdir ${DRPATH}
-		fi
 
 	fi
 
@@ -225,6 +222,8 @@ fi
 # Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
 # The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
 ANDROIDVER=`${BUSYBOX} echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+VERREL=$(DRGETPROP ro.build.version.release)
+ECHOL "FW DETECTED: $VERREL, $ANDROIDVER"
 if [ "$ANDROIDVER" = "lollipop" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		# This should run only once each time system is wiped or reinstalled.
@@ -239,6 +238,11 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 		# This runs every time, enableing the modification of the ramdisk.
 		BBXECL insmod /system/lib/modules/byeselinux.ko
 	fi
+fi
+
+if [ ! -d "${DRPATH}" ]; then
+	ECHOL "${DRPATH} directory does not exist, creating it now."
+	BBXECL mkdir ${DRPATH}
 fi
 
 # Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
@@ -423,15 +427,10 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	${BUSYBOX} umount -l /cache
 	${BUSYBOX} umount -l /storage/sdcard1
 	${BUSYBOX} umount -l /drbin
-	${BUSYBOX} rm -r /drbin
+	${BUSYBOX} rm -fr /drbin
 	${BUSYBOX} chroot /recovery /init
 
 fi
-
-if [ "$systemmounted" = "false" ]; then
-	EXECL umount /system
-fi
-EXECL umount /drbin
 
 ECHOL "DEBUGINFO=Current mounted filesystems:"
 BBXECL mount
@@ -439,11 +438,19 @@ BBXECL mount
 ECHOL "Unmounting log location and booting to Android."
 
 ${BUSYBOX} umount -l /storage/sdcard1
+${BUSYBOX} umount -l /drbin
+${BUSYBOX} rm -fr /drbin
 export PATH="$_PATH"
-${BUSYBOX} rm -r /drbin
 
 if [ "$KEEPBYESELINUX" != "true" ]; then
-	${BUSYBOX} rmmod byeselinux
+	/system/bin/rmmod byeselinux
+	if [ "$systemmounted" = "false" ]; then
+		${BUSYBOX} umount /system
+	fi
+else
+	if [ "$systemmounted" = "false" ]; then
+		${BUSYBOX} umount /system
+	fi
 fi
 
 exit 0

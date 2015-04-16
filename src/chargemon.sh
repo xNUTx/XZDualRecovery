@@ -279,6 +279,15 @@ if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
 
 fi
 
+if [ -d "$SECUREDIR" -a ! -e "$SECUREDIR/init.sony-platform.rc" ]; then
+
+	${BUSYBOX} mount -o remount,rw /system
+	${BUSYBOX} cp /init.* $SECUREDIR/
+	${BUSYBOX} mount -o remount,ro /system
+	echo "Made a copy of all the init RC files in to $SECUREDIR!" >> ${PREPLOG}
+
+fi
+
 if [ ! -d "$SECUREDIR" -o ! -x "$SECUREDIR/busybox" ] && [ -x "${BUSYBOX}" ]; then
 
 	${BUSYBOX} mount -o remount,rw /system
@@ -301,12 +310,12 @@ if [ -x "${BUSYBOX}" ]; then
 	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
 	TEXECL ${BUSYBOX} mount -o remount,rw /system
 
-	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | wc -l)" != "0" ]; then
+	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
 		TECHOL "Sony's kernel security trigger found, running disableric."
 		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
 		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
 		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
-		${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
+		TEXECL ${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
 	fi
 
 	if [ -e "/sbin/ric" ]; then

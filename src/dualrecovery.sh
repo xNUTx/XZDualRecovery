@@ -139,12 +139,6 @@ EVENTNODE=$(DRGETPROP dr.gpiokeys.node)
 
 ECHOL "Model found: $MODEL ($PHNAME - $VERSION)"
 
-if [ -e "/system/lib/modules/wp_mod.ko" ]; then
-	ECHOL "MohammadAG's module is available, lets load it."
-	EXECL rmmod wp_mod
-	EXECL insmod /system/lib/modules/wp_mod.ko
-fi
-
 EXECL mount -o remount,rw rootfs /
 
 RECOVERYBOOT="false"
@@ -454,8 +448,8 @@ else
 	ECHOL "Starting the rickiller to the background..."
 	nohup /system/bin/rickiller.sh &
 
-	EXECL mount -o remount,ro rootfs /
 	EXECL mount -o remount,ro /system
+	EXECL mount -o remount,ro rootfs /
 
 	ECHOL "Return to normal boot mode..."
 
@@ -469,8 +463,7 @@ else
 	umount -f /storage/sdcard1
 
 	if [ "$KEEPBYESELINUX" != "true" ]; then
-		# Unload the byeselinux module.
-		rmmod byeselinux
+		/system/bin/rmmod byeselinux
 	fi
 
 	# Return path variable to default

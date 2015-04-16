@@ -173,7 +173,7 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 			${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
 			/data/local/tmp/recovery/byeselinux.sh
 		fi
-		${BUSYBOX} rmmod byeselinux
+		/system/bin/rmmod byeselinux
 	fi
 	if [ -e "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
 		echo "Removing zxz0O0's byeselinux patch module, restoring the original."
@@ -272,9 +272,10 @@ DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
 if [ "$ANDROIDVER" = "lollipop" ]; then
 	if [ "$(DRGETPROP dr.keep.byeselinux)" != "true" ]; then
-	        #echo "Will unload byeselinux every boot"
+	        echo "XZDualRecovery will unload byeselinux every boot."
 	        DRSETPROP dr.keep.byeselinux false
 	else
+	        echo "XZDualRecovery will leave byeselinux loaded."
 	        DRSETPROP dr.keep.byeselinux true
 	fi
 fi
