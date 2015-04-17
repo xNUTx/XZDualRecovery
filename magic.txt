@@ -1,1 +1,0 @@
-http://comments.gmane.org/gmane.linux.kbuild.devel/9741
