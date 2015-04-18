@@ -236,12 +236,6 @@ else
 	${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 fi
 
-if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' init.* | ${BUSYBOX} wc -l)" = "1" ]; then
-	echo "Copy disableric to system."
-	${BUSYBOX} cp /data/local/tmp/recovery/disableric /system/xbin/
-	${BUSYBOX} chmod 755 /system/xbin/disableric
-fi
-
 if [ -e "/system/etc/.xzdrbusybox" ]; then
 	${BUSYBOX} rm -f /system/etc/.xzdrbusybox
 fi
