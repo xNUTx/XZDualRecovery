@@ -72,7 +72,6 @@ adb push byeselinux\byeselinux.sh /data/local/tmp/recovery/byeselinux.sh
 adb push byeselinux\wp_mod.ko /data/local/tmp/recovery/wp_mod.ko
 adb push byeselinux\sysrw.sh /data/local/tmp/recovery/sysrw.sh
 adb push byeselinux\modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
-adb push disableric /data/local/tmp/recovery/disableric
 adb push busybox /data/local/tmp/recovery/busybox
 adb push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 adb push recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma
@@ -110,10 +109,10 @@ if "%C%" == "3" (
 :cleanup
 
 adb wait-for-device
-adb shell "/system/xbin/busybox rm -rf /data/local/tmp/recovery"
+adb shell "/system/bin/rm -rf /data/local/tmp/recovery"
 
 set install_status=
-for /f "delims=" %%i in ('adb shell "/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh"') do ( set install_status=%%i)
+for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/bin/dualrecovery.sh"') do ( set install_status=%%i)
 
 if NOT "%install_status%" == "" (
 	echo.

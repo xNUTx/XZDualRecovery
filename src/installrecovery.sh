@@ -208,7 +208,7 @@ if [ -f "/system/bin/mr.stock" -a ! -f "/system/bin/mr" ]; then
 	${BUSYBOX} chmod 755 /system/bin/mr
 fi
 
-if [ ! -f "/system/bin/chargemon.stock" ]; then
+if [ ! -f "/system/bin/chargemon.stock" -a "$(${BUSYBOX} head -n 1 /system/bin/chargemon)" != '#!/system/bin/sh' ]; then
 	echo "Rename stock chargemon"
 	${BUSYBOX} mv /system/bin/chargemon /system/bin/chargemon.stock
 fi
@@ -227,8 +227,10 @@ ${BUSYBOX} chmod 755 /system/bin/rickiller.sh
 
 echo "Installing NDRUtils to system."
 if [ "$ANDROIDVER" = "lollipop" ]; then
-	${BUSYBOX} mkdir /system/app/NDRUtils
-	${BUSYBOX} chmod 755 /system/app/NDRUtils
+	if [ ! -d "/system/app/NDRUtils" ]; then
+		${BUSYBOX} mkdir /system/app/NDRUtils
+		${BUSYBOX} chmod 755 /system/app/NDRUtils
+	fi
 	${BUSYBOX} cp /data/local/tmp/recovery/NDRUtils.apk /system/app/NDRUtils/
 	${BUSYBOX} chmod 644 /system/app/NDRUtils/NDRUtils.apk
 else

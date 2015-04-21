@@ -1,4 +1,4 @@
-#!/usr/bin/sudo /bin/sh
+#!/bin/sh
 
 SUPERAPP="superuser"
 ADBBINARY="adb.linux"
@@ -25,6 +25,8 @@ rootappmenu() {
 	echo "=      For many Sony Xperia devices!         ="
 	echo "=                                            ="
 	echo "=============================================="
+	echo ""
+	echo "          Run the installer with sudo if it fails to connect to your device!"
 	echo ""
 	echo "          Choose an installation option:"
 	echo ""
@@ -82,7 +84,6 @@ runinstall() {
 	./${ADBBINARY} push byeselinux/wp_mod.ko /data/local/tmp/recovery/wp_mod.ko
 	./${ADBBINARY} push byeselinux/sysrw.sh /data/local/tmp/recovery/sysrw.sh
 	./${ADBBINARY} push byeselinux/modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
-	./${ADBBINARY} push disableric /data/local/tmp/recovery/disableric
 	./${ADBBINARY} push busybox /data/local/tmp/recovery/busybox
 	./${ADBBINARY} push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 	./${ADBBINARY} push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma
@@ -165,8 +166,8 @@ runinstall() {
 	fi
 
 	./${ADBBINARY} wait-for-device
-	./${ADBBINARY} shell "/system/xbin/busybox rm -rf /data/local/tmp/recovery"
-	if [ "`./${ADBBINARY} shell '/system/xbin/busybox ls -1 /system/bin/dualrecovery.sh' | tr -d '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
+	./${ADBBINARY} shell "/system/bin/rm -rf /data/local/tmp/recovery"
+	if [ "`./${ADBBINARY} shell '/system/bin/ls -1 /system/bin/dualrecovery.sh' | tr -d '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
 		echo ""
 		echo "============================================="
 		echo "Installation finished. Enjoy the recoveries!"
