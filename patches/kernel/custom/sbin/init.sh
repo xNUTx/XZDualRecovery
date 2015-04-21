@@ -155,7 +155,7 @@ DRGETPROP() {
         if [ "$VAR" != "" ]; then
                 echo $PROP
         else
-                echo "false"
+                echo "null"
         fi
 
 }
@@ -169,7 +169,7 @@ DRSETPROP() {
 
         PROP=$(DRGETPROP $1)
 
-        if [ "$PROP" != "false" ]; then
+        if [ "$PROP" != "null" ]; then
                 sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
         else
                 echo "$1=$2" >> ${DRPATH}/XZDR.prop
