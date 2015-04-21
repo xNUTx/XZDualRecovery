@@ -271,6 +271,12 @@ cat ${DRLOG} > ${DRPATH}/${XZDRLOG}
 rm ${DRLOG}
 DRLOG="${DRPATH}/${XZDRLOG}"
 
+if [ ! -d "/system/etc/init.d" ]; then
+        TECHOL "No init.d directory found, creating it now!"
+        TECHOL "To enable init.d support, set dr.enable.initd to true in XZDR.prop!"
+        mkdir /system/etc/init.d
+fi
+
 # Initial setup of the XZDR.prop file, only once or whenever the file was removed
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
         ECHOL "Creating XZDR.prop file."
@@ -429,6 +435,22 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	${BUSYBOX} umount -l /drbin
 	${BUSYBOX} rm -fr /drbin
 	${BUSYBOX} chroot /recovery /init
+
+fi
+
+# init.d support
+if [ "$(DRGETPROP dr.initd.active)" = "true" ]; then
+
+	ECHOL "Init.d folder found and execution is enabled!"
+	ECHOL "It will run the following scripts:"
+	BBXECL run-parts -t /system/etc/init.d
+	ECHOL "Executing them in the background now."
+	/sbin/busybox nohup /sbin/busybox run-parts /system/etc/init.d &
+
+else
+
+	ECHOL "Init.d execution is disabled."
+	ECHOL "To enable it, set dr.initd.active to true in XZDR.prop!"
 
 fi
 
