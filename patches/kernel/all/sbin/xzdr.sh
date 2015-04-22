@@ -443,7 +443,7 @@ if [ "$(DRGETPROP dr.initd.active)" = "true" ]; then
 
 	ECHOL "Init.d folder found and execution is enabled!"
 	ECHOL "It will run the following scripts:"
-	BBXECL run-parts -t /system/etc/init.d
+	BBXECL run-parts --test /system/etc/init.d
 	ECHOL "Executing them in the background now."
 	/sbin/busybox nohup /sbin/busybox run-parts /system/etc/init.d &
 

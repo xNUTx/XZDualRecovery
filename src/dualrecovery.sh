@@ -434,7 +434,7 @@ else
 
 		ECHOL "Init.d folder found and execution is enabled!"
 		ECHOL "It will run the following scripts:"
-		run-parts -t /system/etc/init.d 2>&1 >> ${LOG}
+		EXECL run-parts --test /system/etc/init.d
 		ECHOL "Executing them in the background now."
 		nohup run-parts /system/etc/init.d &
 
