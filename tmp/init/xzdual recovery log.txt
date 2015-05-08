@@ -1,0 +1,110 @@
+
+==============================================
+=                                            =
+=  PhilZ Touch, CWM and TWRP Dual Recovery   =
+=           Maintained by [NUT]              =
+=                                            =
+=       For Many Sony Xperia Devices!        =
+=                                            =
+==============================================
+
+1. Installation on ROM rooted with SuperSU
+2. Installation on ROM rooted with SuperUser
+3. Installation on unrooted ROM using the TowelRoot method
+4. Install ADB drivers to windows
+5. Exit
+
+Please choose install action.
+[1,2,3,4,5]?1
+* daemon not running. starting it now on port 5037 *
+* daemon started successfully *
+
+=============================================
+Waiting for Device, connect USB cable now...
+=============================================
+Device found!
+
+=============================================
+Getting ro.build.product
+=============================================
+Device model is D5322
+Firmware is 19.3.A.0.470
+
+=============================================
+Step2 : Sending the recovery files.
+=============================================
+0 KB/s (31 bytes in 0.031s)
+565 KB/s (18101 bytes in 0.031s)
+10 KB/s (501 bytes in 0.046s)
+106 KB/s (11966 bytes in 0.109s)
+374 KB/s (65965 bytes in 0.171s)
+96 KB/s (3082 bytes in 0.031s)
+235 KB/s (30148 bytes in 0.125s)
+84 KB/s (1357 bytes in 0.015s)
+119 KB/s (34473 bytes in 0.281s)
+34 KB/s (1089 bytes in 0.031s)
+212 KB/s (13592 bytes in 0.062s)
+387 KB/s (719520 bytes in 1.812s)
+360 KB/s (3403408 bytes in 9.218s)
+427 KB/s (2324302 bytes in 5.312s)
+3013 KB/s (1976995 bytes in 0.640s)
+11 KB/s (11760 bytes in 1.000s)
+
+=============================================
+Step3 : Setup of dual recovery.
+=============================================
+Look at your device and grant supersu access!
+Press any key to continue AFTER granting root access.
+-rwxr-xr-x    1 shell    shell       719520 Apr 22 14:09 /data/local/tmp/recover
+y/busybox
+Press any key to continue . . .
+grep: /storage/sdcard1/XZDualRecovery/XZDR.prop: No such file or directory
+grep: /storage/sdcard1/XZDualRecovery/XZDR.prop: No such file or directory
+
+##########################################################
+#
+# Installing XZDR version 2.8.14 RELEASE
+#
+#####
+
+Temporarily disabling the RIC service, remount rootfs and /system writable to al
+low installation.
+The byeselinux module exists, testing if the kernel accepts it.
+insmod: can't insert '/system/lib/modules/byeselinux.ko': Invalid argument
+That module is not accepted by the running kernel, will replace it now.
+Module installed succesfully.
+rmmod: delete_module 'byeselinux' failed (errno 2)
+Copy recovery files to system.
+Copy chargemon script to system.
+Copy dualrecovery.sh to system.
+Copy rickiller.sh to system.
+Installing NDRUtils to system.
+Copy busybox to system.
+Copy init's *.rc files in to /system/.XZDualRecovery.
+Trying to find and update the gpio-keys event node.
+Found and will be using /dev/input/event3!
+Trying to find and update the power key event node.
+Found and will be monitoring /dev/input/event1!
+grep: /storage/sdcard1/XZDualRecovery/XZDR.prop: No such file or directory
+grep: /storage/sdcard1/XZDualRecovery/XZDR.prop: No such file or directory
+XZDualRecovery will unload byeselinux every boot.
+Speeding up backups.
+Make sure firstboot goes to recovery.
+
+=============================================
+DEVICE WILL NOW TRY A DATA SAFE REBOOT!
+=============================================
+
+
+=============================================
+Your installation has already cleaned up after
+itself if you see the install.bat/install.sh exit.
+=============================================
+
+
+=============================================
+Installation finished. Enjoy the recoveries!
+=============================================
+
+* server not running *
+Press any key to continue . . .

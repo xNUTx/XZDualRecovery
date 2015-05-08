@@ -260,8 +260,8 @@ DRLOG="${DRPATH}/${XZDRLOG}"
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
         ECHOL "Creating XZDR.prop file."
         touch ${DRPATH}/XZDR.prop
-        ECHOL "dr.recovery.boot will be set to PhilZ (default)"
-        DRSETPROP dr.recovery.boot philz
+        ECHOL "dr.recovery.boot will be set to TWRP (default)"
+        DRSETPROP dr.recovery.boot twrp
         ECHOL "dr.initd.active will be set to false (default)"
         DRSETPROP dr.initd.active false
 fi

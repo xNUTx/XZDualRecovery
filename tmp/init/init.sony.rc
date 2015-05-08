@@ -1,0 +1,194 @@
+# Copyright (c) 2013 Sony Mobile Communications Inc.
+
+import init.sony.usb.rc
+
+on init
+    mkdir /tmp
+    mount tmpfs tmpfs /tmp nosuid mode=0755,uid=0,gid=0
+    chmod 0664 /proc/rdtag
+    chown root system /proc/rdtag
+
+on early-fs
+    
+
+on fs
+    mkdir /lta-label 0555 system system
+    wait /dev/block/platform/msm_sdcc.1/by-name/LTALabel
+    mount ext4 /dev/block/platform/msm_sdcc.1/by-name/LTALabel /lta-label nosuid nodev noatime noexec ro barrier=0 context=u:object_r:lta_label:s0
+    chown system system /lta-label
+    chmod 0555 /lta-label
+
+on post-fs
+    # Change to socket location on libkeyctrl/suntory for /data encryption
+    mkdir /dev/socket/suntory 0755 system system
+    mkdir /data/suntory 0755 system system
+
+on post-fs-data
+    mkdir /data/credmgr 0700 system system
+    mkdir /data/smime 0770 root smime_keystore
+    mkdir /data/pc 0700 radio radio
+    # Remove lost+found in user and userdebug
+    mkdir /data/tombstones 0755 system system
+    mkdir /data/tombstones/vendor 0775 system system
+    chmod 0775 /data/tombstones/vendor
+    mkdir /data/app-skin 0771 system system
+    
+    #SONY_BEGIN (Indication of Mobile Network Information 2.0)
+    setprop persist.radio.rat_on legacy
+
+    exec /system/bin/rm -r /data/lost+found
+    
+    mkdir /data/lost+found 0770 root root
+    exec /system/bin/rm -r /cache/lost+found
+    
+    mkdir /cache/lost+found 0770 root root
+    exec /system/bin/rm -r /mnt/idd/lost+found
+    
+    mkdir /mnt/idd/lost+found 0770 root root
+    mkdir /mnt/idd/output 0755 idd idd
+    mkdir /mnt/idd/socket 0711 idd idd
+    
+    restorecon_recursive /mnt/idd
+
+    # SONY: fast-dormancy
+    mkdir /data/fastdormancy 0770 fastdormancy system
+
+on boot
+    # Configure coredumps
+    
+    
+
+    # Override the value set in rootdir/init.rc
+    
+
+    
+
+on property:dev.bootcomplete=1
+    start fota-snoop
+    start fota-trigger
+    start startup-prober
+
+# klogger and klogrouter service switch
+
+
+
+
+
+
+service startup-prober /system/bin/startup-prober
+    user root
+    oneshot
+    disabled
+    group sysfs trimarea drmrpc system
+
+# input events logger
+
+
+
+
+
+
+#tcpdump service
+
+
+
+
+
+
+on property:vold.decrypt=trigger_default_encryption
+    start suntrold
+
+# klogger service
+
+
+# klogrouter service
+
+
+# input events logger service (output to file)
+
+
+# input events logger service (output to logcat)
+
+
+# Start suntrold
+service suntrold /system/bin/suntrold
+    user system
+    group system
+    oneshot
+    class main
+
+# Start Credential manager daemon
+service credmgrd /system/bin/credmgrd
+    user system
+    group system
+    socket credmgr stream 0660 system system
+    class main
+
+#Start crashmonitor native service
+
+
+# Native helper for SuperStamina
+service xssm /system/bin/xssm
+    class main
+    user root
+    group root system
+    socket xssm stream 0660 root system
+    socket prmd stream 0666 root system
+    socket xssm_wakelock_socket stream 0660 root system
+
+#Start IDD thermal probe
+
+
+# Sony: FOTA snooping
+service fota-snoop /system/bin/fota-snoop
+    group cache
+    oneshot
+    disabled
+
+# Sony: FOTA trigger
+service fota-trigger /system/bin/fota-trigger
+    group cache
+    disabled
+
+# Start system_monitor
+service system_monitor /system/bin/system_monitor
+    socket sysmon stream 0660 root system
+    class core
+    user root
+    group trimarea system qcom_diag radio
+    disabled
+
+on property:ro.somc.thermal=system_monitor
+    start system_monitor
+
+#modem-debug service to support modem-log-enabler
+
+
+# Fast Dormancy
+service fast-dormancy /system/bin/fast-dormancy
+   user fastdormancy
+   group fastdormancy system inet net_raw net_admin qcom_diag radio wifi
+   socket fastdorm stream 0660 system system
+   class main
+
+on property:ro.semc.enable.fast_dormancy=false
+   stop fast-dormancy
+
+
+
+
+
+
+
+# bugreport is triggered by holding down volume down, volume up and power
+service bugreport /system/bin/dumpstate -d -p -B \
+        -o /data/data/com.android.shell/files/bugreports/bugreport
+    class main
+    disabled
+    oneshot
+    keycodes 114 115 116
+
+# Configurate TCP/IP kernel settings
+service mss_update /system/bin/mssconfig
+    class core
+    oneshot

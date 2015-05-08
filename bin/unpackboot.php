@@ -119,7 +119,7 @@ class unpackBoot {
 				fclose($file);
 					
 				$this->unpackAndroidBoot();
-					
+
 			} else {
 				
 				$this->echoMsg("Using fallback method, not sure what kind of file this is...");
@@ -355,24 +355,32 @@ class unpackBoot {
 				'QCDT' => ".qcdt.img");
 		
 		$messages = array(
-				'1F8B' => "Writing ramdisk to ",
-				'1F9E' => "Writing ramdisk to ",
-				'425A' => "Writing ramdisk to ",
-				'FD37' => "Writing ramdisk to ",
-				'5D00' => "Writing ramdisk to ",
-				'0000A0E1' => "Writing kernel to ",
-				'53315F52504D' => "Writing RPM to ",
-				'QCDT' => "Writing QCDT to ");
+				'1F8B' => "Saving ramdisk to ",
+				'1F9E' => "Saving ramdisk to ",
+				'425A' => "Saving ramdisk to ",
+				'FD37' => "Saving ramdisk to ",
+				'5D00' => "Saving ramdisk to ",
+				'0000A0E1' => "Saving kernel to ",
+				'53315F52504D' => "Saving RPM to ",
+				'QCDT' => "Saving QCDT to ");
 		
 		foreach ($elfProgramHeaders as $program) {
-			
-			if ($program->p_type == "4") {
-				continue;
-			}
 			
 			$offset = ($sinoffset+$program->p_offset);
 			
 			fseek($infile, $offset, SEEK_SET);
+			
+			if ($program->p_type == "4") {
+				if ($program->p_filesz < 200) {
+					$outfile = fopen($this->target_path . "/" . $this->name . ".tmp", "wb");
+					fwrite($outfile, fread($infile, $program->p_filesz));
+					fclose($outfile);
+					
+					$this->echoMsg("Saving kernel commandline to " . $this->name . ".boot.cmd");
+					rename($this->target_path . "/" . $this->name . ".tmp", $this->target_path . "/" . $this->name . ".boot.cmd");
+				}
+				continue;
+			}
 			
 			$outfile = fopen($this->target_path . "/" . $this->name . ".tmp", "wb");
 			fwrite($outfile, fread($infile, $program->p_filesz));
@@ -401,7 +409,9 @@ class unpackBoot {
 		
 		fclose($infile);
 		
-		$this->getBootCMD( true );
+		if (!file_exists($this->target_path . "/" . $this->name . ".boot.cmd")) {
+			$this->getBootCMD( true );
+		}
 		
 	}
 	
