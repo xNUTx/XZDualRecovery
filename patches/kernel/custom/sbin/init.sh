@@ -151,8 +151,8 @@ pwrkeySearch() {
 DRGETPROP() {
 
         # If it's empty, see if what was requested was a XZDR.prop value!
-        VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-        PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+        VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
+        PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
 
         if [ "$VAR" != "" ]; then
                 echo $PROP
