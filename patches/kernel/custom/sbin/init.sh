@@ -267,10 +267,10 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
-if [ "$(DRGETPROP dr.pwrkey.node)" = "" -o "$(DRGETPROP dr.pwrkey.node)" = "false" ]; then
+if [ "$(DRGETPROP dr.pwrkey.node)" = "" -o "$(DRGETPROP dr.pwrkey.node)" = "null" ]; then
         DRSETPROP dr.pwrkey.node $(pwrkeySearch)
 fi
-if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -o "$(DRGETPROP dr.gpiokeys.node)" = "false" ]; then
+if [ "$(DRGETPROP dr.gpiokeys.node)" = "" -o "$(DRGETPROP dr.gpiokeys.node)" = "null" ]; then
         DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
 fi
 
