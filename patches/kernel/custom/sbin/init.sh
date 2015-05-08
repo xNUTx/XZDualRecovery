@@ -27,7 +27,9 @@ ${BUSYBOX} mkdir -m 755 -p /system
 
 # create device nodes
 ${BUSYBOX} mknod -m 600 /dev/block/mmcblk0 b 179 0
-${BUSYBOX} mknod -m 600 ${BOOTREC_EVENT_NODE}
+for i in $(${BUSYBOX} seq 0 12); do
+	${BUSYBOX} mknod -m 600 /dev/input/event${i} c 13 $(${BUSYBOX} expr 64 + ${i})
+done
 ${BUSYBOX} mknod -m 666 /dev/null c 1 3
 
 # mount filesystems
@@ -42,13 +44,13 @@ ${BUSYBOX} date > ${DRLOG}
 if [ ! -d "/cache" ]; then
 	${BUSYBOX} mkdir -m 777 -p /cache
 fi
-if [ ! -d "/storage/removable/sdcard1" ]; then
-	${BUSYBOX} mkdir -p /storage/removable/sdcard1
+if [ ! -d "/storage/sdcard1" ]; then
+	${BUSYBOX} mkdir -p /storage/sdcard1
 fi
 ${BUSYBOX} mkdir -m 777 -p /drbin
 ${BUSYBOX} mount -t tmpfs tmpfs /drbin
 ${BUSYBOX} echo "Install busybox to /drbin..." >> ${DRLOG}
-${BUSYBOX} cp ${BUSYBOX} /drbin/
+${BUSYBOX} cp -a ${BUSYBOX} /drbin/
 
 BUSYBOX="/drbin/busybox"
 
@@ -71,13 +73,13 @@ EXECL(){
 
 MOUNTSDCARD(){
         case $* in
-                06|6|0B|b|0C|c|0E|e) EXECL mount -t vfat /dev/block/mmcblk1p1 /storage/removable/sdcard1; return $?;;
-                07|7) EXECL insmod /system/lib/modules/nls_utf8.ko;
-                      EXECL insmod /system/lib/modules/texfat.ko;
-                      EXECL mount -t texfat /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                06|6|0B|b|0C|c|0E|e) EXECL ${BUSYBOX} mount -t vfat /dev/block/mmcblk1p1 /storage/sdcard1; return $?;;
+                07|7) EXECL ${BUSYBOX} insmod /system/lib/modules/nls_utf8.ko;
+                      EXECL ${BUSYBOX} insmod /system/lib/modules/texfat.ko;
+                      EXECL ${BUSYBOX} mount -t texfat /dev/block/mmcblk1p1 /storage/sdcard1;
                       return $?;;
-                83) PTYPE=$(/system/xbin/busybox blkid /dev/block/mmcblk1p1 | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
-                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/removable/sdcard1;
+                83) PTYPE=$(${BUSYBOX} blkid /dev/block/mmcblk1p1 | ${BUSYBOX} awk -F' ' '{ print $NF }' | ${BUSYBOX} awk -F'[\"=]' '{ print $3 }');
+                    EXECL mount -t $PTYPE /dev/block/mmcblk1p1 /storage/sdcard1;
                     return $?;;
                  *) return 1;;
         esac
@@ -104,9 +106,9 @@ SETLED() {
 # Find the gpio-keys node, to listen on the right input event
 gpioKeysSearch() {
         ECHOL "Trying to find the gpio-keys event node."
-        for INPUTUEVENT in `find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+        for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
-                INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+                INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         ECHOL "Found and will be using /dev/${INPUTDEV}!"
@@ -121,9 +123,9 @@ gpioKeysSearch() {
 pwrkeySearch() {
         ECHOL "Trying to find the power key event node."
         # pm8xxx (xperia Z and similar)
-        for INPUTUEVENT in `find /sys/devices \( -path "*pm8xxx*" -path "*pwrkey*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+        for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*pm8xxx*" -path "*pwrkey*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
-                INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+                INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         ECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
@@ -133,9 +135,9 @@ pwrkeySearch() {
 
         done
         # qpnp_pon (xperia Z1 and similar)
-        for INPUTUEVENT in `find $(find /sys/devices/ -name "name" -exec grep -l "qpnp_pon" {} \; | awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
+        for INPUTUEVENT in `${BUSYBOX} find $(find /sys/devices/ -name "name" -exec ${BUSYBOX} grep -l "qpnp_pon" {} \; | ${BUSYBOX} awk -F '/' 'sub(FS $NF,x)') \( -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
 
-                INPUTDEV=$(grep "DEVNAME=" ${INPUTUEVENT} | sed 's/DEVNAME=//')
+                INPUTDEV=$(${BUSYBOX} grep "DEVNAME=" ${INPUTUEVENT} | ${BUSYBOX} sed 's/DEVNAME=//')
 
                 if [ -e "/dev/$INPUTDEV" -a "$INPUTDEV" != "" ]; then
                         ECHOL "Found and will be monitoring /dev/${INPUTDEV}!"
@@ -149,8 +151,8 @@ pwrkeySearch() {
 DRGETPROP() {
 
         # If it's empty, see if what was requested was a XZDR.prop value!
-        VAR=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
-        PROP=`grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
+        VAR=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $1 }'`
+        PROP=`${BUSYBOX} grep "$*" ${DRPATH}/XZDR.prop | awk -F'=' '{ print $NF }'`
 
         if [ "$VAR" != "" ]; then
                 echo $PROP
@@ -170,7 +172,7 @@ DRSETPROP() {
         PROP=$(DRGETPROP $1)
 
         if [ "$PROP" != "null" ]; then
-                sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
+                ${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
         else
                 echo "$1=$2" >> ${DRPATH}/XZDR.prop
         fi
@@ -216,7 +218,7 @@ if [ "$(mount | grep 'sdcard1' | wc -l)" = "0" ]; then
 
 		echo "### Mounted SDCard1!" >> ${DRLOG}
 
-		DRPATH="/storage/removable/sdcard1/${LOGDIR}"
+		DRPATH="/storage/sdcard1/${LOGDIR}"
 
 		if [ ! -d "${DRPATH}" ]; then
 			echo "Creating the ${LOGDIR} directory on SDCard1." >> ${DRLOG}
@@ -262,8 +264,6 @@ if [ ! -f "${DRPATH}/XZDR.prop" ]; then
         DRSETPROP dr.recovery.boot philz
         ECHOL "dr.initd.active will be set to false (default)"
         DRSETPROP dr.initd.active false
-        DRSETPROP dr.gpiokeys.node $(gpioKeysSearch)
-        DRSETPROP dr.pwrkey.node $(pwrkeySearch)
 fi
 
 # Initial button setup for existing XZDR.prop files which do not have the input nodes defined.
@@ -407,7 +407,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 	# Here the log dies.
 	/sbin/busybox umount -l /cache
-	/sbin/busybox umount -l /storage/removable/sdcard1
+	/sbin/busybox umount -l /storage/sdcard1
 	/sbin/busybox umount -l /drbin
 	/sbin/busybox rm -r /drbin
 	/sbin/busybox chroot /recovery /init
@@ -422,14 +422,15 @@ else
 
 	cpio -i -u < $RAMDISK
 
-	/sbin/busybox umount /drbin
-	/sbin/busybox umount /system
-	/sbin/busybox umount -l /storage/removable/sdcard1
+	/sbin/busybox umount -l /drbin
+	/sbin/busybox umount -l /system
+	/sbin/busybox umount -l /cache
+	/sbin/busybox umount -l /storage/sdcard1
 	/sbin/busybox umount /proc
 	/sbin/busybox umount /sys
 
 	export PATH="$_PATH"
-	/sbin/busybox rm -r /drbin
+	/sbin/busybox rm -rf /drbin
 	exec /init
 
 fi
