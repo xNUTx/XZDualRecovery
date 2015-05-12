@@ -79,6 +79,8 @@ unpackkernel() {
 		KERNEL=$(basename $KERNEL .img)
 	elif [ "$(grep '.elf' $KERNEL | wc -l)" = "1" ]; then
 		KERNEL=$(basename $KERNEL .elf)
+	else
+		KERNEL=$(basename $KERNEL)
 	fi
 
 	cd $WORKDIR/.tmp/kernelramdisk/
@@ -103,6 +105,7 @@ patchramdisk() {
 	mv -v $WORKDIR/.tmp/kernelramdisk/init.rc $WORKDIR/.tmp/kernelramdisk/init.original.rc
 	cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/.tmp/kernelramdisk/
 	cp -v $WORKDIR/includes/busybox $WORKDIR/.tmp/kernelramdisk/sbin/
+	rm -f $WORKDIR/.tmp/kernelramdisk/sbin/*recovery*.cpio*
 
 	# Comment out the sony_ric
 	#    mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
@@ -110,8 +113,10 @@ patchramdisk() {
 	sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/.tmp/kernelramdisk/init.*
 	sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/.tmp/kernelramdisk/init.*
 
-	# Set fstab to rw
-	sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/.tmp/kernelramdisk/fstab.qcom
+	if [ -e "$WORKDIR/.tmp/kernelramdisk/fstab.qcom" ]; then
+		# Set fstab to rw
+		sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/.tmp/kernelramdisk/fstab.qcom
+	fi
 
 	# Disable the ric service
 	sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/.tmp/kernelramdisk/init.*
