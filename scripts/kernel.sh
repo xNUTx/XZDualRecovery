@@ -100,26 +100,33 @@ unpackkernel() {
 
 patchramdisk() {
 
-	echo "Patching kernel ramdisk."
+	if [ -e "$WORKDIR/.tmp/kernelramdisk/sbin/ramdisk.cpio" ]; then
 
-	mv -v $WORKDIR/.tmp/kernelramdisk/init.rc $WORKDIR/.tmp/kernelramdisk/init.original.rc
-	cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/.tmp/kernelramdisk/
-	cp -v $WORKDIR/includes/busybox $WORKDIR/.tmp/kernelramdisk/sbin/
-	rm -f $WORKDIR/.tmp/kernelramdisk/sbin/*recovery*.cpio*
+		echo "Patching CUSTOM kernel ramdisk."
+		rm -f $WORKDIR/.tmp/kernelramdisk/sbin/*recovery*.cpio*
+		cp -vr $WORKDIR/patches/kernel/custom/* $WORKDIR/.tmp/kernelramdisk/
+		cp -v $WORKDIR/includes/busybox $WORKDIR/.tmp/kernelramdisk/sbin/
 
-	# Comment out the sony_ric
-	#    mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
-	#    write /sys/kernel/security/sony_ric/enable 1
-	sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/.tmp/kernelramdisk/init.*
-	sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/.tmp/kernelramdisk/init.*
+	else
+		echo "Patching kernel ramdisk."
 
-	if [ -e "$WORKDIR/.tmp/kernelramdisk/fstab.qcom" ]; then
+		mv -v $WORKDIR/.tmp/kernelramdisk/init.rc $WORKDIR/.tmp/kernelramdisk/init.original.rc
+		cp -vr $WORKDIR/patches/kernel/all/* $WORKDIR/.tmp/kernelramdisk/
+		cp -v $WORKDIR/includes/busybox $WORKDIR/.tmp/kernelramdisk/sbin/
+
+		# Comment out the sony_ric
+		#    mount securityfs securityfs /sys/kernel/security nosuid nodev noexec
+		#    write /sys/kernel/security/sony_ric/enable 1
+		sed -i "s|mount securityfs securityfs /sys/kernel/security|#mount securityfs securityfs /sys/kernel/security|g" $WORKDIR/.tmp/kernelramdisk/init.*
+		sed -i "s|write /sys/kernel/security/sony_ric/enable|#write /sys/kernel/security/sony_ric/enable|g" $WORKDIR/.tmp/kernelramdisk/init.*
+
 		# Set fstab to rw
 		sed -i "s|ro,barrier=1,discard|rw,barrier=1,discard|g" $WORKDIR/.tmp/kernelramdisk/fstab.qcom
-	fi
 
-	# Disable the ric service
-	sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/.tmp/kernelramdisk/init.*
+		# Disable the ric service
+		sed -i '/^service ric \/sbin\/ric/{s/$/\n    disabled/}' $WORKDIR/.tmp/kernelramdisk/init.*
+
+	fi
 
 	if [ "$1" = "auto" ]; then
 		sleep 2
