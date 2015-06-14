@@ -1,16 +1,8 @@
 #!/sbin/busybox sh
 
-# Backup original LD_LIBRARY_PATH value to restore it later.
-_LDLIBPATH="$LD_LIBRARY_PATH"
-# Backup original PATH value to restore later
-_PATH="$PATH"
-
-export LD_LIBRARY_PATH=".:/sbin:/system/vendor/lib:/system/lib"
-export PATH="/sbin:/vendor/bin:/system/sbin:/system/bin:/system/xbin"
-
 #https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
 #The busybox in all of the recoveries has not yet been patched to take this in account.
-/sbin/busybox blockdev --setrw $(/sbin/find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+/sbin/busybox blockdev --setrw $(/sbin/busybox find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 
 # Making darn sure sysfs has been mounted, otherwise the LED control will fail.
 if [ "$(/sbin/busybox cat /proc/mounts | /sbin/busybox grep 'sysfs' | /sbin/busybox grep '/sys' | /sbin/busybox wc -l)" = "0" ]; then
@@ -66,21 +58,21 @@ FLASHLED() {
 	FLASHLED
 }
 
-for LOCKINGPID in `/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | awk '{print $1}'`; do
-	BINARY=$(ps | grep " $LOCKINGPID " | grep -v "grep" | awk '{print $5}')
-        echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xperiablfix.log
-	kill -9 $LOCKINGPID
+for LOCKINGPID in `/sbin/busybox lsof | /sbin/busybox awk '{print $1" "$2}' | /sbin/busybox grep -E "/bin|/system|/data|/cache" | /sbin/busybox awk '{print $1}'`; do
+	BINARY=$(ps | /sbin/busybox grep " $LOCKINGPID " | /sbin/busybox grep -v "grep" | /sbin/busybox awk '{print $5}')
+        echo "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!" >> /tmp/xzdr.log
+	/sbin/busybox kill -9 $LOCKINGPID
 done
 
-REMAINING=$(/sbin/busybox lsof | awk '{print $1" "$2}' | grep -E "/bin|/system|/data|/cache" | wc -l)
+REMAINING=$(/sbin/busybox lsof | /sbin/busybox awk '{print $1" "$2}' | /sbin/busybox grep -E "/bin|/system|/data|/cache" | /sbin/busybox wc -l)
 if [ $REMAINING -gt 0 ]; then
 	FLASHLED
+else
+	# Thanks to McBane87 @ XDA
+	/sbin/mount -o ro /system
+	/sbin/mount -o remount,rw /system
+	/sbin/umount /system
+	/sbin/busybox blockdev --setrw $(/sbin/busybox find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 fi
-
-echo "Anti-Filesystem-Lock completed." >> /tmp/xzdr.log
-
-# Returning values to their original settings
-export LD_LIBRARY_PATH="$_LDLIBPATH"
-export PATH="$_PATH"
 
 exit 0

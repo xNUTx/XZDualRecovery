@@ -67,6 +67,12 @@ done
 REMAINING=$(/sbin/busybox lsof | /sbin/busybox awk '{print $1" "$2}' | /sbin/busybox grep -E "/bin|/system|/data|/cache" | /sbin/busybox wc -l)
 if [ $REMAINING -gt 0 ]; then
 	FLASHLED
+else
+	# Thanks to McBane87 @ XDA
+	/sbin/mount -o ro /system
+	/sbin/mount -o remount,rw /system
+	/sbin/umount /system
+	/sbin/busybox blockdev --setrw $(/sbin/busybox find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 fi
 
 exit 0

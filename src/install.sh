@@ -167,7 +167,8 @@ runinstall() {
 
 	./${ADBBINARY} wait-for-device
 	./${ADBBINARY} shell "/system/bin/rm -rf /data/local/tmp/recovery"
-	if [ "`./${ADBBINARY} shell '/system/bin/ls -1 /system/bin/dualrecovery.sh' | tr -d '\n\r\t'`" = "/system/bin/dualrecovery.sh" ]; then
+	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/bin/dualrecovery.sh' | grep "dualrecovery.sh" | wc -l)
+	if [ "$INSTALLTEST" = "1" ]; then
 		echo ""
 		echo "============================================="
 		echo "Installation finished. Enjoy the recoveries!"
