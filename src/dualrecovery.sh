@@ -307,6 +307,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
 
 		export PATH="/sbin"
+		busybox umount /dev/block/loop0
 		busybox umount -l /system	# System
 
 		# exec
