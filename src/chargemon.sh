@@ -38,7 +38,15 @@ TECHOL(){
 TEXECL(){
   _TIME=`/system/xbin/busybox date +"%H:%M:%S"`
   echo "${_TIME} >> $*" >> ${PREPLOG}
-  $* 2>&1 >> ${PREPLOG}
+  $* >> ${PREPLOG} 2>> ${PREPLOG}
+  _RET=$?
+  echo "${_TIME} >> RET=${_RET}" >> ${PREPLOG}
+  return ${_RET}
+}
+BEXECL(){
+  _TIME=`/system/xbin/busybox date +"%H:%M:%S"`
+  echo "${_TIME} >> $*" >> ${PREPLOG}
+  busybox $* >> ${PREPLOG} 2>> ${PREPLOG}
   _RET=$?
   echo "${_TIME} >> RET=${_RET}" >> ${PREPLOG}
   return ${_RET}

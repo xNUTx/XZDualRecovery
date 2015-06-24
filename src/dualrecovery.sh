@@ -43,7 +43,15 @@ ECHOL(){
 EXECL(){
   _TIME=`busybox date +"%H:%M:%S"`
   echo "$_TIME: $*" >> ${LOG}
-  $* 2>&1 >> ${LOG}
+  $* >> ${LOG} 2>> ${LOG}
+  _RET=$?
+  echo "$_TIME: RET=$_RET" >> ${LOG}
+  return ${_RET}
+}
+BEXECL(){
+  _TIME=`busybox date +"%H:%M:%S"`
+  echo "$_TIME: $*" >> ${LOG}
+  busybox $* >> ${LOG} 2>> ${LOG}
   _RET=$?
   echo "$_TIME: RET=$_RET" >> ${LOG}
   return ${_RET}
@@ -294,21 +302,22 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		# Turn off LED
 		SETLED off
 
+		EXECL umount /system/odex
+		EXECL busybox umount -l /system	# System
+
+		export PATH="/sbin"
+
+		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
+
 		# From here on, the log dies, as these are the locations we log to!
 		# Ending log
 		DATETIME=`date +"%d-%m-%Y %H:%M:%S"`
 		ECHOL "STOP Dual Recovery at ${DATETIME}: Executing recovery init, have fun!"
 
-		umount -l /storage/sdcard1	# SDCard1
-		umount -l /cache		# Cache
+		busybox umount -l /storage/sdcard1	# SDCard1
+		busybox umount -l /cache		# Cache
 #		umount -l /proc
 #		umount -l /sys
-
-		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
-
-		export PATH="/sbin"
-		busybox umount /dev/block/loop0
-		busybox umount -l /system	# System
 
 		# exec
 		busybox chroot /recovery /init

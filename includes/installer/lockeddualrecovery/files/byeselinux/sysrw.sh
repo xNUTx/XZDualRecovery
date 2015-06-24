@@ -22,12 +22,16 @@ if [ ! -f /data/local/tmp/recovery/modulecrcpatch ]; then
 	exit 1
 fi
 
-$BUSYBOX chmod 777 /data/local/tmp/recovery/modulecrcpatch
-for module in /system/lib/modules/*.ko; do
-        /data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/wp_mod.ko 1> /dev/null
-done
+if [ "$($BUSYBOX grep '/sys/kernel/security/sony_ric/enable' /init.* | $BUSYBOX wc -l)" != "0" ]; then
 
-$BUSYBOX insmod /data/local/tmp/recovery/wp_mod.ko
+	$BUSYBOX chmod 777 /data/local/tmp/recovery/modulecrcpatch
+	for module in /system/lib/modules/*.ko; do
+	        /data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/wp_mod.ko 1> /dev/null
+	done
+
+	$BUSYBOX insmod /data/local/tmp/recovery/wp_mod.ko
+
+fi
 
 $BUSYBOX mount -o remount,rw /system 2> /dev/null
 if [ "$?" != "0" ]; then
