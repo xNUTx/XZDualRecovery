@@ -314,7 +314,7 @@ else
         # Turn on green LED as a visual cue
         SETLED on 0 255 0
 
-        EXECL sleep 3
+        ${BUSYBOX} sleep 3
 
         hexdump < /dev/keycheck > /dev/keycheckout
 
