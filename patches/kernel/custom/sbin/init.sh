@@ -378,7 +378,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 	if [ ! -f "$RAMDISK" ]; then
 		ECHOL "CPIO Archive not found, accepting it probably is an lzma version!"
-		lzma -d -c /sbin/recovery.${RECLOAD}.cpio.lzma > /recovery.${RECLOAD}.cpio
+		lzma -d -c /sbin/recovery.${RECLOAD}.cpio.lzma > /drbin/recovery.${RECLOAD}.cpio
 	fi
 	
 	
@@ -398,7 +398,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
         EXECL umount -l /lta-label      # LTALabel
 
 	ECHOL "Executing recovery init, have fun!"
-	RAMDISK="/recovery.${RECLOAD}.cpio"
+	RAMDISK="/drbin/recovery.${RECLOAD}.cpio"
 
 	# Unpack the ramdisk image
 	cpio -i -u < $RAMDISK
