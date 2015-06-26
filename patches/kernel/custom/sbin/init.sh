@@ -8,7 +8,6 @@ LOGDIR="XZDualRecovery"
 PREPLOG="boot.log"
 XZDRLOG="XZDualRecovery.log"
 BUSYBOX="/sbin/busybox"
-
 DRLOG="$PREPLOG"
 
 ${BUSYBOX} cd /
@@ -314,7 +313,7 @@ else
         # Turn on green LED as a visual cue
         SETLED on 0 255 0
 
-        EXECL sleep 3
+        ${BUSYBOX} sleep 3
 
         hexdump < /dev/keycheck > /dev/keycheckout
 
@@ -379,9 +378,10 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 	if [ ! -f "$RAMDISK" ]; then
 		ECHOL "CPIO Archive not found, accepting it probably is an lzma version!"
-		EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
+		lzma -d -c /sbin/recovery.${RECLOAD}.cpio.lzma > /recovery.${RECLOAD}.cpio
 	fi
-
+	
+	
 	EXECL mkdir /recovery
 	EXECL cd /recovery
 
@@ -397,13 +397,13 @@ if [ "$RECOVERYBOOT" = "true" ]; then
         EXECL umount -l /data           # Userdata
         EXECL umount -l /lta-label      # LTALabel
 
+	ECHOL "Executing recovery init, have fun!"
+	RAMDISK="/recovery.${RECLOAD}.cpio"
+
 	# Unpack the ramdisk image
 	cpio -i -u < $RAMDISK
 
-	SETLED off
 
-	# Executing INIT.
-	ECHOL "Executing recovery init, have fun!"
 
 	# Here the log dies.
 	/sbin/busybox umount -l /cache
@@ -412,10 +412,14 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	/sbin/busybox rm -r /drbin
 	/sbin/busybox chroot /recovery /init
 
+	export PATH="$_PATH"
+	/sbin/busybox rm -rf /drbin
+	exec /init
+
 else
 
 	ECHOL "Booting Android."
-
+	SETLED off
 	RAMDISK="/sbin/ramdisk.cpio"
 
 	cd /
