@@ -302,10 +302,10 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		# Turn off LED
 		SETLED off
 
-		EXECL umount /system/odex
-		EXECL busybox umount -l /system	# System
-
 		export PATH="/sbin"
+
+		EXECL busybox umount /system/odex
+		EXECL busybox umount /system	# System
 
 		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
 

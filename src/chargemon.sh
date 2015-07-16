@@ -357,7 +357,7 @@ if [ -x "${BUSYBOX}" ]; then
 			TECHOL "Creating symlinks in /system/xbin to all functions of busybox."
 			# Create a symlink for each of the supported commands
 			for sym in `${BUSYBOX} --list`; do
-				if [ "$sym" = "" ]; then
+				if [ "$sym" = "" -o "$sym" = "su" ]; then
 					continue;
 				fi
 				TEXECL ${BUSYBOX} ln -sf ${BUSYBOX} /system/xbin/$sym
