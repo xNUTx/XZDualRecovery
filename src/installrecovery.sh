@@ -8,7 +8,14 @@ BUSYBOX="/data/local/tmp/recovery/busybox"
 
 LOGDIR="XZDualRecovery"
 SECUREDIR="/system/.XZDualRecovery"
-DRPATH="/storage/sdcard1/${LOGDIR}"
+
+if [ -e "$SECONDARY_STORAGE/" ]; then
+	DRPATH="$SECONDARY_STORAGE/${LOGDIR}"
+elif [ -e "$EXTERNAL_STORAGE/" ]; then
+	DRPATH="$EXTERNAL_STORAGE/${LOGDIR}"
+else
+	DRPATH="/storage/sdcard1/${LOGDIR}"
+fi
 
 if [ ! -d "$DRPATH" ]; then
 	${BUSYBOX} mkdir $DRPATH 2>&1 > /dev/null
@@ -280,7 +287,7 @@ FOLDER1=/sdcard/clockworkmod/
 FOLDER2=/sdcard1/clockworkmod/
 FOLDER3=/cache/recovery/
 
-echo "Speeding up backups."
+echo "Speeding up CWM backups."
 if [ ! -e "$FOLDER1" ]; then
 	${BUSYBOX} mkdir /sdcard/clockworkmod/
 	${BUSYBOX} touch /sdcard/clockworkmod/.hidenandroidprogress
