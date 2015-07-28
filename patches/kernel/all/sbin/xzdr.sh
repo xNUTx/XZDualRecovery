@@ -21,7 +21,7 @@ ECHOL(){
 EXECL(){
   _TIME=`${BUSYBOX} date +"%H:%M:%S"`
   ${BUSYBOX} echo "${_TIME} >> $*" >> ${DRLOG}
-  $* 2>&1 >> ${DRLOG}
+  $* >> ${DRLOG} 2>> ${DRLOG}
   _RET=$?
   ${BUSYBOX} echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
   return ${_RET}
@@ -29,7 +29,7 @@ EXECL(){
 BBXECL(){
   _TIME=`${BUSYBOX} date +"%H:%M:%S"`
   ${BUSYBOX} echo "${_TIME} >> $*" >> ${DRLOG}
-  ${BUSYBOX} $* 2>&1 >> ${DRLOG}
+  ${BUSYBOX} $* >> ${DRLOG} 2>> ${DRLOG}
   _RET=$?
   ${BUSYBOX} echo "${_TIME} >> RET=${_RET}" >> ${DRLOG}
   return ${_RET}
@@ -160,7 +160,7 @@ BBXECL chmod 666 ${DRLOG}
 ECHOL "DEBUGINFO=Current mounted filesystems:"
 BBXECL mount
 
-BBXECL cd /
+EXECL cd /
 BBXECL blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
 if [ "$(${BUSYBOX} mount | ${BUSYBOX} grep system | ${BUSYBOX} wc -l)" = "0" ]; then
 	systemmounted="false"
@@ -176,12 +176,89 @@ if [ ! -d "/cache" ]; then
 	BBXECL chmod 777 /cache
 fi
 if [ ! -d "/storage/sdcard1" ]; then
-	BBXECL mkdir -p /storage/sdcard1
+	BBXECL mkdir /storage
+	BBXECL mkdir /storage/sdcard1
+	BBXECL chmod 775 /storage/sdcard1
 fi
 
 BBXECL mkdir /drbin
 BBXECL chmod 777 /drbin
 BBXECL mount -t tmpfs tmpfs /drbin
+
+checkbyeselinux() {
+
+	echo $(${BUSYBOX} lsmod | ${BUSYBOX} grep byeselinux | ${BUSYBOX} awk '{print $1}' | ${BUSYBOX} wc -l)
+
+}
+
+# Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
+# The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
+ANDROIDVER=`${BUSYBOX} echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+VERREL=$(DRGETPROP ro.build.version.release)
+ECHOL "FW DETECTED: $VERREL, $ANDROIDVER"
+if [ "$ANDROIDVER" = "lollipop" ]; then
+
+	BBXECL mount -w $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "userdata") /data
+
+	if [ ! -e "/data/local/byeselinux.ko" -o ! -e "/system/lib/modules/byeselinux.ko" ]; then
+
+		ECHOL "Byeselinux missing on one or more storage locations, repatching and installing now."
+
+		# This should run only once each time system is wiped or reinstalled.
+		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
+
+		for module in /system/lib/modules/*.ko; do
+			EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
+		done
+
+		BBXECL insmod /drbin/byeselinux.ko
+
+		if [ "$(checkbyeselinux)" = "1" ]; then
+
+			# making sure system is mounted writable
+			BBXECL mount -o remount,rw /system
+
+			if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+
+				BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
+				BBXECL chmod 644 /system/lib/modules/byeselinux.ko
+
+			fi
+
+			if [ ! -e "/data/local/byeselinux.ko" ]; then
+
+				BBXECL cp /drbin/byeselinux.ko /data/local/byeselinux.ko
+				BBXECL chmod 644 /data/local/byeselinux.ko
+
+			fi
+
+		fi
+
+	fi
+
+	if [ "$(checkbyeselinux)" = "0" ]; then
+
+		oldmodule="false"
+
+		if [ -e "/system/lib/modules/byeselinux.ko" ]; then
+			oldmodule="/system/lib/modules/byeselinux.ko"
+		fi
+
+		if [ -e "/data/local/byeselinux.ko" ]; then
+			oldmodule="/data/local/byeselinux.ko"
+		fi
+
+		if [ "$oldmodule" != "false" ]; then
+
+			BBXECL insmod $oldmodule
+
+		fi
+
+	fi
+
+	BBXECL umount /data
+
+fi
 
 # Attempting to mount the external sdcard.
 BOOT=`${BUSYBOX} fdisk -l /dev/block/mmcblk1 | ${BUSYBOX} grep "/dev/block/mmcblk1p1" | ${BUSYBOX} awk '{print $2}'`
@@ -217,32 +294,11 @@ if [ "$(${BUSYBOX} mount | ${BUSYBOX} grep 'sdcard1' | ${BUSYBOX} wc -l)" = "0" 
 
 	fi
 
-fi
-
-# Part of byeselinux, requisit for Lollipop based firmwares, this should run only once each time system is wiped or reinstalled.
-# The test before it is to determine if demolishing SELinux is required to get XZDR to work. If not, the module is of no use to us and will be skipped.
-ANDROIDVER=`${BUSYBOX} echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
-VERREL=$(DRGETPROP ro.build.version.release)
-ECHOL "FW DETECTED: $VERREL, $ANDROIDVER"
-if [ "$ANDROIDVER" = "lollipop" ]; then
-	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
-		# This should run only once each time system is wiped or reinstalled.
-		BBXECL cp /sbin/byeselinux.ko /drbin/byeselinux.ko
-		for module in /system/lib/modules/*.ko; do
-			EXECL /sbin/modulecrcpatch $module /drbin/byeselinux.ko
-		done
-		BBXECL insmod /drbin/byeselinux.ko
-		BBXECL cp /drbin/byeselinux.ko /system/lib/modules/byeselinux.ko
-		BBXECL chmod 644 /system/lib/modules/byeselinux.ko
-	else
-		# This runs every time, enableing the modification of the ramdisk.
-		BBXECL insmod /system/lib/modules/byeselinux.ko
+	if [ ! -d "${DRPATH}" ]; then
+		ECHOL "${DRPATH} directory does not exist, creating it now."
+		BBXECL mkdir ${DRPATH}
 	fi
-fi
 
-if [ ! -d "${DRPATH}" ]; then
-	ECHOL "${DRPATH} directory does not exist, creating it now."
-	BBXECL mkdir ${DRPATH}
 fi
 
 # Here we setup a binaries folder, to make the rest of the script readable and easy to use. It will allow us to slim it down too.
