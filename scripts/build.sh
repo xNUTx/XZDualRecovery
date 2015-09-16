@@ -82,11 +82,13 @@ packflashable() {
 	mkdir -p $WORKDIR/.tmp/flashable/system/bin
 	mkdir -p $WORKDIR/.tmp/flashable/tmp
 	mkdir -p $WORKDIR/.tmp/flashable/system/xbin
+	mkdir -p $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin
+	mkdir -p $WORKDIR/.tmp/flashable/system/.XZDualRecovery/bin
 	echo "Flashable: copying files to their locations..."
 	# Flashable
-	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/flashable/system/bin/recovery.cwm.cpio.lzma
-	cp $WORKDIR/.tmp/recovery.philz.cpio.lzma $WORKDIR/.tmp/flashable/system/bin/recovery.philz.cpio.lzma
-	cp $WORKDIR/.tmp/recovery.twrp.cpio.lzma $WORKDIR/.tmp/flashable/system/bin/recovery.twrp.cpio.lzma
+	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma
+	cp $WORKDIR/.tmp/recovery.philz.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma
+	cp $WORKDIR/.tmp/recovery.twrp.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma
 	if [ -f "$WORKDIR/.tmp/ramdisk.stock.cpio.lzma" ]; then
 		cp $WORKDIR/.tmp/ramdisk.stock.cpio.lzma $WORKDIR/.tmp/flashable/tmp/ramdisk.stock.cpio.lzma
 	fi
@@ -94,10 +96,10 @@ packflashable() {
 	cp $WORKDIR/src/setversion.sh $WORKDIR/.tmp/flashable/tmp/setversion.sh
 	cp $WORKDIR/src/mr.sh $WORKDIR/.tmp/flashable/system/bin/mr
 	cp $WORKDIR/src/chargemon.sh $WORKDIR/.tmp/flashable/system/bin/chargemon
-	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/.tmp/flashable/system/bin/dualrecovery.sh
-	cp $WORKDIR/src/rickiller.sh $WORKDIR/.tmp/flashable/system/bin/rickiller.sh
+	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/dualrecovery.sh
+	cp $WORKDIR/src/rickiller.sh $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/rickiller.sh
 	cp $WORKDIR/src/installdisableric.sh $WORKDIR/.tmp/flashable/tmp/installdisableric.sh
-	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/system/xbin/busybox
+	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/busybox
 	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/flashable/backupstockbinaries.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script
 	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/tmp/NDRUtils.apk

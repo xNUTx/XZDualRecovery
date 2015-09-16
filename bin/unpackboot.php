@@ -482,9 +482,7 @@ class unpackBoot {
 		
 		fclose($infile);
 		
-		if (!file_exists($this->target_path . "/" . $this->name . ".boot.cmd")) {
-			$this->getBootCMD( true );
-		}
+		$this->getBootCMD( true );
 		
 	}
 	
@@ -643,8 +641,8 @@ class unpackBoot {
 	private $dtimg_offset = '4';
 	private $tail = '00000000010000000000E001616E64726F696462';
 	private $tail_offset = '8';
-	private $bootcmd = array('start' => 'E001616E64726F6964626F6F74', 'end' => '00000000000000000000000000000000000000000000000000');
-	private $bootcmd_offset = '4';
+	private $bootcmd = array('start' => '616E64726F6964626F6F742E6861726477617265', 'end' => '00000000000000000000000000000000000000000000000000');
+	private $bootcmd_offset = '20';
 	
 	/*
 	 * Fallback parts extraction method...
@@ -687,7 +685,7 @@ class unpackBoot {
 		$start = $this->findHex($this->bootcmd["start"]);
 		$length = (($this->findHex($this->bootcmd["end"], $start) - $start) + $this->bootcmd_offset);
 		
-		$part = substr ( $this->file_contents , $start+4, $length);
+		$part = substr ( $this->file_contents , $start, $length);
 		$this->bootcmd_str = trim($this->hexToStr($part));
 		
 		if ($this->bootcmd_str != "") {

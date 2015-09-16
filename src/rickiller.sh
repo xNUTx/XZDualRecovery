@@ -11,13 +11,14 @@
 # Author: [NUT] on XDA
 #
 
-BUSYBOX="/sbin/busybox"
+SECUREDIR="/system/.XZDualRecovery"
+BUSYBOX="$SECUREDIR/xbin/busybox"
 
 LOG="/data/local/tmp/rickiller.log"
 
 _PATH="$PATH"
 
-export PATH=".:/system/xbin:/system/bin:/sbin"
+export PATH=".:$SECUREDIR/xbin:$SECUREDIR/bin:/system/xbin:/system/bin:/sbin"
 
 $BUSYBOX echo -n "" > $LOG
 

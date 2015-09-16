@@ -192,16 +192,16 @@ else
 fi
 
 echo "Copy recovery files to system."
-${BUSYBOX} cp /data/local/tmp/recovery/recovery.twrp.cpio.lzma /system/bin/
-${BUSYBOX} cp /data/local/tmp/recovery/recovery.cwm.cpio.lzma /system/bin/
-${BUSYBOX} cp /data/local/tmp/recovery/recovery.philz.cpio.lzma /system/bin/
-${BUSYBOX} chmod 644 /system/bin/recovery.twrp.cpio.lzma
-${BUSYBOX} chmod 644 /system/bin/recovery.cwm.cpio.lzma
-${BUSYBOX} chmod 644 /system/bin/recovery.philz.cpio.lzma
+${BUSYBOX} cp /data/local/tmp/recovery/recovery.twrp.cpio.lzma $SECUREDIR/xbin/
+${BUSYBOX} cp /data/local/tmp/recovery/recovery.cwm.cpio.lzma $SECUREDIR/xbin/
+${BUSYBOX} cp /data/local/tmp/recovery/recovery.philz.cpio.lzma $SECUREDIR/xbin/
+${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.twrp.cpio.lzma
+${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.cwm.cpio.lzma
+${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.philz.cpio.lzma
 
 if [ -f "/data/local/tmp/recovery/ramdisk.stock.cpio.lzma" ]; then
-	${BUSYBOX} cp /data/local/tmp/recovery/ramdisk.stock.cpio.lzma /system/bin/
-	${BUSYBOX} chmod 644 /system/bin/ramdisk.stock.cpio.lzma
+	${BUSYBOX} cp /data/local/tmp/recovery/ramdisk.stock.cpio.lzma $SECUREDIR/xbin/
+	${BUSYBOX} chmod 644 $SECUREDIR/xbin/ramdisk.stock.cpio.lzma
 fi
 
 if [ ! -f "/system/bin/mr.stock" -a -f "/system/bin/mr" ]; then
@@ -225,12 +225,12 @@ ${BUSYBOX} cp /data/local/tmp/recovery/chargemon /system/bin/
 ${BUSYBOX} chmod 755 /system/bin/chargemon
 
 echo "Copy dualrecovery.sh to system."
-${BUSYBOX} cp /data/local/tmp/recovery/dualrecovery.sh /system/bin/
-${BUSYBOX} chmod 755 /system/bin/dualrecovery.sh
+${BUSYBOX} cp /data/local/tmp/recovery/dualrecovery.sh $SECUREDIR/xbin/
+${BUSYBOX} chmod 755 $SECUREDIR/xbin/dualrecovery.sh
 
 echo "Copy rickiller.sh to system."
-${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh /system/bin/
-${BUSYBOX} chmod 755 /system/bin/rickiller.sh
+${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh $SECUREDIR/xbin/
+${BUSYBOX} chmod 755 $SECUREDIR/xbin/rickiller.sh
 
 echo "Installing NDRUtils to system."
 if [ "$ANDROIDVER" = "lollipop" ]; then
@@ -245,19 +245,8 @@ else
 	${BUSYBOX} chmod 644 /system/app/NDRUtils.apk
 fi
 
-if [ -e "/system/etc/.xzdrbusybox" ]; then
-	${BUSYBOX} rm -f /system/etc/.xzdrbusybox
-fi
-
-if [ ! -d "$SECUREDIR" ]; then
-	echo "Creating $SECUREDIR to store a backup copy of busybox and the init.rc files."
-	mkdir $SECUREDIR
-fi
-
 echo "Copy busybox to system."
-${BUSYBOX} cp /data/local/tmp/recovery/busybox /system/xbin/
-${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/
-${BUSYBOX} chmod 755 /system/xbin/busybox
+${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/xbin/
 ${BUSYBOX} chmod 755 $SECUREDIR/busybox
 
 echo "Copy init's *.rc files in to $SECUREDIR."

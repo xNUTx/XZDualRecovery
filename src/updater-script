@@ -32,7 +32,6 @@ set_progress(0.350000);
 
 ui_print("  Extracting new recovery files to SYSTEM...");
 package_extract_dir("system", "/system");
-run_program("/sbin/cp", "/system/xbin/busybox", "/system/.XZDualRecovery/busybox");
 set_progress(0.550000);
 
 ui_print("  Stock ramdisk needed?");

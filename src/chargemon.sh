@@ -13,30 +13,33 @@
 
 set +x
 _PATH="$PATH"
-export PATH="/system/xbin:/system/bin:/sbin"
 
 # Constants
 LOGDIR="XZDualRecovery"
 SECUREDIR="/system/.XZDualRecovery"
 PREPLOG="/tmp/${LOGDIR}/preperation.log"
 LOGFILE="XZDualRecovery.log"
+BUSYBOX="$SECUREDIR/xbin/busybox"
+
+# Setting up PATH
+export PATH="$SECUREDIR/bin:$SECUREDIR/xbin:/system/xbin:/system/bin:/sbin"
 
 # Nodes setup
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
 
-REDLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "red\|LED1_R")
-GREENLED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "green\|LED1_G")
-BLUELED=$(/system/xbin/busybox ls -1 /sys/class/leds|/system/xbin/busybox grep "blue\|LED1_B")
+REDLED=$(busybox ls -1 /sys/class/leds|busybox grep "red\|LED1_R")
+GREENLED=$(busybox ls -1 /sys/class/leds|busybox grep "green\|LED1_G")
+BLUELED=$(busybox ls -1 /sys/class/leds|busybox grep "blue\|LED1_B")
 
 # Function definitions
 TECHOL(){
-  _TIME=`/system/xbin/busybox date +"%H:%M:%S"`
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
   echo "${_TIME} >> $*" >> ${PREPLOG}
   return 0
 }
 TEXECL(){
-  _TIME=`/system/xbin/busybox date +"%H:%M:%S"`
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
   echo "${_TIME} >> $*" >> ${PREPLOG}
   $* >> ${PREPLOG} 2>> ${PREPLOG}
   _RET=$?
@@ -44,9 +47,9 @@ TEXECL(){
   return ${_RET}
 }
 BEXECL(){
-  _TIME=`/system/xbin/busybox date +"%H:%M:%S"`
+  _TIME=`${BUSYBOX} date +"%H:%M:%S"`
   echo "${_TIME} >> $*" >> ${PREPLOG}
-  busybox $* >> ${PREPLOG} 2>> ${PREPLOG}
+  ${BUSYBOX} $* >> ${PREPLOG} 2>> ${PREPLOG}
   _RET=$?
   echo "${_TIME} >> RET=${_RET}" >> ${PREPLOG}
   return ${_RET}
@@ -60,7 +63,7 @@ MOUNTSDCARD(){
 		      TEXECL insmod /system/lib/modules/texfat.ko;
 		      TEXECL mount -t texfat ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
 		      return $?;;
-		83) PTYPE=$(/system/xbin/busybox blkid ${BOOTREC_EXTERNAL_SDCARD} | /system/xbin/busybox awk -F' ' '{ print $NF }' | /system/xbin/busybox awk -F'[\"=]' '{ print $3 }');
+		83) PTYPE=$(${BUSYBOX} blkid ${BOOTREC_EXTERNAL_SDCARD} | ${BUSYBOX} awk -F' ' '{ print $NF }' | ${BUSYBOX} awk -F'[\"=]' '{ print $3 }');
 		    TEXECL mount -t $PTYPE ${BOOTREC_EXTERNAL_SDCARD} /storage/sdcard1;
 		    return $?;;
 		 *) return 1;;
@@ -110,18 +113,18 @@ EXIT2CM(){
 	# Turn on a red led, as a visual warning to the user
 	SETLED on 255 0 0
 
-	/system/xbin/busybox sleep 2
+	${BUSYBOX} sleep 2
 
 	# Turn off LED
 	SETLED off
 
 	# Ending log
-	DATETIME=`/system/xbin/busybox date +"%d-%m-%Y %H:%M:%S"`
+	DATETIME=`busybox date +"%d-%m-%Y %H:%M:%S"`
 	echo "STOP Dual Recovery STAGE 1 at ${DATETIME}" >> ${PREPLOG}
 
-	/system/xbin/busybox umount -l /storage/sdcard1
+	${BUSYBOX} umount -l /storage/sdcard1
 
-	/system/xbin/busybox rmmod -f byeselinux.ko
+	${BUSYBOX} rmmod -f byeselinux.ko
 
 	export PATH="${_PATH}"
 
@@ -213,7 +216,7 @@ pwrkeySearch() {
 	return 1
 }
 
-# We can safely asume a busybox exists in /system/xbin (as XZDualRecovery installs one there)
+# We can safely asume a busybox exists in /system/.XZDualRecovery/xbin (as XZDualRecovery installs one there)
 ${BUSYBOX} mount -o remount,rw rootfs /
 MADETMP="false"
 if [ ! -d "/tmp" ]; then
@@ -230,28 +233,10 @@ ${BUSYBOX} mount -o remount,ro rootfs /
 DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
 echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
 
-NOGOODBUSYBOX="true"
-# Busybox setup, chosing the one that supports lzma, as it is vital for this recovery setup!
-if [ -x "/system/xbin/busybox" -a ! -n "${BUSYBOX}" ]; then
-	CHECK=`/system/xbin/busybox --list | /system/xbin/busybox grep lzma | /system/xbin/busybox wc -l`
-	if [ "$CHECK" -gt "0" ]; then
- 		BUSYBOX="/system/xbin/busybox"
-		NOGOODBUSYBOX="false"
-	fi
-fi
-# Fallback to the one in /system/bin, but only if it supports lzma...
-if [ -x "/system/bin/busybox" -a "$NOGOODBUSYBOX" = "true" ]; then
-	CHECK=`/system/bin/busybox --list | /system/bin/busybox grep lzma | /system/bin/busybox wc -l`
-	if [ "$CHECK" -gt "0" ]; then
-		BUSYBOX="/system/bin/busybox"
-		NOGOODBUSYBOX="false"
-	fi
-fi
-
 #https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
 #The busybox in all of the recoveries has not yet been patched to take this in account.
-${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
-${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
+BEXECL blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "system")
+BEXECL blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-name/ -iname "cache")
 
 # Part of byeselinux, requisit for Lollipop based firmwares.
 echo "Checking if byeselinux is required..." >> ${PREPLOG}
@@ -271,43 +256,12 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 	fi
 fi
 
-# If no good busybox has been found, we will replace the one in xbin
-# This was never so important but with the release of the JB4.3 ROM on the Z1, Z1 Compact and Z Ultra
-# this missing busybox will break full root provided by XZDualRecovery making these
-# user errors that more painful.
-if [ "$NOGOODBUSYBOX" = "true" -a -d "$SECUREDIR" ]; then
-
-	$SECUREDIR/busybox mount -o remount,rw /system
-	$SECUREDIR/busybox cp $SECUREDIR/busybox /system/xbin/
-	chmod 755 /system/xbin/busybox
-	BUSYBOX="/system/xbin/busybox"
-	rm /system/etc/.xzdrbusybox
-	${BUSYBOX} mount -o remount,ro /system
-	echo "Replaced busybox in /system/xbin!" >> ${PREPLOG}
-
-fi
-
 if [ -d "$SECUREDIR" ]; then
 
-	${BUSYBOX} mount -o remount,rw /system
-	${BUSYBOX} cp /init.* $SECUREDIR/
-	${BUSYBOX} mount -o remount,ro /system
+	BEXECL mount -o remount,rw /system
+	BEXECL cp /init.* $SECUREDIR/
+	BEXECL mount -o remount,ro /system
 	echo "Made a copy of all the init RC files in to $SECUREDIR!" >> ${PREPLOG}
-
-fi
-
-if [ ! -d "$SECUREDIR" -o ! -x "$SECUREDIR/busybox" ] && [ -x "${BUSYBOX}" ]; then
-
-	${BUSYBOX} mount -o remount,rw /system
-	if [ ! -d "$SECUREDIR" ]; then
-		${BUSYBOX} mkdir $SECUREDIR
-	fi
-	if [ ! -x "$SECUREDIR/busybox" ]; then
-		${BUSYBOX} cp ${BUSYBOX} $SECUREDIR/
-		${BUSYBOX} chmod 755 $SECUREDIR/busybox
-	fi
-	echo "Created $SECUREDIR and put a busybox safety copy away in it.!" >> ${PREPLOG}
-	${BUSYBOX} mount -o remount,ro /system
 
 fi
 
@@ -315,21 +269,21 @@ if [ -x "${BUSYBOX}" ]; then
 
 	TECHOL "Using ${BUSYBOX}"
 
-	TEXECL ${BUSYBOX} mount -o remount,rw rootfs /
-	TEXECL ${BUSYBOX} mount -o remount,rw /system
+	BEXECL mount -o remount,rw rootfs /
+	BEXECL mount -o remount,rw /system
 
-	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
-		TECHOL "Sony's kernel security trigger found, running disableric."
-		TEXECL ${BUSYBOX} mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
-		TEXECL ${BUSYBOX} mkdir -p /sys/kernel/security/sony_ric
-		TEXECL ${BUSYBOX} chmod 755 /sys/kernel/security/sony_ric
-		TEXECL ${BUSYBOX} echo "0" > /sys/kernel/security/sony_ric/enable
+	if [ ! -e "/system/bin/recovery.twrp.cpio.lzma" -o ! -e "/system/bin/recovery.philz.cpio.lzma" -o ! -e "/system/bin/recovery.cwm.cpio.lzma" ]; then
+
+		BEXECL ln -sf $SECUREDIR/xbin/recovery.twrp.cpio.lzma /system/bin/recovery.twrp.cpio.lzma
+		BEXECL ln -sf $SECUREDIR/xbin/recovery.philz.cpio.lzma /system/bin/recovery.philz.cpio.lzma
+		BEXECL ln -sf $SECUREDIR/xbin/recovery.cwm.cpio.lzma /system/bin/recovery.cwm.cpio.lzma
+
 	fi
 
 	if [ -e "/sbin/ric" ]; then
 		RICPATH="/sbin/ric"
-		TEXECL ${BUSYBOX} rm $RICPATH
-		TEXECL ${BUSYBOX} touch $RICPATH
+		BEXECL rm $RICPATH
+		BEXECL touch $RICPATH
 		${BUSYBOX} echo "#!/system/bin/sh" >> $RICPATH
 		${BUSYBOX} echo "while :" >> $RICPATH
 		${BUSYBOX} echo "do" >> $RICPATH
@@ -338,32 +292,43 @@ if [ -x "${BUSYBOX}" ]; then
 		${BUSYBOX} echo "fi" >> $RICPATH
 		${BUSYBOX} echo "sleep 60" >> $RICPATH
 		${BUSYBOX} echo "done" >> $RICPATH
-		TEXECL ${BUSYBOX} chmod 755 $RICPATH
-		TEXECL ${BUSYBOX} touch /tmp/killedric
+		BEXECL chmod 755 $RICPATH
+		BEXECL touch /tmp/killedric
 	fi
 
 	if [ -e "/system/lib/modules/wp_mod.ko" ]; then
+
 		TECHOL "MohammadAG's module is available, lets load it."
-		TEXECL ${BUSYBOX} insmod /system/lib/modules/wp_mod.ko
+		BEXECL insmod /system/lib/modules/wp_mod.ko
+
 	fi
 
-	if [ -x "${BUSYBOX}" -a -x "/system/bin/dualrecovery.sh" ]; then
+	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
+
+		TECHOL "Sony's kernel security trigger found, running disableric."
+		BEXECL mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		BEXECL mkdir -p /sys/kernel/security/sony_ric
+		BEXECL chmod 755 /sys/kernel/security/sony_ric
+		echo 0 > /sys/kernel/security/sony_ric/enable
+
+	fi
+
+
+	if [ -x "${BUSYBOX}" -a -x "$SECUREDIR/xbin/dualrecovery.sh" ]; then
 
 		TECHOL "Install busybox to /sbin..."
-		TEXECL ${BUSYBOX} cp ${BUSYBOX} /sbin/
+		BEXECL cp ${BUSYBOX} /sbin/
 
-		if [ ! -f "/system/etc/.xzdrbusybox" -o ! -x "/system/xbin/lzma" ]; then
+		if [ ! -x "$SECUREDIR/bin/lzma" ]; then
 
-			TECHOL "Creating symlinks in /system/xbin to all functions of busybox."
+			TECHOL "Creating symlinks in $SECUREDIR/bin to all functions of busybox."
 			# Create a symlink for each of the supported commands
 			for sym in `${BUSYBOX} --list`; do
 				if [ "$sym" = "" -o "$sym" = "su" ]; then
 					continue;
 				fi
-				TEXECL ${BUSYBOX} ln -sf ${BUSYBOX} /system/xbin/$sym
+				BEXECL ln -sf ${BUSYBOX} $SECUREDIR/bin/$sym
 			done
-
-			TEXECL ${BUSYBOX} touch /system/etc/.xzdrbusybox
 
 		else
 
@@ -374,8 +339,8 @@ if [ -x "${BUSYBOX}" ]; then
 		export PATH="/system/xbin"
 
 		TECHOL "Copying recovery files to /sbin"
-		TEXECL ${BUSYBOX} cp /system/bin/dualrecovery.sh /sbin/init.sh
-		TEXECL ${BUSYBOX} chmod 755 /sbin/init.sh
+		BEXECL cp $SECUREDIR/xbin/dualrecovery.sh /sbin/init.sh
+		BEXECL chmod 755 /sbin/init.sh
 
 	else
 
@@ -385,8 +350,8 @@ if [ -x "${BUSYBOX}" ]; then
 
 	fi
 
-	TEXECL ${BUSYBOX} mount -o remount,ro rootfs /
-	TEXECL ${BUSYBOX} mount -o remount,ro /system
+	BEXECL mount -o remount,ro rootfs /
+	BEXECL mount -o remount,ro /system
 
 fi
 
@@ -557,9 +522,9 @@ if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
 	export PATH="$_PATH"
 
 	if [ "$ANDROIDVER" = "lollipop" ]; then
-		/system/xbin/busybox mount -o remount,rw rootfs /
+		${BUSYBOX} mount -o remount,rw rootfs /
 		exec /sbin/init.sh $DRPATH $LOGFILE
-		/system/xbin/busybox mount -o remount,ro rootfs /
+		${BUSYBOX} mount -o remount,ro rootfs /
 	else
 		exec /sbin/init.sh $DRPATH $LOGFILE
 	fi

@@ -13,12 +13,16 @@
 
 set +x
 _PATH="$PATH"
-export PATH="/system/xbin:/system/bin:/sbin"
 
 # Defining constants, from commandline
 DRPATH="$1"
 LOGFILE="$2"
 LOG="${DRPATH}/${LOGFILE}"
+
+# Static constant
+SECUREDIR="/system/.XZDualRecovery"
+
+export PATH="$SECUREDIR/xbin:$SECUREDIR/bin:/sbin:/system/xbin:/system/bin"
 
 # Kickstarting log
 DATETIME=`date +"%d-%m-%Y %H:%M:%S"`
@@ -30,9 +34,9 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
 
-REDLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "red\|LED1_R")
-GREENLED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "green\|LED1_G")
-BLUELED=$(/sbin/busybox ls -1 /sys/class/leds|/sbin/busybox grep "blue\|LED1_B")
+REDLED=$(ls -1 /sys/class/leds|grep "red\|LED1_R")
+GREENLED=$(ls -1 /sys/class/leds|grep "green\|LED1_G")
+BLUELED=$(ls -1 /sys/class/leds|grep "blue\|LED1_B")
 
 # Defining functions
 ECHOL(){
@@ -230,20 +234,20 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	fi
 
   	# Prepare PhilZ recovery - by button press
-	if [ -f "/system/bin/recovery.philz.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
+	if [ -f "$SECUREDIR/xbin/recovery.philz.cpio.lzma" -a "$KEYCHECK" = "UP" ]; then
 		RECLOAD="philz"
 		RECLOG="Booting recovery by keypress, booting to PhilZ Touch..."
 	fi
 
 	# Prepare TWRP recovery - by button press
-	if [ -f "/system/bin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
+	if [ -f "$SECUREDIR/xbin/recovery.twrp.cpio.lzma" -a "$KEYCHECK" = "DOWN" ]; then
 		RECLOAD="twrp"
 		RECLOG="Booting recovery by keypress, booting to TWRP..."
 	fi
 
 	# Copy, unpack and prepare loading the recovery.
 	DRSETPROP dr.recovery.boot ${RECLOAD}
-	EXECL cp /system/bin/recovery.${RECLOAD}.cpio.lzma /sbin/
+	EXECL cp $SECUREDIR/xbin/recovery.${RECLOAD}.cpio.lzma /sbin/
 	EXECL lzma -d /sbin/recovery.${RECLOAD}.cpio.lzma
 	RECOVERY="/sbin/recovery.${RECLOAD}.cpio"
 
@@ -304,6 +308,8 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 		export PATH="/sbin"
 
+		EXECL busybox umount /system/odex.priv-app
+		EXECL busybox umount /system/odex.app
 		EXECL busybox umount /system/odex
 		EXECL busybox umount /system	# System
 
