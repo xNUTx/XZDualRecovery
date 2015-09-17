@@ -56,14 +56,14 @@ run_program("/tmp/setversion.sh");
 set_progress(0.750000);
 
 ui_print("  Correcting permissions...");
-set_perm(0, 2000, 0644, "/system/bin/recovery.cwm.cpio.lzma");
-set_perm(0, 2000, 0644, "/system/bin/recovery.philz.cpio.lzma");
-set_perm(0, 2000, 0644, "/system/bin/recovery.twrp.cpio.lzma");
+set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma");
+set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma");
+set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma");
 set_perm(0, 2000, 0755, "/system/bin/mr");
 set_perm(0, 2000, 0755, "/system/bin/chargemon");
-set_perm(0, 2000, 0755, "/system/bin/dualrecovery.sh");
-set_perm(0, 2000, 0755, "/system/bin/rickiller.sh");
-set_perm(0, 2000, 0755, "/system/xbin/busybox");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/dualrecovery.sh");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/rickiller.sh");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/busybox");
 set_progress(0.850000);
 
 ui_print("  Unmounting SYSTEM...");

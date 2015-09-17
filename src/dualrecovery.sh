@@ -26,7 +26,7 @@ export PATH="$SECUREDIR/xbin:$SECUREDIR/bin:/sbin:/system/xbin:/system/bin"
 
 # Kickstarting log
 DATETIME=`date +"%d-%m-%Y %H:%M:%S"`
-echo "START Dual Recovery at ${DATETIME}: STAGE 2." > ${LOG}
+echo "START Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
 
 # Z setup
 #BOOTREC_CACHE_NODE="/dev/block/mmcblk0p25 b 179 25"

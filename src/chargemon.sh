@@ -231,7 +231,9 @@ ${BUSYBOX} mount -o remount,ro rootfs /
 
 # Kickstarting log
 DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
-echo "START Dual Recovery at ${DATETIME}: STAGE 1." > ${PREPLOG}
+XZDRVER=$(DRGETPROP dr.xzdr.version)
+XZDRREV=$(DRGETPROP dr.release.type)
+echo "START XZDualRecovery ${XZDRVER} ${XZDRREV} at ${DATETIME}: STAGE 1." > ${PREPLOG}
 
 #https://github.com/android/platform_system_core/commit/e18c0d508a6d8b4376c6f0b8c22600e5aca37f69
 #The busybox in all of the recoveries has not yet been patched to take this in account.
@@ -491,22 +493,27 @@ fi
 
 # Logfile rotation
 TECHOL "Logfile rotation..."
+if [ -f ${DRPATH}/${LOGFILE}.1.old ];then
+	TEXECL mv ${DRPATH}/${LOGFILE}.1.old ${DRPATH}/${LOGFILE}.2.old
+fi
+if [ -f ${DRPATH}/${LOGFILE}.old ];then
+	TEXECL mv ${DRPATH}/${LOGFILE}.old ${DRPATH}/${LOGFILE}.1.old
+fi
 if [ -f ${DRPATH}/${LOGFILE} ];then
 	TEXECL mv ${DRPATH}/${LOGFILE} ${DRPATH}/${LOGFILE}.old
 fi
-TEXECL touch ${DRPATH}/${LOGFILE}
+
+# Copy the preperation log to the main log directory, easy to find for the noobish users...
+cp ${PREPLOG} ${DRPATH}/${LOGFILE}
 TEXECL chmod 660 ${DRPATH}/${LOGFILE}
 
 if [ -e "/sbin/init.sh" -a "$EVENTNODE" != "none" ]; then
-	echo "Will be calling /sbin/init.sh with arguments '$DRPATH' and '$LOGFILE'" >> ${PREPLOG}
+	echo "Will be calling /sbin/init.sh with arguments '$DRPATH' and '$LOGFILE'" >> ${DRPATH}/${LOGFILE}
 fi
 
 # Ending log
 DATETIME=`${BUSYBOX} date +"%d-%m-%Y %H:%M:%S"`
-echo "STOP Dual Recovery STAGE 1 at ${DATETIME}, starting stage 2!" >> ${PREPLOG}
-
-# Copy the preperation log to the main log directory, easy to find for the noobish users...
-cp ${PREPLOG} ${DRPATH}/
+echo "STOP Dual Recovery STAGE 1 at ${DATETIME}, starting stage 2!" >> ${DRPATH}/${LOGFILE}
 
 ########
 #
