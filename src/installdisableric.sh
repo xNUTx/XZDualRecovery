@@ -32,8 +32,10 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 	# Part of byeselinux, requisit for Lollipop based firmwares
 	chmod 755 /tmp/sysrw.sh
 	/tmp/sysrw.sh
+	cp /tmp/wp_mod.ko /system/.XZDualRecovery/xbin/
 	chmod 755 /tmp/byeselinux.sh
 	/tmp/byeselinux.sh
+	cp /tmp/byeselinux.ko /system/.XZDualRecovery/xbin/
 fi
 
 exit 0

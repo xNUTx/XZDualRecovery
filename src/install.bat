@@ -16,7 +16,7 @@ echo.
 
 echo 1. Installation on ROM rooted with SuperSU
 echo 2. Installation on ROM rooted with SuperUser
-echo 3. Installation on unrooted ROM using the TowelRoot method
+echo 3. Installation on an unrooted ^(KitKat^) ROM using the TowelRoot method
 echo 4. Install ADB drivers to windows
 echo 5. Exit
 echo.

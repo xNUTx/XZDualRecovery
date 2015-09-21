@@ -71,6 +71,7 @@ packflashablekernel() {
 	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/tmp/dr.prop
 
 	cd $WORKDIR/.tmp/flashable
+	find . -name ".gitkeep" -exec rm -f {} \;
 	echo "Creating flashable zip..."
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-XZDRKernel${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
@@ -108,6 +109,7 @@ packflashable() {
 	echo "release=${RELEASE}" >> $WORKDIR/.tmp/flashable/tmp/dr.prop
 
 	cd $WORKDIR/.tmp/flashable
+	find . -name ".gitkeep" -exec rm -f {} \;
 	echo "Creating flashable zip..."
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.flashable.zip
@@ -134,6 +136,7 @@ packinstaller() {
 	echo "release=${RELEASE}" >> $WORKDIR/.tmp/installer/lockeddualrecovery/files/dr.prop
 
 	cd $WORKDIR/.tmp/installer/
+	find . -name ".gitkeep" -exec rm -f {} \;
 	echo "Creating installer zip..."
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip

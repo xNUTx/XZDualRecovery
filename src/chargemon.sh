@@ -254,7 +254,17 @@ if [ "$ANDROIDVER" = "lollipop" ]; then
 			echo "Loading the module failed with exit code $?" >> ${PREPLOG}
 		fi
 	else
-		echo "Byeselinux module not found!" >> ${PREPLOG}
+		echo "Byeselinux module not found but it is required, (re-)place it." >> ${PREPLOG}
+		${BUSYBOX} insmod $SECUREDIR/xbin/byeselinux.ko
+		if [ "$?" != "0" -a "$?" != "17" ]; then
+			echo "The backup module is not loading correctly, patching it."  >> ${PREPLOG}
+			for module in /system/lib/modules/*.ko; do
+			        $SECUREDIR/xbin/modulecrcpatch $module $SECUREDIR/xbin/byeselinux.ko
+			done
+		fi
+		${BUSYBOX} cp $SECUREDIR/xbin/byeselinux.ko /system/lib/modules/byeselinux.ko
+		${BUSYBOX} chmod 644 /system/lib/modules/byeselinux.ko
+		${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
 	fi
 fi
 
@@ -282,6 +292,16 @@ if [ -x "${BUSYBOX}" ]; then
 
 	fi
 
+	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
+
+		TECHOL "Sony's kernel security trigger found, running disableric."
+		BEXECL mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
+		BEXECL mkdir -p /sys/kernel/security/sony_ric
+		BEXECL chmod 755 /sys/kernel/security/sony_ric
+		BEXECL echo 0 > /sys/kernel/security/sony_ric/enable
+
+	fi
+
 	if [ -e "/sbin/ric" ]; then
 		RICPATH="/sbin/ric"
 		BEXECL rm $RICPATH
@@ -303,18 +323,21 @@ if [ -x "${BUSYBOX}" ]; then
 		TECHOL "MohammadAG's module is available, lets load it."
 		BEXECL insmod /system/lib/modules/wp_mod.ko
 
+	elif [ ! -e "/system/lib/modules/wp_mod.ko" -a "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
+
+		TECHOL "MohammadAG's module is not available but required, lets (re-)place it."
+		BEXECL insmod $SECUREDIR/xbin/wp_mod.ko
+		if [ "$?" != "0" -a "$?" != "17" ]; then
+			TECHOL "The backup module is not loading correctly, patching it."
+			for module in /system/lib/modules/*.ko; do
+			        $SECUREDIR/xbin/modulecrcpatch $module $SECUREDIR/xbin/wp_mod.ko 1> /dev/null
+			done
+		fi
+		BEXECL cp $SECUREDIR/xbin/wp_mod.ko /system/lib/modules/wp_mod.ko
+		BEXECL chmod 644 /system/lib/modules/wp_mod.ko
+                BEXECL insmod /system/lib/modules/wp_mod.ko
+
 	fi
-
-	if [ "$(${BUSYBOX} grep '/sys/kernel/security/sony_ric/enable' /init.* | ${BUSYBOX} wc -l)" != "0" ]; then
-
-		TECHOL "Sony's kernel security trigger found, running disableric."
-		BEXECL mount -t securityfs -o nosuid,nodev,noexec securityfs /sys/kernel/security
-		BEXECL mkdir -p /sys/kernel/security/sony_ric
-		BEXECL chmod 755 /sys/kernel/security/sony_ric
-		echo 0 > /sys/kernel/security/sony_ric/enable
-
-	fi
-
 
 	if [ -x "${BUSYBOX}" -a -x "$SECUREDIR/xbin/dualrecovery.sh" ]; then
 
@@ -337,8 +360,6 @@ if [ -x "${BUSYBOX}" ]; then
 			TECHOL "Skipping creation of busybox symlinks."
 
 		fi
-
-		export PATH="/system/xbin"
 
 		TECHOL "Copying recovery files to /sbin"
 		BEXECL cp $SECUREDIR/xbin/dualrecovery.sh /sbin/init.sh

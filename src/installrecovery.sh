@@ -1,6 +1,8 @@
 #!/data/local/tmp/recovery/busybox sh
 set +x
 
+SWITCH="$1"
+
 _PATH="$PATH"
 export PATH="/system/bin:/system/xbin:/sbin"
 
@@ -115,6 +117,24 @@ DRSETPROP() {
 
 ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
 
+if [ "$SWITCH" = "unrooted" -a "$ANDROIDVER" = "lollipop" ]; then
+
+	echo ""
+	echo "##########################################################"
+	echo "#"
+	echo "# The unrooted installation does not work on Lollipop based ROM's!"
+	echo "#"
+	echo "# The TowelRoot method used only works on (some) KitKat ROM's."
+	echo "#"
+	echo "# The installer will now exit, installation aborted!"
+	echo "#"
+	echo "#####"
+	echo ""
+
+	exit
+
+fi
+
 echo ""
 echo "##########################################################"
 echo "#"
@@ -191,6 +211,21 @@ else
 	echo "This firmware does not require byeselinux, will not install it."
 fi
 
+echo "Creating $SECUREDIR and subfolders."
+${BUSYBOX} mkdir $SECUREDIR
+${BUSYBOX} chmod 755 $SECUREDIR
+${BUSYBOX} mkdir $SECUREDIR/bin
+${BUSYBOX} chmod 755 $SECUREDIR/bin
+${BUSYBOX} mkdir $SECUREDIR/xbin
+${BUSYBOX} chmod 755 $SECUREDIR/xbin
+
+${BUSYBOX} cp /data/local/tmp/recovery/modulecrcpatch $SECUREDIR/xbin/
+${BUSYBOX} chmod 755 $SECUREDIR/xbin/modulecrcpatch
+${BUSYBOX} cp /data/local/tmp/recovery/byeselinux.ko $SECUREDIR/xbin/
+${BUSYBOX} chmod 644 $SECUREDIR/xbin/byeselinux.ko
+${BUSYBOX} cp /data/local/tmp/recovery/wp_mod.ko $SECUREDIR/xbin/
+${BUSYBOX} chmod 644 $SECUREDIR/xbin/wp_mod.ko
+
 echo "Copy recovery files to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/recovery.twrp.cpio.lzma $SECUREDIR/xbin/
 ${BUSYBOX} cp /data/local/tmp/recovery/recovery.cwm.cpio.lzma $SECUREDIR/xbin/
@@ -247,7 +282,7 @@ fi
 
 echo "Copy busybox to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/busybox $SECUREDIR/xbin/
-${BUSYBOX} chmod 755 $SECUREDIR/busybox
+${BUSYBOX} chmod 755 $SECUREDIR/xbin/busybox
 
 echo "Copy init's *.rc files in to $SECUREDIR."
 ${BUSYBOX} cp /*.rc $SECUREDIR/

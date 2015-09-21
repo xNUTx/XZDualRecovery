@@ -32,7 +32,7 @@ rootappmenu() {
 	echo ""
 	echo "          1/ Installation on device rooted with SuperSU"
 	echo "          2/ Installation on device rooted with SuperUser"
-	echo "          3/ Attempt installation on an unrooted device"
+	echo "          3/ Installation on an unrooted (KitKat) ROM using the TowelRoot method"
 	echo ""
 	echo "          Q/ Exit"
 	echo ""
