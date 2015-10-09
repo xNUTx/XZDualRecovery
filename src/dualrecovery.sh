@@ -288,7 +288,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 				SETLED on 255 0 0
 				return 0
 			fi
-		fi
+		done
 
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."
