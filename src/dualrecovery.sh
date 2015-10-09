@@ -34,9 +34,9 @@ echo "START Dual Recovery at ${DATETIME}: STAGE 2." >> ${LOG}
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
 
-REDLED=$(ls -1 /sys/class/leds|grep "red\|LED1_R")
-GREENLED=$(ls -1 /sys/class/leds|grep "green\|LED1_G")
-BLUELED=$(ls -1 /sys/class/leds|grep "blue\|LED1_B")
+REDLED=$(ls -1 /sys/class/leds|egrep "red|LED1_R")
+GREENLED=$(ls -1 /sys/class/leds|egrep "green|LED1_G")
+BLUELED=$(ls -1 /sys/class/leds|egrep "blue|LED1_B")
 
 # Defining functions
 ECHOL(){
@@ -222,6 +222,9 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	if [ -f "/cache/recovery/boot" ]; then
 		EXECL rm -f /cache/recovery/boot
 	fi
+	if [ -f "${DRPATH}/boot" ]; then
+		EXECL rm -f ${DRPATH}/boot
+	fi
 
 	cd /
 
@@ -270,13 +273,22 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		done
 
 		# Preemptive strike against locking applications
-		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | grep "/bin\|/system\|/data\|/cache" | awk '{print $1}'`; do
+		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | egrep "/bin|/system|/data|/cache" | awk '{print $1}'`; do
 			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i "name" | awk -F':\t' '{print $2}')
 			if [ "$BINARY" != "" ]; then
 				ECHOL "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!"
 				EXECL killall $BINARY
 			fi
 		done
+
+		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | egrep "/bin|/system|/data|/cache" | awk '{print $1}'`; do
+			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i "name" | awk -F':\t' '{print $2}')
+			if [ "$BINARY" != "" ]; then
+				ECHOL "File ${BINARY} is STILL locking a critical partition running as PID ${LOCKINGPID}!"
+				SETLED on 255 0 0
+				return 0
+			fi
+		fi
 
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."

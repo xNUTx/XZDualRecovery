@@ -141,7 +141,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		done
 
 		# Preemptive strike against locking applications
-		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | grep "/bin\|/system\|/data\|/cache" | awk '{print $1}'`; do
+		for LOCKINGPID in `lsof | awk '{print $1" "$2}' | egrep "/bin|/system|/data|/cache" | awk '{print $1}'`; do
 			BINARY=$(cat /proc/${LOCKINGPID}/status | grep -i "name" | awk -F':\t' '{print $2}')
 			if [ "$BINARY" != "" ]; then
 				writelog "File ${BINARY} is locking a critical partition running as PID ${LOCKINGPID}, killing it now!"

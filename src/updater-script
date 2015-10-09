@@ -32,6 +32,7 @@ set_progress(0.350000);
 
 ui_print("  Extracting new recovery files to SYSTEM...");
 package_extract_dir("system", "/system");
+run_program("/sbin/mkdir", "/system/.XZDualRecovery/bin");
 set_progress(0.550000);
 
 ui_print("  Stock ramdisk needed?");
@@ -58,6 +59,9 @@ set_progress(0.750000);
 ui_print("  Correcting permissions...");
 set_perm(0, 2000, 0755, "/system/bin/mr");
 set_perm(0, 2000, 0755, "/system/bin/chargemon");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery/bin");
+set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/dualrecovery.sh");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/rickiller.sh");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/busybox");

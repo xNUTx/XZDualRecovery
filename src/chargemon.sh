@@ -28,9 +28,9 @@ export PATH="$SECUREDIR/bin:$SECUREDIR/xbin:/system/xbin:/system/bin:/sbin"
 BOOTREC_EXTERNAL_SDCARD_NODE="/dev/block/mmcblk1p1 b 179 32"
 BOOTREC_EXTERNAL_SDCARD="/dev/block/mmcblk1p1"
 
-REDLED=$(busybox ls -1 /sys/class/leds|busybox grep "red\|LED1_R")
-GREENLED=$(busybox ls -1 /sys/class/leds|busybox grep "green\|LED1_G")
-BLUELED=$(busybox ls -1 /sys/class/leds|busybox grep "blue\|LED1_B")
+REDLED=$(busybox ls -1 /sys/class/leds|busybox egrep "red|LED1_R")
+GREENLED=$(busybox ls -1 /sys/class/leds|busybox egrep "green|LED1_G")
+BLUELED=$(busybox ls -1 /sys/class/leds|busybox egrep "blue|LED1_B")
 
 # Function definitions
 TECHOL(){
@@ -343,6 +343,10 @@ if [ -x "${BUSYBOX}" ]; then
 
 		TECHOL "Install busybox to /sbin..."
 		BEXECL cp ${BUSYBOX} /sbin/
+
+		if [ ! -d "$SECUREDIR/bin" ]; then
+			BEXECL mkdir $SECUREDIR/bin
+		fi
 
 		if [ ! -x "$SECUREDIR/bin/lzma" ]; then
 
