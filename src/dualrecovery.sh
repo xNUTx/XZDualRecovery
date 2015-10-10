@@ -292,13 +292,13 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 		# umount partitions, stripping the ramdisk to bare metal
 		ECHOL "Umount partitions and then executing init..."
-		EXECL umount -l /acct
-		EXECL umount -l /dev/cpuctl
-		EXECL umount -l /dev/pts
-		EXECL umount -l /mnt/int_storage
-		EXECL umount -l /mnt/asec
-		EXECL umount -l /mnt/obb
-		EXECL umount -l /mnt/qcks
+		EXECL umount -ld /acct
+		EXECL umount -ld /dev/cpuctl
+		EXECL umount -ld /dev/pts
+		EXECL umount -ld /mnt/int_storage
+		EXECL umount -ld /mnt/asec
+		EXECL umount -ld /mnt/obb
+		EXECL umount -ld /mnt/qcks
 		EXECL umount -l /mnt/idd	# Appslog
 		EXECL umount -l /data/idd	# Appslog
 		EXECL umount -l /data		# Userdata
@@ -320,9 +320,9 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 
 		export PATH="/sbin"
 
-		EXECL busybox umount /system/odex.priv-app
-		EXECL busybox umount /system/odex.app
-		EXECL busybox umount /system/odex
+		EXECL busybox umount -d /system/odex.priv-app
+		EXECL busybox umount -d /system/odex.app
+		EXECL busybox umount -d /system/odex
 		EXECL busybox umount /system	# System
 
 		# AS OF HERE NO MORE BUSYBOX SYMLINKS IN $PATH!!!!
