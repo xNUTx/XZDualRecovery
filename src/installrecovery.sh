@@ -115,16 +115,16 @@ DRSETPROP() {
 
 }
 
-ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.1.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop51"; else print "other"}'`
 
-if [ "$SWITCH" = "unrooted" -a "$ANDROIDVER" = "lollipop" ]; then
+if [ "$SWITCH" = "unrooted" -a "$ANDROIDVER" = "lollipop51" ]; then
 
 	echo ""
 	echo "##########################################################"
 	echo "#"
-	echo "# The unrooted installation does not work on Lollipop based ROM's!"
+	echo "# The unrooted installation does not work on Lollipop 5.1 based ROM's!"
 	echo "#"
-	echo "# The TowelRoot method used only works on (some) KitKat ROM's."
+	echo "# rootkitXperia only works on (some) Lollipop 5.0 ROM's."
 	echo "#"
 	echo "# The installer will now exit, installation aborted!"
 	echo "#"
@@ -212,12 +212,18 @@ else
 fi
 
 echo "Creating $SECUREDIR and subfolders."
-${BUSYBOX} mkdir $SECUREDIR
-${BUSYBOX} chmod 755 $SECUREDIR
-${BUSYBOX} mkdir $SECUREDIR/bin
-${BUSYBOX} chmod 755 $SECUREDIR/bin
-${BUSYBOX} mkdir $SECUREDIR/xbin
-${BUSYBOX} chmod 755 $SECUREDIR/xbin
+if [ ! -d "$SECUREDIR" ]; then
+	${BUSYBOX} mkdir $SECUREDIR
+	${BUSYBOX} chmod 755 $SECUREDIR
+fi
+if [ ! -d "$SECUREDIR/bin" ]; then
+	${BUSYBOX} mkdir $SECUREDIR/bin
+	${BUSYBOX} chmod 755 $SECUREDIR/bin
+fi
+if [ ! -d "$SECUREDIR/xbin" ]; then
+	${BUSYBOX} mkdir $SECUREDIR/xbin
+	${BUSYBOX} chmod 755 $SECUREDIR/xbin
+fi
 
 ${BUSYBOX} cp /data/local/tmp/recovery/modulecrcpatch $SECUREDIR/xbin/
 ${BUSYBOX} chmod 755 $SECUREDIR/xbin/modulecrcpatch

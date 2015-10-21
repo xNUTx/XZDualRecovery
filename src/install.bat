@@ -16,7 +16,7 @@ echo.
 
 echo 1. Installation on ROM rooted with SuperSU
 echo 2. Installation on ROM rooted with SuperUser
-echo 3. Installation on an unrooted ^(KitKat^) ROM using the TowelRoot method
+echo 3. Installation on an unrooted ^(Lollipop 5.0^) ROM using rootkitXperia
 echo 4. Install ADB drivers to windows
 echo 5. Exit
 echo.
@@ -103,7 +103,7 @@ if "%C%" == "2" (
 )
 
 if "%C%" == "3" (
-	goto easyRootTool
+	goto rootkitxperia
 )
 
 :cleanup
@@ -145,10 +145,10 @@ echo.
 pause
 goto end
 
-:easyRootTool
+:rootkitxperia
 
 echo =============================================
-echo Attempting to get root access for installation using TowelRoot now.
+echo Attempting to get root access for installation using rootkitXperia now.
 echo.
 echo NOTE: this only works on certain ROM/Kernel versions!
 echo.
@@ -161,38 +161,26 @@ echo.
 echo You can use one of the recoveries to root your device.
 echo =============================================
 
+pause
+
 echo.
 echo =============================================
 echo Sending files
 echo =============================================
 
-adb push easyroottool\zxz.sh /data/local/tmp/zxz.sh
-adb push easyroottool\towelzxperia /data/local/tmp/
-adb push easyroottool\libexploit.so /data/local/tmp/
-adb push easyroottool\writekmem /data/local/tmp/
-adb push easyroottool\findricaddr /data/local/tmp/
-adb shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
-adb shell "chmod 777 /data/local/tmp/busybox"
-adb shell "chmod 777 /data/local/tmp/zxz.sh"
-adb shell "chmod 777 /data/local/tmp/towelzxperia"
-adb shell "chmod 777 /data/local/tmp/writekmem"
-adb shell "chmod 777 /data/local/tmp/findricaddr"
-
-echo Copying kernel module...
-adb push easyroottool\wp_mod.ko /data/local/tmp/
-adb push easyroottool\kernelmodule_patch.sh /data/local/tmp/
-adb shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-adb push easyroottool\modulecrcpatch /data/local/tmp/
-adb shell "chmod 777 /data/local/tmp/modulecrcpatch"
-adb shell "/data/local/tmp/kernelmodule_patch.sh"
+adb push rootkitxperia\getroot /data/local/tmp/recovery/getroot
+adb shell "chmod 777 /data/local/tmp/recovery/getroot"
 
 echo.
 echo =============================================
-echo Installing using zxz0O0's towelzxperia
-echo ^(using geohot's towelroot library^)
+echo Installing using cubeundcube's rootkitXperia
+echo. 
+echo Thanks to anyone involved in the development of this exploit:
+echo. 
+echo Keen Team, cubeundcube, AndroPlus and zxz0O0
 echo =============================================
 
-adb shell "/data/local/tmp/towelzxperia /data/local/tmp/recovery/install.sh unrooted"
+adb shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh unrooted"
 goto cleanup
 
 :WinDriverSetup

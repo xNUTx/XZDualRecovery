@@ -42,7 +42,7 @@ rootappmenu() {
 	case $num in
 	        1) clear; echo "Adjusting for SuperSU!"; SUPERAPP="supersu"; runinstall;;
 	        2) clear; echo "Adjusting for SuperUser!"; SUPERAPP="superuser"; runinstall;;
-	        3) clear; echo "Using TowelRoot to attempt an installation."; SUPERAPP="unrooted"; runinstall;;
+	        3) clear; echo "Using rootkitXperia to attempt an installation."; SUPERAPP="unrooted"; runinstall;;
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
 	esac
@@ -114,44 +114,35 @@ runinstall() {
 	if [ "$SUPERAPP" = "unrooted" ]; then
 
 		echo "============================================="
-		echo "Attempting to get root access for installation using TowelRoot now."
+		echo "Attempting to get root access for installation using rootkitXperia now."
 		echo ""
 		echo "NOTE: this only works on certain ROM/Kernel versions!"
 		echo ""
 		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
 		echo "============================================="
 
+		echo "To continue, press any key"
+
+		read anykey
+
 		echo ""
 		echo "============================================="
 		echo "Sending files"
 		echo "============================================="
 
-		./${ADBBINARY} push easyroottool/zxz.sh /data/local/tmp/zxz.sh
-		./${ADBBINARY} push easyroottool/towelzxperia /data/local/tmp/
-		./${ADBBINARY} push easyroottool/libexploit.so /data/local/tmp/
-		./${ADBBINARY} push easyroottool/writekmem /data/local/tmp/
-		./${ADBBINARY} push easyroottool/findricaddr /data/local/tmp/
-		./${ADBBINARY} shell "cp /data/local/tmp/recovery/busybox /data/local/tmp/"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/busybox"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/zxz.sh"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/towelzxperia"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/writekmem"
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/findricaddr"
-
-		echo "Copying kernel module..."
-		./${ADBBINARY} push easyroottool/wp_mod.ko /data/local/tmp
-		./${ADBBINARY} push easyroottool/kernelmodule_patch.sh /data/local/tmp
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/kernelmodule_patch.sh"
-		./${ADBBINARY} push easyroottool/modulecrcpatch /data/local/tmp
-		./${ADBBINARY} shell "chmod 777 /data/local/tmp/modulecrcpatch"
-		./${ADBBINARY} shell "/data/local/tmp/kernelmodule_patch.sh"
+		./${ADBBINARY} push rootkitxperia/getroot /data/local/tmp/getroot
+		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
 
 		echo ""
 		echo "============================================="
-		echo "Installing using zxz0O0's towelzxperia (using geohot's towelroot library)"
+		echo "Installing using rootkitXperia by cubeundcube"
+		echo ""
+		echo "Big thanks to anyone involved in the development:"
+		echo ""
+		echo "Keen Team, cubeundcube, AndroPlus and zxz0O0"
 		echo "============================================="
 
-		./${ADBBINARY} shell "/data/local/tmp/towelzxperia /data/local/tmp/recovery/install.sh unrooted"
+		./${ADBBINARY} shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh unrooted"
 
 		echo "============================================="
 		echo ""
