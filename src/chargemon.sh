@@ -284,11 +284,11 @@ if [ -x "${BUSYBOX}" ]; then
 	BEXECL mount -o remount,rw rootfs /
 	BEXECL mount -o remount,rw /system
 
-	if [ ! -e "/system/bin/recovery.twrp.cpio.lzma" -o ! -e "/system/bin/recovery.philz.cpio.lzma" -o ! -e "/system/bin/recovery.cwm.cpio.lzma" ]; then
+	if [ ! -e "/system/bin/recovery.twrp.cpio.lzma" -o ! -e "/system/bin/recovery.philz.cpio.lzma" ]; then
 
 		BEXECL ln -sf $SECUREDIR/xbin/recovery.twrp.cpio.lzma /system/bin/recovery.twrp.cpio.lzma
 		BEXECL ln -sf $SECUREDIR/xbin/recovery.philz.cpio.lzma /system/bin/recovery.philz.cpio.lzma
-		BEXECL ln -sf $SECUREDIR/xbin/recovery.cwm.cpio.lzma /system/bin/recovery.cwm.cpio.lzma
+#		BEXECL ln -sf $SECUREDIR/xbin/recovery.cwm.cpio.lzma /system/bin/recovery.cwm.cpio.lzma
 
 	fi
 

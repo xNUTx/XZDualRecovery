@@ -6,7 +6,7 @@ cls
 echo.
 echo ==============================================
 echo =                                            =
-echo =  PhilZ Touch, CWM and TWRP Dual Recovery   =
+echo =              XZDualRecovery                =
 echo =           Maintained by [NUT]              =
 echo =                                            =
 echo =       For Many Sony Xperia Devices!        =
@@ -75,7 +75,6 @@ adb push byeselinux\modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
 adb push busybox /data/local/tmp/recovery/busybox
 adb push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 adb push recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma
-adb push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma
 if exist {ramdisk.stock.cpio.lzma} (
 	adb push ramdisk.stock.cpio.lzma /data/local/tmp/recovery/ramdisk.stock.cpio.lzma
 )
@@ -112,7 +111,7 @@ adb wait-for-device
 adb shell "/system/bin/rm -rf /data/local/tmp/recovery"
 
 set install_status=
-for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/bin/dualrecovery.sh"') do ( set install_status=%%i)
+for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/.XZDualRecovery/xbin/dualrecovery.sh"') do ( set install_status=%%i)
 
 if NOT "%install_status%" == "" (
 	echo.
@@ -152,9 +151,12 @@ echo Attempting to get root access for installation using rootkitXperia now.
 echo.
 echo NOTE: this only works on certain ROM/Kernel versions!
 echo.
-echo If it fails, please check the development thread ^(Post #2^) on XDA for more details.
+echo If it fails, please check the development thread ^(Post #2^) on 
+echo XDA for more details.
 echo.
-echo REMEMBER THIS:
+echo.
+echo ******** REMEMBER THIS: ********
+echo.
 echo.
 echo XZDualRecovery does NOT install any superuser app!!
 echo.
@@ -171,6 +173,8 @@ echo =============================================
 adb push rootkitxperia\getroot /data/local/tmp/recovery/getroot
 adb shell "chmod 777 /data/local/tmp/recovery/getroot"
 
+:retryrootkitxperia
+
 echo.
 echo =============================================
 echo Installing using cubeundcube's rootkitXperia
@@ -180,8 +184,57 @@ echo.
 echo Keen Team, cubeundcube, AndroPlus and zxz0O0
 echo =============================================
 
-adb shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh unrooted"
-goto cleanup
+adb shell "/data/local/tmp/recovery/getroot "/data/local/tmp/recovery/install.sh unrooted""
+
+ping 127.0.0.1 -n 11 > nul
+
+echo.
+echo =============================================
+echo If your device now boots to recovery, reboot 
+echo it to system to continue and allow this script
+echo to check and clean up. The script will continue
+echo once your device allows adb connections again.
+echo =============================================
+echo.
+
+adb kill-server
+adb start-server
+adb wait-for-device
+
+set install_status=
+for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/.XZDualRecovery/xbin/dualrecovery.sh"') do ( set install_status=%%i)
+
+if NOT "%install_status%" == "" (
+	echo Unrooted installation was succesful!
+	goto cleanup
+) else (
+	goto unrootmenu
+)
+
+:unrootmenu
+
+echo. 
+echo =============================================
+echo Unrooted installation failed, please press 1 
+echo once the device finished rebooting to retry.
+echo. 
+echo 1. Retry installation on an unrooted ROM using rootkitXperia
+echo 2. Exit
+echo.
+echo =============================================
+set /P C=[1,2]?
+
+if "%C%" == "2" (
+goto abort
+)
+
+if "%C%" == "1" (
+goto retryrootkitxperia
+)
+
+cls
+echo %C% is not a valid menu choice
+goto unrootmenu
 
 :WinDriverSetup
 echo.

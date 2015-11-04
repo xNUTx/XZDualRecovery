@@ -26,6 +26,10 @@ if [ ! -d "$DRPATH" ]; then
 	fi
 fi
 
+if [ ! -f "${DRPATH}/XZDR.prop" ]; then
+	${BUSYBOX} touch ${DRPATH}/XZDR.prop
+fi
+
 # Find the gpio-keys node, to listen on the right input event
 gpioKeysSearch() {
         for INPUTUEVENT in `${BUSYBOX} find /sys/devices \( -path "*gpio*" -path "*keys*" -a -path "*input?*" -a -path "*event?*" -a -name "uevent" \)`; do
@@ -71,8 +75,8 @@ pwrkeySearch() {
 
 DRGETPROP() {
 
-        VAR=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
-        PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
+  VAR=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
+  PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
 
 	if [ "$VAR" = "" -a "$PROP" = "" ]; then
 
@@ -116,6 +120,9 @@ DRSETPROP() {
 }
 
 ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.1.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop51"; else print "other"}'`
+if [ "$ANDROIDVER" = "other" ]; then
+	ANDROIDVER=`echo "$(DRGETPROP ro.build.version.release) 5.0.0" | ${BUSYBOX} awk '{if ($2 != "" && $1 >= $2) print "lollipop"; else print "other"}'`
+fi
 
 if [ "$SWITCH" = "unrooted" -a "$ANDROIDVER" = "lollipop51" ]; then
 
@@ -139,6 +146,9 @@ echo ""
 echo "##########################################################"
 echo "#"
 echo "# Installing XZDR version $(DRGETPROP version) $(DRGETPROP release)"
+if [ "$SWITCH" = "unrooted" ]; then
+	echo "# using rootkitXperia by cubeundcube, with modifications by zxz0O0."
+fi
 echo "#"
 echo "#####"
 echo ""
@@ -148,6 +158,22 @@ ${BUSYBOX} blockdev --setrw $(${BUSYBOX} find /dev/block/platform/msm_sdcc.1/by-
 echo "Temporarily disabling the RIC service, remount rootfs and /system writable to allow installation."
 # Thanks to Androxyde for this method!
 RICPATH=$(ps | ${BUSYBOX} grep "bin/ric" | ${BUSYBOX} awk '{ print $NF }')
+if [ "$RICPATH" != "" ]; then
+	${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
+fi
+
+# Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
+# Thanks to zxz0O0 for this method
+if [ "$ANDROIDVER" = "lollipop" ]; then
+	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
+		${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
+		/data/local/tmp/recovery/byeselinux.sh
+	else
+		/system/bin/insmod /system/lib/modules/byeselinux.ko
+	fi
+else
+	echo "This firmware does not require byeselinux, will not install it."
+fi
 
 # Thanks to MohammadAG and zxz0O0 for this method, heavily modified by [NUT].
 ${BUSYBOX} mount -o remount,rw /system 2>&1 > /dev/null
@@ -177,30 +203,15 @@ if [ "$?" != "0" ]; then
 			${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
 		fi
 	fi
-else
-	if [ "$RICPATH" != "" ]; then
-		${BUSYBOX} mount -o remount,rw / && mv ${RICPATH} ${RICPATH}c && ${BUSYBOX} pkill -f ${RICPATH}
-	fi
 fi
 
 # Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
+# Thanks to zxz0O0 for this method
 if [ "$ANDROIDVER" = "lollipop" ]; then
-	# Thanks to zxz0O0 for this method
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
-		echo "The byeselinux module does not yet exist, installing it now."
-		${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
-		${BUSYBOX} chmod 755 /data/local/tmp/recovery/modulecrcpatch
-		/data/local/tmp/recovery/byeselinux.sh
-	else
-		echo "The byeselinux module exists, testing if the kernel accepts it."
-		${BUSYBOX} insmod /system/lib/modules/byeselinux.ko
-		if [ "$?" != "0" -a "$?" != "17" ]; then
-			echo "That module is not accepted by the running kernel, will replace it now."
-			${BUSYBOX} chmod 755 /data/local/tmp/recovery/modulecrcpatch
-			${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
-			/data/local/tmp/recovery/byeselinux.sh
-		fi
-		/system/bin/rmmod byeselinux
+		echo "The byeselinux module does not yet exist on system, installing it now."
+		$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
+		$BUSYBOX chmod 644 $SECUREDIR/xbin/byeselinux.ko
 	fi
 	if [ -e "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
 		echo "Removing zxz0O0's byeselinux patch module, restoring the original."
@@ -234,10 +245,10 @@ ${BUSYBOX} chmod 644 $SECUREDIR/xbin/wp_mod.ko
 
 echo "Copy recovery files to system."
 ${BUSYBOX} cp /data/local/tmp/recovery/recovery.twrp.cpio.lzma $SECUREDIR/xbin/
-${BUSYBOX} cp /data/local/tmp/recovery/recovery.cwm.cpio.lzma $SECUREDIR/xbin/
+#${BUSYBOX} cp /data/local/tmp/recovery/recovery.cwm.cpio.lzma $SECUREDIR/xbin/
 ${BUSYBOX} cp /data/local/tmp/recovery/recovery.philz.cpio.lzma $SECUREDIR/xbin/
 ${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.twrp.cpio.lzma
-${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.cwm.cpio.lzma
+#${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.cwm.cpio.lzma
 ${BUSYBOX} chmod 644 $SECUREDIR/xbin/recovery.philz.cpio.lzma
 
 if [ -f "/data/local/tmp/recovery/ramdisk.stock.cpio.lzma" ]; then
@@ -293,6 +304,15 @@ ${BUSYBOX} chmod 755 $SECUREDIR/xbin/busybox
 echo "Copy init's *.rc files in to $SECUREDIR."
 ${BUSYBOX} cp /*.rc $SECUREDIR/
 
+if [ ! -f "${DRPATH}/XZDR.prop" ]; then
+	echo "Creating the XZDR properties file."
+	${BUSYBOX} touch ${DRPATH}/XZDR.prop
+fi
+
+echo "Updating installed version in properties file."
+DRSETPROP dr.xzdr.version $(DRGETPROP version) 
+DRSETPROP dr.release.type $(DRGETPROP release)
+
 echo "Trying to find and update the gpio-keys event node."
 GPIOINPUTDEV="$(gpioKeysSearch)"
 echo "Found and will be using ${GPIOINPUTDEV}!"
@@ -344,31 +364,61 @@ fi
 DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
 
-echo ""
-echo "============================================="
-echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
-echo "============================================="
-echo ""
+if [ "$SWITCH" = "unrooted" ]; then
 
-/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
-if [ "$?" != "0" ]; then
+	if [ ! -d "$SECUREDIR" ]; then
 
-	echo ""
-	echo "============================================="
-	echo "If you want the installer to clean up after itself,"
-	echo "reboot to system after entering recovery for the first time!"
-	echo "============================================="
-	echo ""
+		echo ""
+		echo "============================================="
+		echo "Installation Failed!"
+		echo "============================================="
+		echo ""
+		${BUSYBOX} sync
+		${BUSYBOX} ls -la /system
+		${BUSYBOX} mount
 
-	reboot
+	else
+
+		${BUSYBOX} sync
+
+	fi
+
+	/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
+	if [ "$?" != "0" ]; then
+
+		reboot
+
+	fi
 
 else
 
 	echo ""
 	echo "============================================="
-	echo "Your installation has already cleaned up after"
-	echo "itself if you see the install.bat/install.sh exit."
+	echo "DEVICE WILL NOW TRY A DATA SAFE REBOOT!"
 	echo "============================================="
 	echo ""
+
+	/system/bin/am start -a android.intent.action.REBOOT 2>&1 > /dev/null
+	if [ "$?" != "0" ]; then
+
+		echo ""
+		echo "============================================="
+		echo "If you want the installer to clean up after itself,"
+		echo "reboot to system after entering recovery for the first time!"
+		echo "============================================="
+		echo ""
+
+		reboot
+
+	else
+
+		echo ""
+		echo "============================================="
+		echo "Your installation has already cleaned up after"
+		echo "itself if you see the install.bat/install.sh exit."
+		echo "============================================="
+		echo ""
+
+	fi
 
 fi

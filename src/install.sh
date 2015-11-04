@@ -32,7 +32,7 @@ rootappmenu() {
 	echo ""
 	echo "          1/ Installation on device rooted with SuperSU"
 	echo "          2/ Installation on device rooted with SuperUser"
-	echo "          3/ Installation on an unrooted (KitKat) ROM using the TowelRoot method"
+	echo "          3/ Installation on an unrooted (Lollipop 5.0) ROM using rootkitXperia"
 	echo ""
 	echo "          Q/ Exit"
 	echo ""
@@ -46,6 +46,96 @@ rootappmenu() {
 	        q|Q) clear; exit;;
 	      	*) echo "$num is not a valid option"; sleep 3; clear; rootappmenu;
 	esac
+}
+
+unrootedmenu() {
+	echo ""
+	echo "If your device booted to recovery and you see this menu, please reboot your device to system and press C."
+	echo ""
+	echo "You should have been told it is installing the recovery package, including a version."
+	echo ""
+	echo "If the unrooted installation failed, please press R once the device finished rebooting to retry!"
+	echo ""
+	echo "    R/ Retry installation on an unrooted ROM using rootkitXperia"
+	echo "    C/ Continue installation"
+	echo "    Q/ Exit"
+	echo ""
+	echo "    Enter option:"
+	echo ""
+	read num
+	case $num in
+	        r|R) clear; echo "Retrying the rootkitXperia installation."; unrooted retry;;
+	        c|C) clear; return 0;;
+	        q|Q) clear; exit;;
+	      	*) echo "$num is not a valid option"; sleep 3; clear; unrootedmenu;
+	esac
+}
+
+unrooted() {
+
+	if [ "$1" != "retry" ]; then
+
+		echo "============================================="
+		echo "Attempting to get root access for installation using rootkitXperia now."
+		echo ""
+		echo "NOTE: this only works on certain ROM/Kernel versions!"
+		echo ""
+		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
+		echo ""
+		echo "******** REMEMBER THIS: ********"
+		echo ""
+		echo "XZDualRecovery does NOT install any superuser app!!"
+		echo ""
+		echo "You can use one of the recoveries to root your device."
+		echo "============================================="
+
+		echo "To continue, press enter..."
+
+		read anykey
+
+		echo ""
+		echo "============================================="
+		echo "Sending files"
+		echo "============================================="
+
+		./${ADBBINARY} push rootkitxperia/getroot /data/local/tmp/recovery/getroot
+		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
+
+	fi
+
+	echo ""
+	echo "============================================="
+	echo "Installing using rootkitXperia by cubeundcube"
+	echo ""
+	echo "Big thanks to anyone involved in the development:"
+	echo ""
+	echo "Keen Team, cubeundcube, AndroPlus and zxz0O0"
+	echo "============================================="
+
+	./${ADBBINARY} shell '/data/local/tmp/recovery/getroot "/data/local/tmp/recovery/install.sh unrooted"'
+
+	sleep 15
+
+	echo ""
+	echo "============================================="
+	echo "If your device now boots to recovery, reboot "
+	echo "it to system to continue and allow this script"
+	echo "to check and clean up. The script will continue"
+	echo "once your device allows adb connections again."
+	echo "============================================="
+	echo ""
+
+	./${ADBBINARY} kill-server
+	./${ADBBINARY} start-server
+	./${ADBBINARY} wait-for-device
+
+	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/bin/dualrecovery.sh' | grep "dualrecovery.sh" | wc -l)
+#	if [ "$INSTALLTEST" != "1" ]; then
+
+		unrootedmenu
+
+#	fi
+
 }
 
 runinstall() {
@@ -86,7 +176,7 @@ runinstall() {
 	./${ADBBINARY} push byeselinux/modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
 	./${ADBBINARY} push busybox /data/local/tmp/recovery/busybox
 	./${ADBBINARY} push recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
-	./${ADBBINARY} push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma
+#	./${ADBBINARY} push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma
 	./${ADBBINARY} push recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma
 	if [ -f "ramdisk.stock.cpio.lzma" ]; then
 		./${ADBBINARY} push ramdisk.stock.cpio.lzma /data/local/tmp/recovery/ramdisk.stock.cpio.lzma
@@ -103,7 +193,7 @@ runinstall() {
 	if [ "$SUPERAPP" = "supersu" ]; then
 		echo "Look at your device and grant supersu access!"
 		./${ADBBINARY} shell "su -c /system/bin/ls -la /data/local/tmp/recovery/busybox"
-		echo "Press any key to continue AFTER granting root access."
+		echo "Press enter to continue AFTER granting root access."
 		read blah
 	fi
 
@@ -113,46 +203,7 @@ runinstall() {
 
 	if [ "$SUPERAPP" = "unrooted" ]; then
 
-		echo "============================================="
-		echo "Attempting to get root access for installation using rootkitXperia now."
-		echo ""
-		echo "NOTE: this only works on certain ROM/Kernel versions!"
-		echo ""
-		echo "If it fails, please check the development thread (Post #2) on XDA for more details."
-		echo "============================================="
-
-		echo "To continue, press any key"
-
-		read anykey
-
-		echo ""
-		echo "============================================="
-		echo "Sending files"
-		echo "============================================="
-
-		./${ADBBINARY} push rootkitxperia/getroot /data/local/tmp/getroot
-		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
-
-		echo ""
-		echo "============================================="
-		echo "Installing using rootkitXperia by cubeundcube"
-		echo ""
-		echo "Big thanks to anyone involved in the development:"
-		echo ""
-		echo "Keen Team, cubeundcube, AndroPlus and zxz0O0"
-		echo "============================================="
-
-		./${ADBBINARY} shell "/data/local/tmp/recovery/getroot /data/local/tmp/recovery/install.sh unrooted"
-
-		echo "============================================="
-		echo ""
-		echo "REMEMBER THIS:"
-		echo ""
-		echo "XZDualRecovery does NOT install any superuser app!!"
-		echo ""
-		echo "You can use one of the recoveries to root your device."
-		echo ""
-		echo "============================================="
+		unrooted
 
 	fi
 
@@ -177,6 +228,7 @@ runinstall() {
 	fi
 	./${ADBBINARY} kill-server
 	exit 0
+
 }
 
 # Fire up the menu

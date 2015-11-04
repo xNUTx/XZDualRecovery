@@ -28,7 +28,7 @@ doall() {
 #	copyphilz auto
 	recoverypatcher auto
 	maketwrp $PACKRAMDISK auto
-	makecwm $PACKRAMDISK auto
+#	makecwm $PACKRAMDISK auto
 	makephilz $PACKRAMDISK auto
 	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.stock" ]; then
 		makestock $PACKRAMDISK auto
@@ -48,7 +48,7 @@ doallkernel() {
 #	copyphilz auto
 	recoverypatcher auto
 	maketwrp $PACKKERNELRAMDISK auto
-	makecwm $PACKKERNELRAMDISK auto
+#	makecwm $PACKKERNELRAMDISK auto
 	makephilz $PACKKERNELRAMDISK auto
 	patchramdisk auto
 	packramdisk auto
@@ -87,7 +87,7 @@ packflashable() {
 	mkdir -p $WORKDIR/.tmp/flashable/system/.XZDualRecovery/bin
 	echo "Flashable: copying files to their locations..."
 	# Flashable
-	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma
+#	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma
 	cp $WORKDIR/.tmp/recovery.philz.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma
 	cp $WORKDIR/.tmp/recovery.twrp.cpio.lzma $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma
 	if [ -f "$WORKDIR/.tmp/ramdisk.stock.cpio.lzma" ]; then
@@ -118,7 +118,7 @@ packflashable() {
 
 packinstaller() {
 	echo "Installer: copying files to their locations..."
-	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/installer/lockeddualrecovery/files/recovery.cwm.cpio.lzma
+#	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/installer/lockeddualrecovery/files/recovery.cwm.cpio.lzma
 	cp $WORKDIR/.tmp/recovery.philz.cpio.lzma $WORKDIR/.tmp/installer/lockeddualrecovery/files/recovery.philz.cpio.lzma
 	cp $WORKDIR/.tmp/recovery.twrp.cpio.lzma $WORKDIR/.tmp/installer/lockeddualrecovery/files/recovery.twrp.cpio.lzma
 	if [ -f "$WORKDIR/.tmp/ramdisk.stock.cpio.lzma" ]; then

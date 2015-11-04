@@ -822,6 +822,8 @@ int main(int argc, char **argv) {
 
 	void *protect = NULL;
 	int ret;
+	int i;
+	int p = 0;
 
 	__system_property_get("ro.build.product", devicename);
 	__system_property_get("ro.build.id", buildid);
@@ -845,7 +847,13 @@ int main(int argc, char **argv) {
 		printf("\n");
 
 		if (argc >= 2) {
-			system(argv[1]);
+			char* argument = calloc(1, 256);
+			for(i = 1;i < argc; i++)
+				p += snprintf(&argument[p], 256 - p, "%s ", argv[i]);
+			//removing the last space
+			argument[strlen(argument) - 1] = 0x00;
+			system(argument);
+			free(argument);
 		} else {
 			system(EXECCOMMAND);
 		}
