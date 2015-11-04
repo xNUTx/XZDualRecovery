@@ -3,7 +3,7 @@ ui_print("===========================================");
 ui_print("|                                         |");
 ui_print("|         *** XZDualRecovery ***          |");
 ui_print("|                                         |");
-ui_print("|  PhilZ Touch, CWM & TWRP dual recovery! |");
+ui_print("|    PhilZ Touch & TWRP dual recovery!    |");
 ui_print("|       Maintained by [NUT] on XDA        |");
 ui_print("|                                         |");
 ui_print("===========================================");
