@@ -66,7 +66,6 @@ set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/dualrecovery.sh");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/rickiller.sh");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/busybox");
 set_perm(0, 2000, 0755, "/system/.XZDualRecovery/xbin/modulecrcpatch");
-set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma");
 set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma");
 set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma");
 set_perm(0, 2000, 0644, "/system/.XZDualRecovery/xbin/byeselinux.ko");
