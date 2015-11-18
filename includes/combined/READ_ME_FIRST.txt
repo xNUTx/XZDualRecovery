@@ -8,7 +8,7 @@ or Linux.
 
 RECOVERY FLASHING:
 
-To flash it, just boot put the zip on your sdcard or internal storage and flash
+To flash it, just put the zip on your sdcard or internal storage and flash
 it in recovery.
 
 INSTALLING FROM PC/MAC:
