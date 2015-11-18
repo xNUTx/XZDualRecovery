@@ -123,10 +123,11 @@ buildlockedparts_menu_opt() {
         fi
         echo "          5/ Create flashable zip"
         echo "          6/ Create installer"
+        echo "          7/ Create flashable installer"
         echo ""
         echo "          C/ Cleanup /tmp and /out"
         echo "          S/ Copy package base to /tmp"
-        echo "          A/ Do all of the above"
+        echo "          A/ Do all of the above (combined only)"
         echo ""
 	echo "          B/ Back to Action menu"
         echo "          Q/ Quit"
@@ -141,9 +142,10 @@ buildlockedparts_menu_opt() {
                 4) clear; makestock $PACKRAMDISK; buildlockedparts_menu_opt;;
                 5) clear; packflashable; buildlockedparts_menu_opt;;
                 6) clear; packinstaller; buildlockedparts_menu_opt;;
+                7) clear; packflashableinstaller; buildlockedparts_menu_opt;;
                 c|C) clear; cleanuptmp; cleanupout lockeddualrecovery; buildlockedparts_menu_opt;;
                 s|S) clear; copyxzsource; buildlockedparts_menu_opt;;
-                a|A) clear; doall single; buildlockedparts_menu_opt;;
+                a|A) clear; doall single combined; buildlockedparts_menu_opt;;
                 b|B) clear; dualrecovery_action_menu_opt;;
                 q|Q) clear; exit;;
                 *) echo "$num is not a valid option"; sleep 3; clear; buildlockedparts_menu_opt;

@@ -1,0 +1,24 @@
+Manifest-Version: 1.0
+Created-By: 1.0 (Android SignApk)
+
+Name: 7za
+SHA1-Digest: hvf7IZz0899UKtKXgbzqzo/Nrh4=
+
+Name: META-INF/com/google/android/updater-script
+SHA1-Digest: Mmjoi6dfEZkcUEW3AQoM9UGjr20=
+
+Name: system/lib/modules/usb-storage.ko
+SHA1-Digest: R1+vDRevGXnVBSZ+0tyQUVLlBxI=
+
+Name: system/lib/modules/ntfs.ko
+SHA1-Digest: zMfOgIA3nQh9IHY3Md3jMuEutpo=
+
+Name: META-INF/com/google/android/update-binary
+SHA1-Digest: 8n8tDr103eM8ktcLq1LPCc64K4o=
+
+Name: system/lib/modules/fuse.ko
+SHA1-Digest: x4xjRyt+fvBOIpn961v8JwMfqzA=
+
+Name: system/lib/modules/cifs.ko
+SHA1-Digest: 9GvRkMg/2nstYJktP3exGvmZuMk=
+

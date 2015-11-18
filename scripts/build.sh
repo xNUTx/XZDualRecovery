@@ -33,8 +33,12 @@ doall() {
 	if [ -d "$WORKDIR/ramdisks/${DRPATH}/ramdisk.stock" ]; then
 		makestock $PACKRAMDISK auto
 	fi
-	packflashable
-	packinstaller
+	if [ "$2" = "combined" ]; then
+		packflashableinstaller
+	else
+		packflashable
+		packinstaller
+	fi
 }
 
 doallkernel() {
@@ -141,4 +145,48 @@ packinstaller() {
 	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip *
 	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip
 	zip -T $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.installer.zip
+}
+
+packflashableinstaller() {
+	# combined flashable and installer
+	cd $WORKDIR/.tmp/
+	mkdir -p $WORKDIR/.tmp/combined/system/bin
+	mkdir -p $WORKDIR/.tmp/combined/tmp
+	mkdir -p $WORKDIR/.tmp/combined/system/xbin
+	mkdir -p $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin
+	mkdir -p $WORKDIR/.tmp/combined/system/.XZDualRecovery/bin
+
+	echo "Flashable installer: copying files to their locations..."
+#	cp $WORKDIR/.tmp/recovery.cwm.cpio.lzma $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/recovery.cwm.cpio.lzma
+	cp $WORKDIR/.tmp/recovery.philz.cpio.lzma $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma
+	cp $WORKDIR/.tmp/recovery.twrp.cpio.lzma $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma
+	if [ -f "$WORKDIR/.tmp/ramdisk.stock.cpio.lzma" ]; then
+		cp $WORKDIR/.tmp/ramdisk.stock.cpio.lzma $WORKDIR/.tmp/combined/tmp/ramdisk.stock.cpio.lzma
+	fi
+	cp $WORKDIR/src/installstock.sh $WORKDIR/.tmp/combined/tmp/installstock.sh
+	cp $WORKDIR/src/setversion.sh $WORKDIR/.tmp/combined/tmp/setversion.sh
+	cp $WORKDIR/src/mr.sh $WORKDIR/.tmp/combined/system/bin/mr
+	cp $WORKDIR/src/chargemon.sh $WORKDIR/.tmp/combined/system/bin/chargemon
+	cp $WORKDIR/src/dualrecovery.sh $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/dualrecovery.sh
+	cp $WORKDIR/src/rickiller.sh $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/rickiller.sh
+	cp $WORKDIR/src/installdisableric.sh $WORKDIR/.tmp/combined/tmp/installdisableric.sh
+	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/busybox
+	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/combined/backupstockbinaries.sh
+	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/combined/META-INF/com/google/android/updater-script
+	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/combined/tmp/NDRUtils.apk
+	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/combined/tmp/installndrutils.sh
+	cp $WORKDIR/src/installrecovery.sh $WORKDIR/.tmp/combined/tmp/installrecovery.sh
+	cp $WORKDIR/src/combined.bat $WORKDIR/.tmp/combined/install.bat
+	cp $WORKDIR/src/combined.sh $WORKDIR/.tmp/combined/install.sh
+
+	echo "version=${MAJOR}.${MINOR}.${REVISION}" > $WORKDIR/.tmp/combined/tmp/dr.prop
+	echo "release=${RELEASE}" >> $WORKDIR/.tmp/combined/tmp/dr.prop
+
+	cd $WORKDIR/.tmp/combined
+	find . -name ".gitkeep" -exec rm -f {} \;
+	echo "Creating flashable installer zip..."
+	zip -r -b /tmp $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.combined.zip *
+	chmod 644 $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.combined.zip
+	zip -T $WORKDIR/out/${LABEL}-lockeddualrecovery${MAJOR}.${MINOR}.${REVISION}-${RELEASE}.combined.zip
+
 }

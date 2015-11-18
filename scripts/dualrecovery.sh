@@ -60,7 +60,7 @@ dualrecovery_menu_opt() {
 	echo ""
 	echo "          U / Upload Available Builds"
 	echo ""
-	echo "          A / Rebuild all (x) marked devices"
+	echo "          A / Rebuild all (x) marked devices (combined only)"
 	echo ""
 	echo "          Q / Quit"
 	echo ""
@@ -105,42 +105,42 @@ loadsources() {
 }
 
 buildallxed() {
-	echo "Rebuild all? (y/n)"
+	echo "Rebuild all packages? (y/n)"
 	read answer
 	if [ "$answer" = "y" -o "$answer" = "Y" ]; then
 		loadsources
 		buildxz auto
-		doall
+		doall bla combined
 		buildz1 auto
-		doall
+		doall bla combined
 		buildzu auto
-		doall
+		doall bla combined
 		buildzl auto
-		doall
+		doall bla combined
 		buildtabz auto
-		doall
+		doall bla combined
 		buildz1c auto
-		doall
+		doall bla combined
 		buildzr auto
-		doall
+		doall bla combined
 		buildt auto
-		doall
+		doall bla combined
 		buildsp auto
-		doall
+		doall bla combined
 		builds auto
-		doall
+		doall bla combined
 		buildz2 auto
-		doall
+		doall bla combined
 		buildtabz2 auto
-		doall
+		doall bla combined
 		buildt2u auto
-		doall
+		doall bla combined
 		buildz3 auto
-		doall
+		doall bla combined
 		buildz3c auto
-		doall
+		doall bla combined
 		buildtabz3c auto
-		doall
+		doall bla combined
 	fi
 	uploadallfiles auto
 }
