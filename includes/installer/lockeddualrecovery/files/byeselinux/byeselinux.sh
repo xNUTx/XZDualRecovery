@@ -22,6 +22,6 @@ for module in /system/lib/modules/*.ko; do
 	/data/local/tmp/recovery/modulecrcpatch $module /data/local/tmp/recovery/byeselinux.ko 1> /dev/null
 done
 
-/system/bin/insmod /system/lib/modules/byeselinux.ko
+/system/bin/insmod /data/local/tmp/recovery/byeselinux.ko
 
 exit 0
