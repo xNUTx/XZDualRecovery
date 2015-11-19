@@ -75,8 +75,8 @@ pwrkeySearch() {
 
 DRGETPROP() {
 
-  VAR=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
-  PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
+	VAR=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $1 }'`
+	PROP=`${BUSYBOX} grep "$*" /data/local/tmp/recovery/dr.prop | ${BUSYBOX} awk -F'=' '{ print $NF }'`
 
 	if [ "$VAR" = "" -a "$PROP" = "" ]; then
 
@@ -94,7 +94,7 @@ DRGETPROP() {
 
 	fi
 
-	if [ "$VAR" != "" ]; then
+	if [ "$VAR" != "" -a "$PROP" != "null" ]; then
         	echo $PROP
 	else
 		echo "null"
@@ -110,10 +110,10 @@ DRSETPROP() {
 
         PROP=$(DRGETPROP $1)
 
-        if [ "$PROP" != "null" ]; then
-                ${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
-        else
+        if [ "$PROP" = "null" ]; then
                 ${BUSYBOX} echo "$1=$2" >> ${DRPATH}/XZDR.prop
+        else
+                ${BUSYBOX} sed -i 's|'$1'=[^ ]*|'$1'='$2'|' ${DRPATH}/XZDR.prop
         fi
         return 0
 
@@ -164,7 +164,7 @@ fi
 
 # Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
 # Thanks to zxz0O0 for this method
-if [ "$ANDROIDVER" = "lollipop" ]; then
+if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		${BUSYBOX} chmod 755 /data/local/tmp/recovery/byeselinux.sh
 		/data/local/tmp/recovery/byeselinux.sh
@@ -207,11 +207,13 @@ fi
 
 # Checking android version first, because byeselinux is causing issues with android versions older then lollipop.
 # Thanks to zxz0O0 for this method
-if [ "$ANDROIDVER" = "lollipop" ]; then
+if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		echo "The byeselinux module does not yet exist on system, installing it now."
 		$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
+		$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko $SECUREDIR/xbin/byeselinux.ko
 		$BUSYBOX chmod 644 $SECUREDIR/xbin/byeselinux.ko
+		$BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
 	fi
 	if [ -e "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
 		echo "Removing zxz0O0's byeselinux patch module, restoring the original."
@@ -285,7 +287,7 @@ ${BUSYBOX} cp /data/local/tmp/recovery/rickiller.sh $SECUREDIR/xbin/
 ${BUSYBOX} chmod 755 $SECUREDIR/xbin/rickiller.sh
 
 echo "Installing NDRUtils to system."
-if [ "$ANDROIDVER" = "lollipop" ]; then
+if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 	if [ ! -d "/system/app/NDRUtils" ]; then
 		${BUSYBOX} mkdir /system/app/NDRUtils
 		${BUSYBOX} chmod 755 /system/app/NDRUtils
@@ -307,11 +309,19 @@ ${BUSYBOX} cp /*.rc $SECUREDIR/
 if [ ! -f "${DRPATH}/XZDR.prop" ]; then
 	echo "Creating the XZDR properties file."
 	${BUSYBOX} touch ${DRPATH}/XZDR.prop
+	${BUSYBOX} chmod 666 ${DRPATH}/XZDR.prop
 fi
 
 echo "Updating installed version in properties file."
-DRSETPROP dr.xzdr.version $(DRGETPROP version) 
+DRSETPROP dr.xzdr.version $(DRGETPROP version)
 DRSETPROP dr.release.type $(DRGETPROP release)
+
+echo "dr.recovery.boot will be set to TWRP (default)"
+DRSETPROP dr.recovery.boot twrp
+echo "dr.initd.active will be set to false (default)"
+DRSETPROP dr.initd.active false
+echo "dr.ramdisk.boot will be set to false (default)"
+DRSETPROP dr.ramdisk.boot false
 
 echo "Trying to find and update the gpio-keys event node."
 GPIOINPUTDEV="$(gpioKeysSearch)"
@@ -323,7 +333,7 @@ PWRINPUTDEV="$(pwrkeySearch)"
 echo "Found and will be monitoring ${PWRINPUTDEV}!"
 DRSETPROP dr.pwrkey.node ${PWRINPUTDEV}
 
-if [ "$ANDROIDVER" = "lollipop" ]; then
+if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 	if [ "$(DRGETPROP dr.keep.byeselinux)" != "true" ]; then
 	        echo "XZDualRecovery will unload byeselinux every boot."
 	        DRSETPROP dr.keep.byeselinux false
@@ -360,9 +370,6 @@ else
 	${BUSYBOX} mkdir /cache/recovery/
 	${BUSYBOX} touch /cache/recovery/boot
 fi
-
-DRSETPROP dr.xzdr.version $(DRGETPROP version)
-DRSETPROP dr.release.type $(DRGETPROP release)
 
 if [ "$SWITCH" = "unrooted" ]; then
 

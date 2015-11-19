@@ -63,7 +63,7 @@ echo =============================================
 adb shell "mkdir /data/local/tmp/recovery"
 adb push ..\tmp\dr.prop /data/local/tmp/recovery/dr.prop
 adb push ..\system\bin\chargemon /data/local/tmp/recovery/chargemon
-adb push ..\system\bin\mr.sh /data/local/tmp/recovery/mr
+adb push ..\system\bin\mr /data/local/tmp/recovery/mr
 adb push ..\system\.XZDualRecovery\xbin\dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 adb push ..\tmp\NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk
 adb push ..\system\.XZDualRecovery\xbin\rickiller.sh /data/local/tmp/recovery/rickiller.sh
@@ -72,7 +72,7 @@ adb push byeselinux\byeselinux.sh /data/local/tmp/recovery/byeselinux.sh
 adb push ..\tmp\wp_mod.ko /data/local/tmp/recovery/wp_mod.ko
 adb push byeselinux\sysrw.sh /data/local/tmp/recovery/sysrw.sh
 adb push ..\tmp\modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
-adb push ..\tmp\busybox /data/local/tmp/recovery/busybox
+adb push ..\system\.XZDualRecovery\xbin\busybox /data/local/tmp/recovery/busybox
 adb push ..\system\.XZDualRecovery\xbin\recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 adb push ..\system\.XZDualRecovery\xbin\recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma
 if exist {..\system\.XZDualRecovery\xbin\ramdisk.stock.cpio.lzma} (

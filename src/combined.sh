@@ -165,7 +165,7 @@ runinstall() {
 	./${ADBBINARY} shell "mkdir /data/local/tmp/recovery"
 	./${ADBBINARY} push ../tmp/dr.prop /data/local/tmp/recovery/dr.prop
 	./${ADBBINARY} push ../system/bin/chargemon /data/local/tmp/recovery/chargemon
-	./${ADBBINARY} push ../system/bin/mr.sh /data/local/tmp/recovery/mr
+	./${ADBBINARY} push ../system/bin/mr /data/local/tmp/recovery/mr
 	./${ADBBINARY} push ../system/.XZDualRecovery/xbin/dualrecovery.sh /data/local/tmp/recovery/dualrecovery.sh
 	./${ADBBINARY} push ../tmp/NDRUtils.apk /data/local/tmp/recovery/NDRUtils.apk
 	./${ADBBINARY} push ../system/.XZDualRecovery/xbin/rickiller.sh /data/local/tmp/recovery/rickiller.sh
@@ -174,7 +174,7 @@ runinstall() {
 	./${ADBBINARY} push ../tmp/wp_mod.ko /data/local/tmp/recovery/wp_mod.ko
 	./${ADBBINARY} push byeselinux/sysrw.sh /data/local/tmp/recovery/sysrw.sh
 	./${ADBBINARY} push ../tmp/modulecrcpatch /data/local/tmp/recovery/modulecrcpatch
-	./${ADBBINARY} push ../tmp/busybox /data/local/tmp/recovery/busybox
+	./${ADBBINARY} push ../system/.XZDualRecovery/xbin/busybox /data/local/tmp/recovery/busybox
 	./${ADBBINARY} push ../system/.XZDualRecovery/xbin/recovery.twrp.cpio.lzma /data/local/tmp/recovery/recovery.twrp.cpio.lzma
 #	./${ADBBINARY} push recovery.cwm.cpio.lzma /data/local/tmp/recovery/recovery.cwm.cpio.lzma
 	./${ADBBINARY} push ../system/.XZDualRecovery/xbin/recovery.philz.cpio.lzma /data/local/tmp/recovery/recovery.philz.cpio.lzma
