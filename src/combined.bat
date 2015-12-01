@@ -18,13 +18,17 @@ echo 1. Installation on ROM rooted with SuperSU
 echo 2. Installation on ROM rooted with SuperUser
 echo 3. Installation on an unrooted ^(Lollipop 5.0^) ROM using rootkitXperia
 echo 4. Install ADB drivers to windows
-echo 5. Exit
+echo 5. Open an ADB shell
+echo 6. Exit
 echo.
 echo Please choose install action.
-set /P C=[1,2,3,4,5]?
+set /P C=[1,2,3,4,5,6]?
 
-if "%C%" == "5" (
+if "%C%" == "6" (
 	goto abort
+)
+if "%C%" == "5" (
+	goto startshell
 )
 if "%C%" == "4" (
 	goto WinDriverSetup
@@ -111,9 +115,9 @@ adb wait-for-device
 adb shell "/system/bin/rm -rf /data/local/tmp/recovery"
 
 set install_status=
-for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/.XZDualRecovery/xbin/dualrecovery.sh"') do ( set install_status=%%i)
+for /f "delims=" %%i in ('adb shell "/system/bin/ls /system/.XZDualRecovery/xbin/dualrecovery.sh" ^| find /i "no such file" /c') do ( set install_status=%%i)
 
-if NOT "%install_status%" == "" (
+if "%install_status%" == "0" (
 	echo.
 	echo =============================================
 	echo Installation finished. Enjoy the recoveries!
@@ -144,6 +148,29 @@ echo.
 pause
 goto end
 
+:startshell
+adb kill-server
+adb start-server
+
+echo.
+echo =============================================
+echo Waiting for Device, connect USB cable now...
+echo =============================================
+adb wait-for-device
+echo Device found!
+echo.
+echo =============================================
+echo Getting ro.build.product
+echo =============================================
+set product_name=
+for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set product_name=%%i)
+echo Device model is %product_name%
+for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
+echo Firmware is %firmware%
+echo.
+adb shell
+goto menu
+
 :rootkitxperia
 
 echo =============================================
@@ -165,6 +192,12 @@ echo =============================================
 
 pause
 
+:retryrootkitxperia
+
+adb kill-server
+adb start-server
+adb wait-for-device
+
 echo.
 echo =============================================
 echo Sending files
@@ -172,8 +205,6 @@ echo =============================================
 
 adb push rootkitxperia\getroot /data/local/tmp/recovery/getroot
 adb shell "chmod 777 /data/local/tmp/recovery/getroot"
-
-:retryrootkitxperia
 
 echo.
 echo =============================================
@@ -202,9 +233,9 @@ adb start-server
 adb wait-for-device
 
 set install_status=
-for /f "delims=" %%i in ('adb shell "/system/bin/ls -1 /system/.XZDualRecovery/xbin/dualrecovery.sh"') do ( set install_status=%%i)
+for /f "delims=" %%i in ('adb shell "/system/bin/ls /system/.XZDualRecovery/xbin/dualrecovery.sh" ^| find /i "no such file" /c') do ( set install_status=%%i)
 
-if NOT "%install_status%" == "" (
+if "%install_status%" == "0" (
 	echo Unrooted installation was succesful!
 	goto cleanup
 ) else (
@@ -218,6 +249,9 @@ echo =============================================
 echo Unrooted installation failed, please press 1 
 echo once the device finished rebooting to retry.
 echo. 
+echo Try at least 4 times before reporting it on the
+echo XDA DevDB thread.
+echo. 
 echo 1. Retry installation on an unrooted ROM using rootkitXperia
 echo 2. Exit
 echo.
@@ -225,11 +259,11 @@ echo =============================================
 set /P C=[1,2]?
 
 if "%C%" == "2" (
-goto abort
+	goto abort
 )
 
 if "%C%" == "1" (
-goto retryrootkitxperia
+	goto retryrootkitxperia
 )
 
 cls
@@ -245,7 +279,7 @@ echo.
 echo Open the windows device manager, look up the device with an exclamation mark.
 echo Right click on it and choose 'update driver'. You will want to locate
 echo a driver on your disk and for that purpose point the installation wizard
-echo to lockeddualrecovery\files\adbdrivers and install the driver there.
+echo to files\adbdrivers and install the driver there.
 echo.
 echo =============================================
 echo IMPORTANT NOTE:

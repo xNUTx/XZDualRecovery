@@ -93,15 +93,19 @@ unrooted() {
 
 		read anykey
 
-		echo ""
-		echo "============================================="
-		echo "Sending files"
-		echo "============================================="
-
-		./${ADBBINARY} push rootkitxperia/getroot /data/local/tmp/recovery/getroot
-		./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
-
 	fi
+
+	./${ADBBINARY} kill-server
+	./${ADBBINARY} start-server
+	./${ADBBINARY} wait-for-device
+
+	echo ""
+	echo "============================================="
+	echo "Sending files"
+	echo "============================================="
+
+	./${ADBBINARY} push rootkitxperia/getroot /data/local/tmp/recovery/getroot
+	./${ADBBINARY} shell "chmod 755 /data/local/tmp/recovery/getroot"
 
 	echo ""
 	echo "============================================="
@@ -129,12 +133,12 @@ unrooted() {
 	./${ADBBINARY} start-server
 	./${ADBBINARY} wait-for-device
 
-	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/bin/dualrecovery.sh' | grep "dualrecovery.sh" | wc -l)
-#	if [ "$INSTALLTEST" != "1" ]; then
+	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/.XZDualRecovery/xbin/dualrecovery.sh' | grep -i "no such file" | wc -l)
+	if [ "$INSTALLTEST" != "0" ]; then
 
 		unrootedmenu
 
-#	fi
+	fi
 
 }
 
@@ -209,8 +213,9 @@ runinstall() {
 
 	./${ADBBINARY} wait-for-device
 	./${ADBBINARY} shell "/system/bin/rm -rf /data/local/tmp/recovery"
-	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/bin/dualrecovery.sh' | grep "dualrecovery.sh" | wc -l)
-	if [ "$INSTALLTEST" = "1" ]; then
+
+	INSTALLTEST=$(./${ADBBINARY} shell '/system/bin/ls /system/.XZDualRecovery/xbin/dualrecovery.sh' | grep -i "no such file" | wc -l)
+	if [ "$INSTALLTEST" = "0" ]; then
 		echo ""
 		echo "============================================="
 		echo "Installation finished. Enjoy the recoveries!"

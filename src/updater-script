@@ -22,9 +22,7 @@ set_progress(0.150000);
 
 ui_print("  Making sure a copy of the original chargemon remains...");
 package_extract_file("system/xbin/busybox", "/sbin/sh");
-package_extract_file("chargemon.c650x", "/tmp/chargemon.c650x");
-package_extract_file("chargemon.c660x", "/tmp/chargemon.c660x");
-package_extract_file("backupstockbinaries.sh", "/sbin/backupstockbinaries.sh");
+package_extract_file("tmp/backupstockbinaries.sh", "/sbin/backupstockbinaries.sh");
 set_perm(0, 0, 0755, "/sbin/sh");
 set_perm(0, 0, 0755, "/sbin/backupstockbinaries.sh");
 run_program("/sbin/backupstockbinaries.sh");

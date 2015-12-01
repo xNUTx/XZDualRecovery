@@ -17,8 +17,8 @@ copysource() {
 
 doall() {
 	if [ "$1" = "single" ]; then
-		source scripts/recovery.sh
-		source scripts/build.sh
+		source $WORKDIR/scripts/recovery.sh
+		source $WORKDIR/scripts/build.sh
 	fi
 	cleanuptmp
 	cleanupout lockeddualrecovery
@@ -105,7 +105,7 @@ packflashable() {
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/rickiller.sh
 	cp $WORKDIR/src/installdisableric.sh $WORKDIR/.tmp/flashable/tmp/installdisableric.sh
 	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/flashable/system/.XZDualRecovery/xbin/busybox
-	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/flashable/backupstockbinaries.sh
+	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/flashable/tmp/backupstockbinaries.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/flashable/META-INF/com/google/android/updater-script
 	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/flashable/tmp/NDRUtils.apk
 	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/flashable/tmp/installndrutils.sh
@@ -171,7 +171,7 @@ packflashableinstaller() {
 	cp $WORKDIR/src/rickiller.sh $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/rickiller.sh
 	cp $WORKDIR/src/installdisableric.sh $WORKDIR/.tmp/combined/tmp/installdisableric.sh
 	cp $WORKDIR/.tmp/busybox $WORKDIR/.tmp/combined/system/.XZDualRecovery/xbin/busybox
-	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/combined/backupstockbinaries.sh
+	cp $WORKDIR/src/backupstockbinaries.sh $WORKDIR/.tmp/combined/tmp/backupstockbinaries.sh
 	cp $WORKDIR/src/updater-script $WORKDIR/.tmp/combined/META-INF/com/google/android/updater-script
 	cp $WORKDIR/.tmp/NDRUtils.apk $WORKDIR/.tmp/combined/tmp/NDRUtils.apk
 	cp $WORKDIR/src/installndrutils.sh $WORKDIR/.tmp/combined/tmp/installndrutils.sh

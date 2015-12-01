@@ -211,8 +211,6 @@ if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 	if [ ! -e "/system/lib/modules/byeselinux.ko" ]; then
 		echo "The byeselinux module does not yet exist on system, installing it now."
 		$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko /system/lib/modules/byeselinux.ko
-		$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko $SECUREDIR/xbin/byeselinux.ko
-		$BUSYBOX chmod 644 $SECUREDIR/xbin/byeselinux.ko
 		$BUSYBOX chmod 644 /system/lib/modules/byeselinux.ko
 	fi
 	if [ -e "/system/lib/modules/mhl_sii8620_8061_drv_orig.ko" ]; then
@@ -220,8 +218,6 @@ if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
 		$BUSYBOX rm -f /system/lib/modules/mhl_sii8620_8061_drv.ko
 		$BUSYBOX mv /system/lib/modules/mhl_sii8620_8061_drv_orig.ko /system/lib/modules/mhl_sii8620_8061_drv.ko
 	fi
-else
-	echo "This firmware does not require byeselinux, will not install it."
 fi
 
 echo "Creating $SECUREDIR and subfolders."
@@ -240,8 +236,10 @@ fi
 
 ${BUSYBOX} cp /data/local/tmp/recovery/modulecrcpatch $SECUREDIR/xbin/
 ${BUSYBOX} chmod 755 $SECUREDIR/xbin/modulecrcpatch
-${BUSYBOX} cp /data/local/tmp/recovery/byeselinux.ko $SECUREDIR/xbin/
-${BUSYBOX} chmod 644 $SECUREDIR/xbin/byeselinux.ko
+if [ "$ANDROIDVER" = "lollipop" -o "$ANDROIDVER" = "lollipop51" ]; then
+	$BUSYBOX cp /data/local/tmp/recovery/byeselinux.ko $SECUREDIR/xbin/byeselinux.ko
+	$BUSYBOX chmod 644 $SECUREDIR/xbin/byeselinux.ko
+fi
 ${BUSYBOX} cp /data/local/tmp/recovery/wp_mod.ko $SECUREDIR/xbin/
 ${BUSYBOX} chmod 644 $SECUREDIR/xbin/wp_mod.ko
 
