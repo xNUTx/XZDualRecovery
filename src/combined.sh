@@ -165,7 +165,7 @@ runinstall() {
 	echo "Android version is $androidver"
 	echo ""
 
-	if [ "$(echo $androidver | grep -i \"5.1\" | wc -l)" = "1"]; then
+	if [ "$SUPERAPP" = "unrooted" -a "$(echo $androidver | grep -i \"5.1\" | wc -l)" = "1" ]; then
 
 	        echo ""
 	        echo "##########################################################"
