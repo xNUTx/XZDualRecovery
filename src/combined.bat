@@ -62,6 +62,31 @@ echo Firmware is %firmware%
 for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set androidver=%%i)
 echo Android version is %androidver%
 echo.
+
+for /f "delims=" %%i in ('adb shell "getprop ro.build.version.release" ^| find /i "5.1" /c') do ( set androidver=%%i)
+if "%C%" == "3" (
+	if "%androidver%" == "0" (
+
+		echo.
+		echo ##########################################################
+		echo #
+		echo # The unrooted installation does not work on Lollipop 5.1 based ROM's!
+		echo #
+		echo # rootkitXperia only works on (some) Lollipop 5.0 ROM's.
+		echo #
+		echo # The installer will now exit, installation aborted!
+		echo #
+		echo #####
+		echo.
+
+		adb shell "/system/bin/rm -rf /data/local/tmp/recovery"
+
+		pause
+
+		goto end
+	)
+)
+
 echo =============================================
 echo Step2 : Sending the recovery files.
 echo =============================================
@@ -167,36 +192,13 @@ for /f "delims=" %%i in ('adb shell "getprop ro.build.product"') do ( set produc
 echo Device model is %product_name%
 for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set firmware=%%i)
 echo Firmware is %firmware%
-for /f "delims=" %%i in ('adb shell "getprop ro.build.id"') do ( set androidver=%%i)
+for /f "delims=" %%i in ('adb shell "getprop ro.build.version.release"') do ( set androidver=%%i)
 echo Android version is %androidver%
 echo.
 adb shell
 goto menu
 
 :rootkitxperia
-
-for /f "delims=" %%i in ('adb shell "getprop ro.build.id" ^| find /i "5.1" /c') do ( set androidver=%%i)
-if "%androidver%" == "0" (
-
-	echo.
-	echo ##########################################################
-	echo #
-	echo # The unrooted installation does not work on Lollipop 5.1 based ROM's!
-	echo #
-	echo # rootkitXperia only works on (some) Lollipop 5.0 ROM's.
-	echo #
-	echo # The installer will now exit, installation aborted!
-	echo #
-	echo #####
-	echo.
-
-	adb shell "/system/bin/rm -rf /data/local/tmp/recovery"
-
-	pause
-
-	goto end
-	
-)
 
 echo =============================================
 echo Attempting to get root access for installation using rootkitXperia now.

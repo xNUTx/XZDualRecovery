@@ -164,6 +164,27 @@ runinstall() {
 	androidver=`./${ADBBINARY} shell "getprop ro.build.version.release"`
 	echo "Android version is $androidver"
 	echo ""
+
+	if [ "$(echo $androidver | grep -i \"5.1\" | wc -l)" = "1"]; then
+
+	        echo ""
+	        echo "##########################################################"
+	        echo "#"
+	        echo "# The unrooted installation does not work on Lollipop 5.1 based ROM's!"
+	        echo "#"
+	        echo "# rootkitXperia only works on (some) Lollipop 5.0 ROM's."
+	        echo "#"
+	        echo "# The installer will now exit, installation aborted!"
+	        echo "#"
+	        echo "#####"
+	        echo ""
+
+		./${ADBBINARY} shell "/system/bin/rm -rf /data/local/tmp/recovery"
+
+		exit
+
+	fi
+
 	echo "============================================="
 	echo "Step2 : Sending the recovery files."
 	echo "============================================="
@@ -209,29 +230,7 @@ runinstall() {
 
 	if [ "$SUPERAPP" = "unrooted" ]; then
 
-		if [ "$(echo $androidver | grep -i \"5.1\" | wc -l)" = "0"]; then
-
-			unrooted
-
-		else
-
-		        echo ""
-		        echo "##########################################################"
-		        echo "#"
-		        echo "# The unrooted installation does not work on Lollipop 5.1 based ROM's!"
-		        echo "#"
-		        echo "# rootkitXperia only works on (some) Lollipop 5.0 ROM's."
-		        echo "#"
-		        echo "# The installer will now exit, installation aborted!"
-		        echo "#"
-		        echo "#####"
-		        echo ""
-
-			./${ADBBINARY} shell "/system/bin/rm -rf /data/local/tmp/recovery"
-
-			exit
-
-		fi
+		unrooted
 
 	fi
 
