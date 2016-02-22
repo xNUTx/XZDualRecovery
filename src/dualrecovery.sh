@@ -233,6 +233,9 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 	# reboot recovery trigger or boot file found, no keys pressed: read what recovery to use
 	if [ "$KEYCHECK" = "" ]; then
 		RECLOAD="$(DRGETPROP dr.recovery.boot)"
+		if [ "$RECLOAD" = "cwm" ]; then
+			RECLOAD="philz"
+		fi
 		RECLOG="Booting to ${RECLOAD}..."
 	fi
 

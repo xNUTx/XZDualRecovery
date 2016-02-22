@@ -23,6 +23,7 @@ if [ ! -d "$DRPATH" ]; then
 	${BUSYBOX} mkdir $DRPATH 2>&1 > /dev/null
 	if [ ! -d "$DRPATH" ]; then
 		DRPATH="/cache/${LOGDIR}"
+		${BUSYBOX} mkdir $DRPATH 2>&1 > /dev/null
 	fi
 fi
 

@@ -355,6 +355,9 @@ if [ "$RECOVERYBOOT" = "true" ]; then
         # reboot recovery trigger or boot file found, no keys pressed: read what recovery to use
         if [ "$KEYCHECK" = "false" ]; then
                 RECLOAD="$(DRGETPROP dr.recovery.boot)"
+		if [ "$RECLOAD" = "cwm" ]; then
+			RECLOAD="philz"
+		fi
                 RECLOG="Booting to ${RECLOAD}..."
         fi
 
@@ -380,8 +383,7 @@ if [ "$RECOVERYBOOT" = "true" ]; then
 		ECHOL "CPIO Archive not found, accepting it probably is an lzma version!"
 		lzma -d -c /sbin/recovery.${RECLOAD}.cpio.lzma > /drbin/recovery.${RECLOAD}.cpio
 	fi
-	
-	
+
 	EXECL mkdir /recovery
 	EXECL cd /recovery
 

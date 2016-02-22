@@ -21,7 +21,7 @@ run_program("/sbin/busybox", "mount", "/system");
 set_progress(0.150000);
 
 ui_print("  Making sure a copy of the original chargemon remains...");
-package_extract_file("system/xbin/busybox", "/sbin/sh");
+package_extract_file("system/.XZDualRecovery/xbin/busybox", "/sbin/sh");
 package_extract_file("tmp/backupstockbinaries.sh", "/sbin/backupstockbinaries.sh");
 set_perm(0, 0, 0755, "/sbin/sh");
 set_perm(0, 0, 0755, "/sbin/backupstockbinaries.sh");
