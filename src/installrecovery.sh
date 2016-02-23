@@ -317,8 +317,10 @@ DRSETPROP dr.release.type $(DRGETPROP release)
 
 echo "dr.recovery.boot will be set to TWRP (default)"
 DRSETPROP dr.recovery.boot twrp
-echo "dr.initd.active will be set to false (default)"
-DRSETPROP dr.initd.active false
+if [ "$(DRGETPROP dr.initd.active)" != "true" ]; then
+	echo "dr.initd.active will be set to false (default)"
+	DRSETPROP dr.initd.active false
+fi
 echo "dr.ramdisk.boot will be set to false (default)"
 DRSETPROP dr.ramdisk.boot false
 
